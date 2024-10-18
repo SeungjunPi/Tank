@@ -164,7 +164,9 @@ void OnSessionDisconnect(UINT32 sessionID)
 	g_playerManager.TryDeletePlayer(sessionID);
 	Tank* pTank = g_objectManager.GetTank(sessionID);
 	if (pTank != nullptr) {
+		printf("RemoveTank: owner=%u, tankId=%u\n", sessionID, pTank->GetID());
 		g_objectManager.RemoveTank(pTank->GetID(), sessionID);
+		
 	}
 }
 
@@ -266,6 +268,7 @@ void s_CollideObjects(ULONGLONG currentTick)
 					pOtherObj->OnHit(currentTick);
 
 					GamePacket::BroadcastTankHit(pOtherObj->GetID(), pProjectile->GetID());
+					printf("Tank Hit: tankId=%u, projectileId=%d\n", pOtherObj->GetID(), pProjectile->GetID());
 				}
 			}
 		}

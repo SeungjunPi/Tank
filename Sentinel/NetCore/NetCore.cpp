@@ -164,7 +164,6 @@ UINT32 NetCore::ConnectTo(const char* ip, int port)
 	}
 
 	Session* pSession = s_sessionManager.CreateSession(hSocket);
-	pSession->Initiate();
 
 	if (CreateIoCompletionPort((HANDLE)hSocket, s_hIOCP, (ULONG_PTR)pSession, 0) == NULL) {
 		puts("IOCP Create Fail");

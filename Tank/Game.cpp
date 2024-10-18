@@ -112,6 +112,7 @@ void s_ApplyKeyboardEvents(ULONGLONG tickDiff)
 
 	if (KeyboardEventListener::inputs.escape) {
 		s_isRunning = false;
+		return;
 	}
 
 	if (KeyboardEventListener::inputs.spawn) {
