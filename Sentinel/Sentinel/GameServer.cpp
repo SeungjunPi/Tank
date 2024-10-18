@@ -9,8 +9,7 @@
 #include "GameEvent.h"
 #include "Tank.h"
 
-void OnSessionCreate(UINT32 sessionID);
-void OnSessionDisconnect(UINT32 sessionID);
+
 
 static BOOL s_isRunning = false;
 
@@ -21,6 +20,9 @@ ObjectManager g_objectManager;
 static void s_ApplyObjectLogic(ULONGLONG tickDiff);
 static void s_CollideObjects(ULONGLONG curTick);
 static void s_CleanupDestroyedObjects(ULONGLONG curTick);
+static void s_OnSessionEvent(UINT32 sessionID, ESessionEvent sessionEvent);
+void OnSessionCreate(UINT32 sessionID);
+void OnSessionDisconnect(UINT32 sessionID);
 
 
 void GameServer::Initialize()
@@ -37,7 +39,7 @@ void GameServer::Initialize()
 void GameServer::Start()
 {
 	g_pNetCore->StartNetCore();
-	g_pNetCore->StartAccept(OnSessionCreate, OnSessionDisconnect);
+	g_pNetCore->StartAccept();
 	UINT32 senderID = 0;
 
 	s_isRunning = true;
@@ -49,15 +51,24 @@ void GameServer::Start()
 		ULONGLONG currentTick = GetTickCount64();
 		ULONGLONG gameTickDiff = currentTick - g_previousGameTick;
 
-		// Apply NetCore Events
-		NetMessageQueue* msgs = g_pNetCore->GetReceiveMessages();
+		// Handle NetCore Session Events
+		NetSessionEventQueue* pNetSessionEventQueue = g_pNetCore->StartHandleSessionEvents();
+		ESessionEvent sessionEvent = pNetSessionEventQueue->GetNetSessionEvent(&senderID);
+		while (sessionEvent != ESessionEvent::NONE) {
+			s_OnSessionEvent(senderID, sessionEvent);
+			sessionEvent = pNetSessionEventQueue->GetNetSessionEvent(&senderID);
+		}
+		g_pNetCore->EndHandleSessionEvents();
+
+		// Handle NetCore Messages
+		NetMessageQueue* msgs = g_pNetCore->StartHandleReceivedMessages();
 
 		NetMessage* pMsg = msgs->GetNetMessageOrNull(&senderID);
 		while (pMsg != NULL) {
 			GamePacket::HandlePacket((BYTE*)pMsg->body, senderID);
 			pMsg = msgs->GetNetMessageOrNull(&senderID);
 		}
-		msgs->Flush();
+		g_pNetCore->EndHandleReceivedMessages();
 
 		// Erase Destroyed Objects
 		s_CleanupDestroyedObjects(currentTick);
@@ -157,6 +168,20 @@ void s_CleanupDestroyedObjects(ULONGLONG curTick)
 			}
 		}
 
+	}
+}
+
+void s_OnSessionEvent(UINT32 sessionID, ESessionEvent sessionEvent)
+{
+	switch (sessionEvent) {
+	case ESessionEvent::CREATE_PASSIVE_CLIENT:
+		OnSessionCreate(sessionID);
+		break;
+	case ESessionEvent::DELETE_PASSIVE_CLIENT:
+		OnSessionDisconnect(sessionID);
+		break;
+	default:
+		__debugbreak();
 	}
 }
 

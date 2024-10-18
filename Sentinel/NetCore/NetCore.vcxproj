@@ -133,6 +133,7 @@
     <ClCompile Include="NetMessageQueue.cpp" />
     <ClCompile Include="NetCore.cpp" />
     <ClCompile Include="NetCoreMain.cpp" />
+    <ClCompile Include="NetSessionEventQueue.cpp" />
     <ClCompile Include="PointerList.cpp" />
     <ClCompile Include="PointerMap.cpp" />
     <ClCompile Include="PointerQueue.cpp" />
@@ -147,6 +148,7 @@
     <ClInclude Include="NetCore.h" />
     <ClInclude Include="NetGlobal.h" />
     <ClInclude Include="NetMessage.h" />
+    <ClInclude Include="NetSessionEventQueue.h" />
     <ClInclude Include="PointerList.h" />
     <ClInclude Include="PointerMap.h" />
     <ClInclude Include="PointerQueue.h" />

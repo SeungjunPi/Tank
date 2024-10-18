@@ -3,11 +3,13 @@
 #define NETCORE_API __declspec(dllexport)
 
 #include "NetMessageQueue.h"
+#include "NetSessionEventQueue.h"
 
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 #define NET_CORE_NUM_THREADS (2)
 #define NET_CORE_PORT (30283)
+
 
 class NETCORE_API NetCore
 {
@@ -16,7 +18,7 @@ public:
 	bool StartNetCore();
 
 	// Accept 시작, session 생성 시 매개변수로 전달되는 콜백함수 실행
-	void StartAccept(void (*sessionCreateCallback)(UINT32 sessionID), void (*sessionDisconnectCallback)(UINT32 sessionID));
+	void StartAccept();
 
 	// IOCP 종료
 	void EndNetCore();
@@ -32,15 +34,19 @@ public:
 	bool SendMessageTo(UINT32 sessionID, BYTE* msg, UINT32 length);
 	bool SendMessageTo(UINT32* sessionIDs, UINT32 numSessions, BYTE* msg, UINT32 length);
 
+	NetSessionEventQueue* StartHandleSessionEvents();
+	void EndHandleSessionEvents();
 
-	NetMessageQueue* GetReceiveMessages();
+	NetMessageQueue* StartHandleReceivedMessages(); // 이 함수는 싱글 스레드에서 호출돼야 하며, 이후 반드시 End가 호출돼야 함 
+	void EndHandleReceivedMessages(); // 이 함수가 호출된 시점에 NetMessageQueue의 모든 NetMessage가 처리됐다고 간주함
+
 
 	void EndIoThreads();
 };
 
 
-NETCORE_API NetCore* GetNetCore();
-NETCORE_API void DeleteNetCore();
+NETCORE_API NetCore* GetNetCore(); // deprecated
+NETCORE_API void DeleteNetCore(); // deprecated
 
 NETCORE_API void CreateNetCore(NetCore** dst);
 NETCORE_API void DeleteNetCore(NetCore* src);

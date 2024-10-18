@@ -55,7 +55,7 @@ public:
 	void Send(BYTE* msg, UINT32 len);
 	
 	void OnSendComplete();
-	void OnSendCompleteImediately();
+	void OnSendCompleteImediately(); // deprecated
 
 	ESessionRefResult ReduceReference(ESessionRefParam param);
 

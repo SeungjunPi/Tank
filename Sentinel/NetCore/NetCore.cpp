@@ -26,28 +26,27 @@ static AcceptIoOperationData s_acceptIoOperationData;
 
 
 static HANDLE s_ioThreads[NET_CORE_NUM_THREADS];
+
+static SRWLOCK s_sessionEventLocks[NET_CORE_NUM_THREADS];
+static NetSessionEventQueue* s_pSessionEventsFront;
+static NetSessionEventQueue* s_pSessionEventsBack;
+
 static SRWLOCK s_receiveSrwLocks[NET_CORE_NUM_THREADS];
-
-
 static NetMessageQueue* s_pReceiveMessagesFront;
 static NetMessageQueue* s_pReceiveMessagesBack;
 
 static SessionManager s_sessionManager;
 
 
-static void(*s_OnCreateSession)(UINT32 sessionID) = nullptr;
-static void(*s_OnDisconnectSession)(UINT32 sessionID) = nullptr;
-
-
-
 unsigned WINAPI ThreadIoCompletion(LPVOID pParam);
 
-void OnAccept(AcceptIoOperationData* data);
+void OnAccept(AcceptIoOperationData* data, int threadId);
 bool PostAccept();
 
 void InitiateAllocation();
 void TerminateAllocation();
 
+void s_WriteSessionEvent(UINT32 sessionId, ESessionEvent sessionEvent, int threadId);
 
 
 bool NetCore::StartNetCore()
@@ -76,7 +75,7 @@ bool NetCore::StartNetCore()
 	return true;
 }
 
-void NetCore::StartAccept(void (*sessionCreateCallback)(UINT32 sessionID), void (*sessionDisconnectCallback)(UINT32 sessionID))
+void NetCore::StartAccept()
 {
 	s_hListeningSocket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
 
@@ -102,9 +101,6 @@ void NetCore::StartAccept(void (*sessionCreateCallback)(UINT32 sessionID), void 
 		EndNetCore();
 		return;
 	}
-
-	s_OnCreateSession = sessionCreateCallback;
-	s_OnDisconnectSession = sessionDisconnectCallback;
 
 	PostAccept();
 }
@@ -215,7 +211,29 @@ bool NetCore::SendMessageTo(UINT32* sessionIDs, UINT32 numSessions, BYTE* msg, U
 	return true;
 }
 
-NetMessageQueue* NetCore::GetReceiveMessages()
+NetSessionEventQueue* NetCore::StartHandleSessionEvents()
+{
+	for (int i = 0; i < NET_CORE_NUM_THREADS; ++i) {
+		AcquireSRWLockExclusive(&s_sessionEventLocks[i]);
+	}
+
+	NetSessionEventQueue* tmp = s_pSessionEventsFront;
+	s_pSessionEventsFront = s_pSessionEventsBack;
+	s_pSessionEventsBack = tmp;
+
+	for (int i = 0; i < NET_CORE_NUM_THREADS; ++i) {
+		ReleaseSRWLockExclusive(&s_sessionEventLocks[i]);
+	}
+
+	return s_pSessionEventsFront;
+}
+
+void NetCore::EndHandleSessionEvents()
+{
+	s_pSessionEventsFront->Flush();
+}
+
+NetMessageQueue* NetCore::StartHandleReceivedMessages()
 {
 	for (int i = 0; i < NET_CORE_NUM_THREADS; ++i) {
 		AcquireSRWLockExclusive(&s_receiveSrwLocks[i]);
@@ -231,6 +249,11 @@ NetMessageQueue* NetCore::GetReceiveMessages()
 	}
 
 	return s_pReceiveMessagesFront;
+}
+
+void NetCore::EndHandleReceivedMessages()
+{
+	s_pReceiveMessagesFront->Flush();
 }
 
 void NetCore::EndIoThreads()
@@ -258,6 +281,7 @@ unsigned WINAPI ThreadIoCompletion(LPVOID pParam)
 	int threadID = InterlockedIncrement(&s_threadID) - 1;
 
 	s_receiveSrwLocks[threadID] = SRWLOCK_INIT;
+	s_sessionEventLocks[threadID] = SRWLOCK_INIT;
 
 	NetPage* netPage = NULL;
 	printf("Start IO Completion thread[%d]..\n", threadID);
@@ -282,9 +306,7 @@ unsigned WINAPI ThreadIoCompletion(LPVOID pParam)
 					if (res == SESSION_REF_DEACTIVATE) {
 						SHORT id = pSession->GetID();
 						s_sessionManager.RemoveSession(id, COMPLETION_RECV_ERROR);
-						if (s_OnDisconnectSession != nullptr) {
-							s_OnDisconnectSession(id);
-						}
+						s_WriteSessionEvent(id, ESessionEvent::DELETE_PASSIVE_CLIENT, threadID);
 					}
 				}
 				else
@@ -311,7 +333,7 @@ unsigned WINAPI ThreadIoCompletion(LPVOID pParam)
 			else if (pData->operation == IoOperationData::ACCEPT)
 			{
 				AcceptIoOperationData* accpetIoOpData = (AcceptIoOperationData*)pOverlapped;
-				OnAccept(accpetIoOpData);
+				OnAccept(accpetIoOpData, threadID);
 
 				
 			}
@@ -329,9 +351,7 @@ unsigned WINAPI ThreadIoCompletion(LPVOID pParam)
 				if (res == SESSION_REF_DEACTIVATE) {
 					SHORT id = pSession->GetID();
 					s_sessionManager.RemoveSession(id, COMPLETION_RECV_ERROR);
-					if (s_OnDisconnectSession != nullptr) {
-						s_OnDisconnectSession(id);
-					}
+					s_WriteSessionEvent(id, ESessionEvent::DELETE_PASSIVE_CLIENT, threadID);
 				}
 				continue;
 			}
@@ -340,9 +360,7 @@ unsigned WINAPI ThreadIoCompletion(LPVOID pParam)
 				if (res == SESSION_REF_DEACTIVATE) {
 					SHORT id = pSession->GetID();
 					s_sessionManager.RemoveSession(id, COMPLETION_SEND_ERROR);
-					if (s_OnDisconnectSession != nullptr) {
-						s_OnDisconnectSession(id);
-					}
+					s_WriteSessionEvent(id, ESessionEvent::DELETE_PASSIVE_CLIENT, threadID);
 				}
 				continue;
 			}
@@ -364,11 +382,9 @@ END_THREAD:
 }
 
 
-void OnAccept(AcceptIoOperationData* data)
+void OnAccept(AcceptIoOperationData* data, int threadId)
 {
 	Session* pNewSession = s_sessionManager.CreateSession(data->data.socket);
-
-	s_OnCreateSession(pNewSession->GetID());
 
 	CreateIoCompletionPort(
 		(HANDLE)pNewSession->GetSocket(),
@@ -378,6 +394,8 @@ void OnAccept(AcceptIoOperationData* data)
 	);
 
 	pNewSession->RegisterReceive();
+
+	s_WriteSessionEvent(pNewSession->GetID(), ESessionEvent::CREATE_PASSIVE_CLIENT, threadId);
 
 	// Register async accept chain
 	PostAccept();
@@ -420,15 +438,25 @@ void InitiateAllocation()
 {
 	s_pReceiveMessagesFront = new NetMessageQueue();
 	s_pReceiveMessagesBack = new NetMessageQueue();
+
+	s_pSessionEventsFront = new NetSessionEventQueue();
+	s_pSessionEventsBack = new NetSessionEventQueue();
 }
 
 void TerminateAllocation()
 {
+	delete s_pSessionEventsBack;
+	delete s_pSessionEventsFront;
 	delete s_pReceiveMessagesFront;
 	delete s_pReceiveMessagesBack;
 }
 
-
+void s_WriteSessionEvent(UINT32 sessionId, ESessionEvent sessionEvent, int threadId)
+{
+	AcquireSRWLockExclusive(&s_sessionEventLocks[threadId]);
+	s_pSessionEventsBack->WriteNetSessionEvent(sessionId, sessionEvent);
+	ReleaseSRWLockExclusive(&s_sessionEventLocks[threadId]);
+}
 
 NETCORE_API NetCore* GetNetCore()
 {

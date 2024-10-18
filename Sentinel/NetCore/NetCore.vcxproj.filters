@@ -57,6 +57,9 @@
     <ClCompile Include="LinearQueue.cpp">
       <Filter>Data Structs</Filter>
     </ClCompile>
+    <ClCompile Include="NetSessionEventQueue.cpp">
+      <Filter>iocp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PointerMap.h">
@@ -100,6 +103,9 @@
     </ClInclude>
     <ClInclude Include="LinearQueue.h">
       <Filter>Data Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="NetSessionEventQueue.h">
+      <Filter>iocp</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

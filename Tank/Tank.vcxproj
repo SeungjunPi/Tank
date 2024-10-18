@@ -71,8 +71,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>C:\dev\SyncNexus\Sentinel\x64\Debug;$(LibraryPath)</LibraryPath>
-    <IncludePath>C:\dev\SyncNexus\Sentinel\NetCore;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\dev\Tank\Sentinel\x64\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\dev\Tank\Sentinel\NetCore;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -115,7 +115,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Ws2_32.lib;Mswsock.lib;C:\dev\SyncNexus\Sentinel\x64\Debug\NetCore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Ws2_32.lib;Mswsock.lib;C:\dev\Tank\Sentinel\x64\Debug\NetCore.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
       <PerUserRedirection>true</PerUserRedirection>

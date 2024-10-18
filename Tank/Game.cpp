@@ -193,15 +193,14 @@ void s_ApplyObjectLogic(ULONGLONG tickDiff)
 
 void s_HandleNetEvents()
 {
-	NetMessageQueue* pReceiveMessageQueue = g_pNetCore->GetReceiveMessages();
+	NetMessageQueue* pReceiveMessageQueue = g_pNetCore->StartHandleReceivedMessages();
 	UINT32 serverId;
 	NetMessage* pMessage = pReceiveMessageQueue->GetNetMessageOrNull(&serverId);
 	while (pMessage != nullptr) {
 		GamePacket::HandlePacket((BYTE*)pMessage->body, serverId);
 		pMessage = pReceiveMessageQueue->GetNetMessageOrNull(&serverId);
 	}
-
-	pReceiveMessageQueue->Flush();
+	g_pNetCore->EndHandleReceivedMessages();
 }
 
 void s_CollideObjects(ULONGLONG currentTick)
