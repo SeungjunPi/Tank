@@ -132,6 +132,27 @@ void OnSessionCreate(UINT32 sessionID)
 	pScPlayerId->id = sessionID;
 	g_pNetCore->SendMessageTo(sessionID, pRawMsg, msgSize);
 	GamePacket::SendSnapshot(sessionID);
+
+
+	{
+		// Auto create user's tank
+		Tank* pTank = g_objectManager.CreateTank(sessionID);
+
+		const size_t PACKET_SIZE = sizeof(EGameEventCode) + sizeof(PACKET_SC_CREATE_TANK);
+		BYTE pRawPacket[PACKET_SIZE] = { 0, };
+
+		EGameEventCode* pEvCode = (EGameEventCode*)pRawPacket;
+		*pEvCode = GAME_EVENT_CODE_SC_CREATE_TANK;
+		PACKET_SC_CREATE_TANK* pSCCreateTank = (PACKET_SC_CREATE_TANK*)(pRawPacket + sizeof(EGameEventCode));
+		pSCCreateTank->objectId = pTank->GetID();
+		pSCCreateTank->ownerId = sessionID;
+		// 
+		memcpy(&pSCCreateTank->transform, pTank->GetTransformPtr(), sizeof(Transform));
+
+		printf("CreateTank: owner=%u, tankId=%u\n", sessionID, pSCCreateTank->objectId);
+
+		GameServer::Broadcast(pRawPacket, PACKET_SIZE);
+	}
 }
 
 
