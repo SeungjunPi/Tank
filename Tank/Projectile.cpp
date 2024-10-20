@@ -2,15 +2,17 @@
 #include "Global.h"
 #include "StaticData.h"
 
+const float VELOCITY_WEIGHT = 1.5f;
+
 void Projectile::Initiate(UINT32 id, Transform* transform)
 {
 	_id = id;
 	memcpy(&_transform, transform, sizeof(Transform));
 
 	_forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
-	_transform.Position.x += _forwardDirection.x;
-	_transform.Position.y += _forwardDirection.y;
-	_transform.Position.z += _forwardDirection.z;
+	_transform.Position.x += _forwardDirection.x * 1.2f;
+	_transform.Position.y += _forwardDirection.y * 1.2f;
+	_transform.Position.z += _forwardDirection.z * 1.2f;
 
 	_model = g_pProjectileModel;
 	_colliderSize = 1.0f;
@@ -46,7 +48,7 @@ BOOL Projectile::IsTimeout() const
 
 void Projectile::Move(ULONGLONG tickDiff)
 {
-	const static float SPEED_PER_MS = 4.0f / 1000.0f;
+	const static float SPEED_PER_MS = 40.0f / 1000.0f;
 	_transform.Position.x += _forwardDirection.x * SPEED_PER_MS * tickDiff;
 	_transform.Position.y += _forwardDirection.y * SPEED_PER_MS * tickDiff;
 	_transform.Position.z += _forwardDirection.z * SPEED_PER_MS * tickDiff;

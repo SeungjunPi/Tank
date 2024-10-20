@@ -1,6 +1,8 @@
 #include "Tank.h"
 #include "StaticData.h"
 
+const float VELOCITY_WEIGHT = 0.75f;
+
 Tank::Tank(UINT32 id)
 	: GameObject(id)
 {
@@ -35,17 +37,17 @@ void Tank::Terminate()
 
 void Tank::MoveForward(ULONGLONG tickDiff)
 {
-	_transform.Position.x = _transform.Position.x + _forwardDirection.x * (tickDiff / 1000.f * 60.f);
-	_transform.Position.y = _transform.Position.y + _forwardDirection.y * (tickDiff / 1000.f * 60.f);
-	_transform.Position.z = _transform.Position.z + _forwardDirection.z * (tickDiff / 1000.f * 60.f);
+	_transform.Position.x = _transform.Position.x + _forwardDirection.x * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
+	_transform.Position.y = _transform.Position.y + _forwardDirection.y * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
+	_transform.Position.z = _transform.Position.z + _forwardDirection.z * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
 	_dirty = true;
 }
 
 void Tank::MoveBackward(ULONGLONG tickDiff)
 {
-	_transform.Position.x = _transform.Position.x - _forwardDirection.x * (tickDiff / 1000.f * 60.f);
-	_transform.Position.y = _transform.Position.y - _forwardDirection.y * (tickDiff / 1000.f * 60.f);
-	_transform.Position.z = _transform.Position.z - _forwardDirection.z * (tickDiff / 1000.f * 60.f);
+	_transform.Position.x = _transform.Position.x - _forwardDirection.x * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
+	_transform.Position.y = _transform.Position.y - _forwardDirection.y * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
+	_transform.Position.z = _transform.Position.z - _forwardDirection.z * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
 	_dirty = true;
 }
 
@@ -54,7 +56,7 @@ void Tank::RotateRight(ULONGLONG tickDiff)
 	/*_transform.Rotation = Vector4::Product(ROTATION_Z_P90, _transform.Rotation);
 	_forwardDirection = Vector3::RotateZP90(_forwardDirection);*/
 	const float angularVelocity = 3.14159265358979323846f / 1000.f * 60.f / 32.f;
-	float radian = tickDiff * angularVelocity;
+	float radian = tickDiff * angularVelocity * VELOCITY_WEIGHT;
 
 	_transform.Rotation = Vector4::RotateZP(radian, _transform.Rotation);
 	_forwardDirection = Vector3::RotateZP(radian, _forwardDirection);
@@ -68,7 +70,7 @@ void Tank::RotateLeft(ULONGLONG tickDiff)
 	_forwardDirection = Vector3::RotateZM90(_forwardDirection);*/
 
 	const float angularVelocity = 3.14159265358979323846f / 1000.f * 60.f / 32.f;
-	float radian = tickDiff * angularVelocity;
+	float radian = tickDiff * angularVelocity * VELOCITY_WEIGHT;
 
 	_transform.Rotation = Vector4::RotateZM(radian, _transform.Rotation);
 	_forwardDirection = Vector3::RotateZM(radian, _forwardDirection);
