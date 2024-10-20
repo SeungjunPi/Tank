@@ -28,8 +28,6 @@ static BOOL s_isRunning;
 
 static BOOL s_isMoving;
 
-
-
 void Game::Initialize()
 {
 	g_pPlayerTank = NULL;
@@ -45,6 +43,7 @@ void Game::Initialize()
 	if (res != true) {
 		__debugbreak();
 	}
+
 	g_serverId = g_pNetCore->ConnectTo("127.0.0.1", 30283);
 }
 

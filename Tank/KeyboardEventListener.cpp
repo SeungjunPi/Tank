@@ -1,4 +1,4 @@
-#include <memory>
+﻿#include <memory>
 
 #include <windows.h>
 #include <conio.h>
@@ -17,11 +17,14 @@ static const char s_sFlag = 0b00000010;
 static const char s_aFlag = 0b00000100;
 static const char s_dFlag = 0b00001000;
 
+static HWND s_gameWindowHandle = nullptr;
+
 
 void KeyboardEventListener::Initiate()
 {
 	ZeroMemory(&inputs, sizeof(KeyboardInputs));
 	inputs.escape = false;
+	s_gameWindowHandle = GetForegroundWindow();
 }
 
 void KeyboardEventListener::Terminate()
@@ -30,6 +33,11 @@ void KeyboardEventListener::Terminate()
 
 void KeyboardEventListener::ProcessInputs()
 {
+
+	if (GetForegroundWindow() != s_gameWindowHandle) {
+		// Todo: 윈도우 비활성화 시 모든 입력을 비활성화하게 변경, 필요시 OnKeyUp을 호출하게 변경 
+		return;
+	}
 	if (GetAsyncKeyState('W') || GetAsyncKeyState('w')) {
 		if (!inputs.up) {
 			OnKeyDown_W();
