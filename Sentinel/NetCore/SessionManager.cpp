@@ -86,10 +86,9 @@ void SessionManager::SendMessageTo(UINT32 sessionID, BYTE* msg, UINT32 length)
     Session* pSession = (Session*)_pointerTable.Get(sessionID);
     if (pSession != nullptr) {
         pSession->Lock();
+        pSession->Send(msg, length);
+        pSession->Unlock();
     }
-    //????????????????? 여기서 session이 이미 null인 경우가 발생.. ㅋㅋㅋㅋ 왜??????????
-    pSession->Send(msg, length);
-    pSession->Unlock();
     ReleaseSRWLockExclusive(&_srwLock);
 }
 
