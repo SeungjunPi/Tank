@@ -98,6 +98,35 @@ void GamePacket::BroadcastTankHit(UINT16 tankId, UINT16 projectileId)
 	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
 }
 
+void GamePacket::BroadcastCreateObstacle(UINT16 obstacleId, Transform* pTransform)
+{
+	const size_t PACKET_SIZE = sizeof(EGameEventCode) + sizeof(PACKET_SC_CREATE_OBSTACLE);
+	BYTE pRawPacket[PACKET_SIZE];
+	EGameEventCode* pEvCode = (EGameEventCode*)pRawPacket;
+	*pEvCode = GAME_EVENT_CODE_SC_CREATE_OBSTACLE;
+	PACKET_SC_CREATE_OBSTACLE* pScCreateObstacle = (PACKET_SC_CREATE_OBSTACLE*)(pRawPacket + sizeof(EGameEventCode));
+
+	pScCreateObstacle->obstacleId = obstacleId;
+	memcpy(&pScCreateObstacle->transform, pTransform, sizeof(Transform));
+
+	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
+}
+
+void GamePacket::BroadcastDeleteObstacle(UINT16 obstacleId, UINT32 shooterId)
+{
+	const size_t PACKET_SIZE = sizeof(EGameEventCode) + sizeof(PACKET_SC_DELETE_OBSTACLE);
+	BYTE pRawPacket[PACKET_SIZE];
+	EGameEventCode* pEvCode = (EGameEventCode*)pRawPacket;
+	*pEvCode = GAME_EVENT_CODE_SC_DELETE_OBSTACLE;
+
+	PACKET_SC_DELETE_OBSTACLE* pScDeleteObstacle = (PACKET_SC_DELETE_OBSTACLE*)(pRawPacket + sizeof(EGameEventCode));
+
+	pScDeleteObstacle->obstacleId = obstacleId;
+	pScDeleteObstacle->shooterId = shooterId;
+
+	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
+}
+
 void GamePacket::HandleCreateTank(BYTE* pGameEvent, UINT32 senderId)
 {
 	bool isValid = ValidateCreateTank(pGameEvent, senderId);

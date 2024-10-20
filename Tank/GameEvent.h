@@ -20,6 +20,8 @@ enum EGameEventCode
 	GAME_EVENT_CODE_CS_SHOOT = 0x02010401,
 	GAME_EVENT_CODE_SC_SHOOT = 0x02010402,
 	GAME_EVENT_CODE_SC_TANK_HIT = 0x02010502,
+	GAME_EVENT_CODE_SC_CREATE_OBSTACLE = 0x02010102,
+	GAME_EVENT_CODE_SC_DELETE_OBSTACLE = 0x02010202
 };
 
 struct GameNetEvent
@@ -118,6 +120,18 @@ struct PACKET_SC_TANK_HIT
 	UINT16 projectileId;
 };
 
+struct PACKET_SC_CREATE_OBSTACLE
+{
+	UINT16 obstacleId;
+	Transform transform;
+};
+
+struct PACKET_SC_DELETE_OBSTACLE
+{
+	UINT16 obstacleId;
+	UINT32 shooterId;
+};
+
 class GamePacket
 {
 public:
@@ -161,5 +175,9 @@ private:
 	static void HandleTankHit(BYTE* pGameEvent, UINT32 senderId);
 	static BOOL ValidateTankHit(BYTE* pGameEvent, UINT32 senderId);
 
+	static void HandleCreateObstacle(BYTE* pGameEvent, UINT32 senderId);
+	static BOOL ValidateCreateObstacle(BYTE* pGameEvent, UINT32 senderId);
 
+	static void HandleDeleteObstacle(BYTE* pGameEvent, UINT32 senderId);
+	static BOOL ValidateDeleteObstacle(BYTE* pGameEvent, UINT32 senderId);
 };

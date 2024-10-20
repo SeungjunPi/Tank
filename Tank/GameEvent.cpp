@@ -185,17 +185,24 @@ void GamePacket::HandleSnapshot(BYTE* pGameEvent, UINT32 senderId)
 	for (UINT16 i = 0; i < pScSnapshot->countObjects; ++i) {
 		switch (pObjInfo->kind) {
 		case GAME_OBJECT_KIND_TANK:
-			g_objectManager.CreateTank(pObjInfo->objectId);
+		{
+			Tank* pTank = g_objectManager.CreateTank(pObjInfo->objectId);
+			pTank->UpdateTransform(&pObjInfo->transform);
 			break;
+		}
 		case GAME_OBJECT_KIND_PROJECTILE:
-			g_objectManager.CreateProjectile(pObjInfo->objectId, &pObjInfo->transform);
+		{
+			Projectile* pProjectile = g_objectManager.CreateProjectile(pObjInfo->objectId, &pObjInfo->transform);
+			pProjectile->UpdateTransform(&pObjInfo->transform);
 			break;
+		}
 		case GAME_OBJECT_KIND_OBSTACLE:
 			//g_objectManager.CreateObstacle(pObjInfo->objectId);
 			break;
 		default:
 			__debugbreak();
 		}
+		++pObjInfo;
 	}
 
 	
@@ -242,6 +249,26 @@ void GamePacket::HandleTankHit(BYTE* pGameEvent, UINT32 senderId)
 }
 
 BOOL GamePacket::ValidateTankHit(BYTE* pGameEvent, UINT32 senderId)
+{
+	return true;
+}
+
+void GamePacket::HandleCreateObstacle(BYTE* pGameEvent, UINT32 senderId)
+{
+
+}
+
+BOOL GamePacket::ValidateCreateObstacle(BYTE* pGameEvent, UINT32 senderId)
+{
+	return true;
+}
+
+void GamePacket::HandleDeleteObstacle(BYTE* pGameEvent, UINT32 senderId)
+{
+
+}
+
+BOOL GamePacket::ValidateDeleteObstacle(BYTE* pGameEvent, UINT32 senderId)
 {
 	return true;
 }
