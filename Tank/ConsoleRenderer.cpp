@@ -203,7 +203,7 @@ void ConsoleRenderer::DrawObjects()
 
 			Vertex* pVertex = s_vertices;
 			for (UINT k = 0; k < numVectors; ++k) {
-				s_Draw((SHORT)roundf(pVertex->v.x), (SHORT)roundf(pVertex->v.y), pVertex->c); // hmm.. roundf is little bit risky... 
+				s_Draw((SHORT)roundf(pVertex->v.x), (SHORT)roundf(pVertex->v.y), pVertex->c);
 				pVertex++;
 			}
 		}

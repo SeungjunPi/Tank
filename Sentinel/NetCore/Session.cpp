@@ -64,7 +64,19 @@ void Session::RegisterReceive()
 
 	_receiveWsaBuf.buf = (CHAR*)_receiveStream->GetWritePtr();
 	_receiveWsaBuf.len = (ULONG)_receiveStream->GetFreeSize();
-	WSARecv(_socket, &_receiveWsaBuf, 1, &numBytes, &dwFlag, &_receiveIoData.wol, NULL);
+	DWORD result = WSARecv(_socket, &_receiveWsaBuf, 1, &numBytes, &dwFlag, &_receiveIoData.wol, NULL);
+	if (result == 0) {
+		// Send가 즉시 완료되었으나, Overlapped socket이므로 GQCS에서 처리됨
+		return;
+	}
+
+	DWORD errorCode = WSAGetLastError();
+	if (errorCode == WSA_IO_PENDING) {
+		// 정상적으로 예약됨, GQCS에서 처리될 예정
+		return;
+	}
+
+	HandleWSAError(errorCode, _id);
 }
 
 void Session::OnReceive(DWORD length)
@@ -129,18 +141,18 @@ void Session::RegisterSend()
 
 	int result = WSASend(_socket, &_sendWsaBuf, 1, NULL, 0, &_sendIoData.wol, NULL);
 	if (result == 0) {
-		// WSASend complete imediately
-		OnSendCompleteImediately();
+		// Send가 즉시 완료되었으나, Overlapped socket이므로 GQCS에서 처리됨
 		return;
 	}
 	else if (result == SOCKET_ERROR) {
 		DWORD error = GetLastError();
 		if (error == ERROR_IO_PENDING) {
-			// Handle on GQCS
+			// 정상적으로 예약됨, GQCS에서 처리될 예정
 			return;
 		}
+
+		HandleWSAError(error, _id);
 		
-		printf("Send error occured, error number = [%d]\n", error);
 		// Todo: Handle error	
 		return;
 	}
@@ -206,18 +218,6 @@ void Session::OnSendComplete()
 	}
 }
 
-void Session::OnSendCompleteImediately()
-{
-	_sendFrontNetPage->length = 0;
-	_isSending = false;
-	
-	if (!_isRecving) {
-		// IO에서 error가 발생하진 않았으나, session이 비활성화되어 receive가 비활성화 된 경우. 
-		// Todo: 이 부분을 확인하지 않고 GQCS의 콜백에서 처리해도 괜찮을지 검토 
-		Terminate();
-	}
-}
-
 ESessionRefResult Session::ReduceReference(ESessionRefParam param)
 {
 	ESessionRefResult result = SESSION_REF_DEACTIVATE;
@@ -248,6 +248,12 @@ void Session::Lock()
 void Session::Unlock()
 {
 	ReleaseSRWLockExclusive(&_srwLock);
+}
+
+void Session::HandleWSAError(DWORD errorCode, UINT32 sessionId)
+{
+	// Todo: handle errors
+	printf("Send error occured, errorCode=%d, sessionId=%u\n", errorCode, sessionId);
 }
 
 UINT32 Session::GetID() const

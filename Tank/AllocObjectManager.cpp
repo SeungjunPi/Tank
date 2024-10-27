@@ -105,6 +105,9 @@ void AllocObjectManager::UpdateObject(EGameObjectKind objectKind, GameObject* ob
 void AllocObjectManager::UpdateObjectTransform(EGameObjectKind objectKind, UINT objId, const Transform* pTransform)
 {
 	GameObject* pGameObject = GetObjectPtrOrNull(objectKind, objId);
+	if (pGameObject == nullptr) {
+		return;
+	}
 	pGameObject->UpdateTransform(pTransform);
 }
 

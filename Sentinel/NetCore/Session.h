@@ -55,7 +55,6 @@ public:
 	void Send(BYTE* msg, UINT32 len);
 	
 	void OnSendComplete();
-	void OnSendCompleteImediately(); // deprecated
 
 	ESessionRefResult ReduceReference(ESessionRefParam param);
 
@@ -64,7 +63,7 @@ public:
 	void Unlock();
 	
 
-	
+	static void HandleWSAError(DWORD errorCode, UINT32 sessionId);
 
 private:
 	UINT32 _id = 0;
