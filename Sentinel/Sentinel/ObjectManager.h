@@ -26,6 +26,14 @@ public:
 	Tank* GetTank(UINT16 objectId);
 	Tank* GetTank(UINT32 ownerId);
 
+	void StartTankMove(UINT32 ownerId, EMOVEMENT movement);
+	void EndTankMove(UINT32 ownerId, EMOVEMENT movement);
+
+	void StartTankRotate(UINT32 ownerId, EROTATION rotation);
+	void EndTankRotate(UINT32 ownerId, EROTATION rotation);
+
+
+
 	void UpdateTankTransform(UINT16 objectId, const Transform* pTransform);
 	void UpdateTankTransform(UINT32 ownerId, const Transform* pTransform);
 

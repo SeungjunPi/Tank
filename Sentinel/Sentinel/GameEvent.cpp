@@ -205,11 +205,26 @@ void GamePacket::HandleStartMove(BYTE* pGameEvent, UINT32 senderId)
 
 	PACKET_CS_START_MOVE* pCsStartMove = (PACKET_CS_START_MOVE*)(pGameEvent + sizeof(EGameEventCode));
 	
-	g_objectManager.UpdateTankTransform(senderId, &pCsStartMove->transform);
-	
 	Tank* pTank = g_objectManager.GetTank(senderId);
 	if (pTank == nullptr) {
+		// Hit 등으로 인해 서버에서 먼저 사라졌을 수도 있다.
 		return;
+	}
+
+	if (pCsStartMove->movementFlag & FLAG_MOVE_FORWARD) {
+		g_objectManager.StartTankMove(senderId, EMOVEMENT::FORWARD);
+	}
+
+	if (pCsStartMove->movementFlag & FLAG_MOVE_BACKWARD) {
+		g_objectManager.StartTankMove(senderId, EMOVEMENT::BACKWARD);
+	}
+
+	if (pCsStartMove->movementFlag & FLAG_ROTATE_LEFT) {
+		g_objectManager.StartTankRotate(senderId, EROTATION::LEFT);
+	}
+
+	if (pCsStartMove->movementFlag & FLAG_ROTATE_RIGHT) {
+		g_objectManager.StartTankRotate(senderId, EROTATION::RIGHT);
 	}
 
 	const size_t PACKET_SIZE = sizeof(PACKET_SC_START_MOVE) + sizeof(EGameEventCode);
@@ -219,7 +234,8 @@ void GamePacket::HandleStartMove(BYTE* pGameEvent, UINT32 senderId)
 
 	PACKET_SC_START_MOVE* pScStartMove = (PACKET_SC_START_MOVE*)(pRawPacket + sizeof(EGameEventCode));
 	pScStartMove->objectId = pTank->GetID();
-	memcpy(&pScStartMove->transform, &pCsStartMove->transform, sizeof(Transform));
+	pScStartMove->movementFlag = pCsStartMove->movementFlag;
+	memcpy(&pScStartMove->transform, pTank->GetTransformPtr(), sizeof(Transform));
 
 	printf("StartMove: owner=%u\n", senderId);
 	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
@@ -237,15 +253,30 @@ void GamePacket::HandleEndMove(BYTE* pGameEvent, UINT32 senderId)
 		return;
 	}
 
-
 	PACKET_CS_END_MOVE* pCsEndMove = (PACKET_CS_END_MOVE*)(pGameEvent + sizeof(EGameEventCode));
-	g_objectManager.UpdateTankTransform(senderId, &pCsEndMove->transform);
-
+	
 	printf("EndMove: owner=%u\n", senderId);
 
 	Tank* pTank = g_objectManager.GetTank(senderId);
 	if (pTank == nullptr) {
 		return;
+	}
+	g_objectManager.UpdateTankTransform(senderId, &pCsEndMove->transform); // TODO: 현재 transform과 비교 후 일정 이하면 적용
+
+	if (pCsEndMove->movementFlag & FLAG_MOVE_FORWARD) {
+		g_objectManager.EndTankMove(senderId, EMOVEMENT::FORWARD);
+	}
+
+	if (pCsEndMove->movementFlag & FLAG_MOVE_BACKWARD) {
+		g_objectManager.EndTankMove(senderId, EMOVEMENT::BACKWARD);
+	}
+
+	if (pCsEndMove->movementFlag & FLAG_ROTATE_LEFT) {
+		g_objectManager.EndTankRotate(senderId, EROTATION::LEFT);
+	}
+
+	if (pCsEndMove->movementFlag & FLAG_ROTATE_RIGHT) {
+		g_objectManager.EndTankRotate(senderId, EROTATION::RIGHT);
 	}
 
 	const size_t PACKET_SIZE = sizeof(PACKET_SC_END_MOVE) + sizeof(EGameEventCode);
@@ -255,9 +286,10 @@ void GamePacket::HandleEndMove(BYTE* pGameEvent, UINT32 senderId)
 
 	PACKET_SC_END_MOVE* pScEndMove = (PACKET_SC_END_MOVE*)(pRawPacket + sizeof(EGameEventCode));
 	pScEndMove->objectId = pTank->GetID();
-	memcpy(&pScEndMove->transform, &pCsEndMove->transform, sizeof(Transform));
+	memcpy(&pScEndMove->transform, pTank->GetTransformPtr(), sizeof(Transform));
 
-	printf("EndMove: owner=%u\n", senderId);
+	pScEndMove->movementFlag = pCsEndMove->movementFlag;
+
 	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
 }
 

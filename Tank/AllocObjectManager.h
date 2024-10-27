@@ -38,6 +38,13 @@ public:
 
 	int GetCountObjects() const;
 
+
+	void StartTankMove(UINT32 objectId, EMOVEMENT movement);
+	void EndTankMove(UINT32 objectId, EMOVEMENT movement, const Transform* pTransform);
+
+	void StartTankRotate(UINT32 objectId, EROTATION rotation);
+	void EndTankRotate(UINT32 objectId, EROTATION rotation, const Transform* pTransform);
+
 private:
 	PointerTable _tankTable;
 	PointerTable _projectileTable;

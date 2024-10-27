@@ -35,6 +35,95 @@ void Tank::Terminate()
 	_colliderSize = 0;
 }
 
+
+void Tank::StartMove(EMOVEMENT movement)
+{
+	switch (movement) {
+	case EMOVEMENT::FORWARD:
+		_isMovingFoward = true;
+		break;
+	case EMOVEMENT::BACKWARD:
+		_isMovingBackward = true;
+		break;
+	default:
+		__debugbreak();
+	}
+}
+
+void Tank::EndMove(EMOVEMENT movement)
+{
+	switch (movement) {
+	case EMOVEMENT::FORWARD:
+		_isMovingFoward = false;
+		break;
+	case EMOVEMENT::BACKWARD:
+		_isMovingBackward = false;
+		break;
+	default:
+		__debugbreak();
+	}
+}
+
+void Tank::EndMove(EMOVEMENT movement, const Transform* pTransform)
+{
+	switch (movement) {
+	case EMOVEMENT::FORWARD:
+		_isMovingFoward = false;
+		memcpy(&_transform, pTransform, sizeof(Transform));
+		break;
+	case EMOVEMENT::BACKWARD:
+		_isMovingBackward = false;
+		memcpy(&_transform, pTransform, sizeof(Transform));
+		break;
+	default:
+		__debugbreak();
+	}
+}
+
+void Tank::StartRotate(EROTATION rotation)
+{
+	switch (rotation) {
+	case EROTATION::LEFT:
+		_isRotatingLeft = true;
+		break;
+	case EROTATION::RIGHT:
+		_isRotatingRight = true;
+		break;
+	default:
+		__debugbreak();
+	}
+}
+
+void Tank::EndRotate(EROTATION rotation)
+{
+	switch (rotation) {
+	case EROTATION::LEFT:
+		_isRotatingLeft = false;
+		break;
+	case EROTATION::RIGHT:
+		_isRotatingRight = false;
+		break;
+	default:
+		__debugbreak();
+	}
+}
+
+void Tank::EndRotate(EROTATION rotation, const Transform* pTransform)
+{
+	switch (rotation) {
+	case EROTATION::LEFT:
+		memcpy(&_transform, pTransform, sizeof(Transform));
+		_isRotatingLeft = false;
+		break;
+	case EROTATION::RIGHT:
+		memcpy(&_transform, pTransform, sizeof(Transform));
+		_isRotatingRight = false;
+		break;
+	default:
+		__debugbreak();
+	}
+}
+
 void Tank::MoveForward(ULONGLONG tickDiff)
 {
 	_transform.Position.x = _transform.Position.x + _forwardDirection.x * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
@@ -53,8 +142,6 @@ void Tank::MoveBackward(ULONGLONG tickDiff)
 
 void Tank::RotateRight(ULONGLONG tickDiff)
 {
-	/*_transform.Rotation = Vector4::Product(ROTATION_Z_P90, _transform.Rotation);
-	_forwardDirection = Vector3::RotateZP90(_forwardDirection);*/
 	const float angularVelocity = 3.14159265358979323846f / 1000.f * 60.f / 32.f;
 	float radian = tickDiff * angularVelocity * VELOCITY_WEIGHT;
 
@@ -66,9 +153,6 @@ void Tank::RotateRight(ULONGLONG tickDiff)
 
 void Tank::RotateLeft(ULONGLONG tickDiff)
 {
-	/*_transform.Rotation = Vector4::Product(ROTATION_Z_M90, _transform.Rotation);
-	_forwardDirection = Vector3::RotateZM90(_forwardDirection);*/
-
 	const float angularVelocity = 3.14159265358979323846f / 1000.f * 60.f / 32.f;
 	float radian = tickDiff * angularVelocity * VELOCITY_WEIGHT;
 
@@ -110,6 +194,18 @@ void Tank::GetTurretInfo(Transform* out_transform) const
 
 void Tank::OnFrame(ULONGLONG tickDiff)
 {
+	if (_isMovingFoward) {
+		MoveForward(tickDiff);
+	}
+	if (_isMovingBackward) {
+		MoveBackward(tickDiff);
+	}
+	if (_isRotatingLeft) {
+		RotateLeft(tickDiff);
+	}
+	if (_isRotatingRight) {
+		RotateRight(tickDiff);
+	}
 	return;
 }
 

@@ -130,35 +130,44 @@ void s_ApplyKeyboardEvents(ULONGLONG tickDiff)
 	}
 
 	if (g_pPlayerTank != NULL) {
-		if (KeyboardEventListener::inputs.left) {
-			g_pPlayerTank->RotateLeft(tickDiff);
-		}
-		if (KeyboardEventListener::inputs.right) {
-			g_pPlayerTank->RotateRight(tickDiff);
-		}
-		if (KeyboardEventListener::inputs.down) {
-			g_pPlayerTank->MoveBackward(tickDiff);
-		}
-		if (KeyboardEventListener::inputs.up) {
-			g_pPlayerTank->MoveForward(tickDiff);
+		char startFlag;
+		char endFlag;
+		char movingFlag;
+		KeyboardEventListener::GetAndUpdateKeyboardMovementStatus(&startFlag, &endFlag, &movingFlag);
+		if (startFlag) {
+			if (startFlag & KEYBOARD_INPUT_FLAG_W) {
+				g_pPlayerTank->StartMove(EMOVEMENT::FORWARD);
+			} 
+			if (startFlag & KEYBOARD_INPUT_FLAG_S) {
+				g_pPlayerTank->StartMove(EMOVEMENT::BACKWARD);
+			}
+			if (startFlag & KEYBOARD_INPUT_FLAG_A) {
+				g_pPlayerTank->StartRotate(EROTATION::LEFT);
+			}
+			if (startFlag & KEYBOARD_INPUT_FLAG_D) {
+				g_pPlayerTank->StartRotate(EROTATION::RIGHT);
+			}
+			GamePacket::SendStartMove(g_pPlayerTank->GetTransformPtr(), startFlag);
 		}
 
-		EKeyboardMovementStatus keyboardMovingStatus = KeyboardEventListener::GetAndUpdateKeyboardMovingStatus();
-		switch (keyboardMovingStatus) {
-		case KEYBOARD_MOVEMENT_STATUS_NONE:
-			break;
-		case KEYBOARD_MOVEMENT_STATUS_MOVING:
-			// Todo: periodically send
-			GamePacket::SendMoving(g_pPlayerTank->GetTransformPtr());
-			break;
-		case KEYBOARD_MOVEMENT_STATUS_STARTED:
-			// send movement started packet with transform of tank
-			GamePacket::SendStartMove(g_pPlayerTank->GetTransformPtr());
-			break;
-		case KEYBOARD_MOVEMENT_STATUS_ENDED:
-			// send movement ended packet with transform of tank
-			GamePacket::SendEndMove(g_pPlayerTank->GetTransformPtr());
-			break;
+		if (endFlag) {
+			if (endFlag & KEYBOARD_INPUT_FLAG_W) {
+				g_pPlayerTank->EndMove(EMOVEMENT::FORWARD);
+			}
+			if (endFlag & KEYBOARD_INPUT_FLAG_S) {
+				g_pPlayerTank->EndMove(EMOVEMENT::BACKWARD);
+			}
+			if (endFlag & KEYBOARD_INPUT_FLAG_A) {
+				g_pPlayerTank->EndRotate(EROTATION::LEFT);
+			}
+			if (endFlag & KEYBOARD_INPUT_FLAG_D) {
+				g_pPlayerTank->EndRotate(EROTATION::RIGHT);
+			}
+			GamePacket::SendEndMove(g_pPlayerTank->GetTransformPtr(), endFlag);
+		}
+
+		if (movingFlag) {
+			// TODO: send moving status periodically
 		}
 
 		if (KeyboardEventListener::inputs.shoot) {

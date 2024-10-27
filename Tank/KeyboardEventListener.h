@@ -1,5 +1,12 @@
 #pragma once
 
+enum KeyboardFlag : char
+{
+	KEYBOARD_INPUT_FLAG_W = 0b00000001,
+	KEYBOARD_INPUT_FLAG_S = 0b00000010,
+	KEYBOARD_INPUT_FLAG_A = 0b00000100,
+	KEYBOARD_INPUT_FLAG_D = 0b00001000
+};
 
 struct KeyboardInputs
 {
@@ -32,7 +39,10 @@ public:
 
 	static KeyboardInputs inputs;
 
-	static EKeyboardMovementStatus GetAndUpdateKeyboardMovingStatus();
+	static EKeyboardMovementStatus GetAndUpdateKeyboardMovingStatus(); // deprecated
+	static void ResetKeyboardMovementStatus();
+	static void GetAndUpdateKeyboardMovementStatus(char* out_startFlag, char* out_endFlag, char* out_movingFlag);
+
 
 private:
 	static void OnKeyDown_W();

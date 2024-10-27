@@ -117,6 +117,46 @@ Tank* ObjectManager::GetTank(UINT32 ownerId)
 	return pTank;
 }
 
+void ObjectManager::StartTankMove(UINT32 ownerId, EMOVEMENT movement)
+{
+	Tank* pTank = (Tank*)_tankTableByOwner.Get(ownerId);
+	if (pTank == nullptr) {
+		return;
+	}
+
+	pTank->StartMove(movement);
+}
+
+void ObjectManager::EndTankMove(UINT32 ownerId, EMOVEMENT movement)
+{
+	Tank* pTank = (Tank*)_tankTableByOwner.Get(ownerId);
+	if (pTank == nullptr) {
+		return;
+	}
+
+	pTank->EndMove(movement);
+}
+
+void ObjectManager::StartTankRotate(UINT32 ownerId, EROTATION rotation)
+{
+	Tank* pTank = (Tank*)_tankTableByOwner.Get(ownerId);
+	if (pTank == nullptr) {
+		return;
+	}
+
+	pTank->StartRotate(rotation);
+}
+
+void ObjectManager::EndTankRotate(UINT32 ownerId, EROTATION rotation)
+{
+	Tank* pTank = (Tank*)_tankTableByOwner.Get(ownerId);
+	if (pTank == nullptr) {
+		return;
+	}
+
+	pTank->EndRotate(rotation);
+}
+
 void ObjectManager::UpdateTankTransform(UINT16 objectId, const Transform* pTransform)
 {
 	Tank* pTank = (Tank*)_tankTable.Get(objectId);
