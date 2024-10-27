@@ -4,6 +4,21 @@
 
 const Vector3 FORWARD_DIRECTION = { .0f, -1.0f, .0f };
 
+enum class EMOVEMENT
+{
+	NONE,
+	FORWARD,
+	BACKWARD
+};
+
+enum class EROTATION
+{
+	NONE,
+	LEFT,
+	RIGHT
+};
+
+
 class GameObject
 {
 public:

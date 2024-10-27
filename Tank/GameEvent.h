@@ -54,24 +54,33 @@ struct PACKET_SC_DELETE_TANK
 	UINT32 objectId;
 };
 
+
+const char FLAG_MOVE_FORWARD	= 0b00000001;
+const char FLAG_MOVE_BACKWARD	= 0b00000010;
+const char FLAG_ROTATE_LEFT		= 0b00000100;
+const char FLAG_ROTATE_RIGHT	= 0b00001000;
+
 struct PACKET_CS_START_MOVE
 {
-	Transform transform;
+	char movementFlag; // [][][][][Right][Left][backward][forward]
 };
 
 struct PACKET_SC_START_MOVE
 {
+	char movementFlag;
 	UINT32 objectId;
-	Transform transform;
+	Transform transform; // 클라이언트가 확인하기 위한 용도
 };
 
 struct PACKET_CS_END_MOVE
 {
-	Transform transform;
+	char movementFlag;
+	Transform transform; // 보정용
 };
 
 struct PACKET_SC_END_MOVE
 {
+	char movementFlag;
 	UINT32 objectId;
 	Transform transform;
 };
@@ -128,8 +137,8 @@ public:
 	static void SendCreateTank(Transform* pTransform);
 	static void SendDeleteTank(UINT32 objectId);
 
-	static void SendStartMove(const Transform* pTankTransform);
-	static void SendEndMove(const Transform* pTankTransform);
+	static void SendStartMove(const Transform* pTankTransform, char moveFlag);
+	static void SendEndMove(const Transform* pTankTransform, char moveFlag);
 	static void SendMoving(const Transform* pTankTransform);
 	static void SendShoot(const Transform* pTurretTransform);
 

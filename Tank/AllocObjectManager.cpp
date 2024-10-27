@@ -195,3 +195,43 @@ int AllocObjectManager::GetCountObjects() const
 	countObject += _obstacleTable.GetCount();
 	return countObject;
 }
+
+void AllocObjectManager::StartTankMove(UINT32 objectId, EMOVEMENT movement)
+{
+	Tank* pTank = (Tank*)_tankTable.Get(objectId);
+	if (pTank == nullptr) {
+		return;
+	}
+
+	pTank->StartMove(movement);
+}
+
+void AllocObjectManager::EndTankMove(UINT32 objectId, EMOVEMENT movement, const Transform* pTransform)
+{
+	Tank* pTank = (Tank*)_tankTable.Get(objectId);
+	if (pTank == nullptr) {
+		return;
+	}
+
+	pTank->EndMove(movement, pTransform);
+}
+
+void AllocObjectManager::StartTankRotate(UINT32 objectId, EROTATION rotation)
+{
+	Tank* pTank = (Tank*)_tankTable.Get(objectId);
+	if (pTank == nullptr) {
+		return;
+	}
+
+	pTank->StartRotate(rotation);
+}
+
+void AllocObjectManager::EndTankRotate(UINT32 objectId, EROTATION rotation, const Transform* pTransform)
+{
+	Tank* pTank = (Tank*)_tankTable.Get(objectId);
+	if (pTank == nullptr) {
+		return;
+	}
+
+	pTank->EndRotate(rotation, pTransform);
+}

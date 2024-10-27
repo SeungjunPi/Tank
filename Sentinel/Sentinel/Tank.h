@@ -16,10 +16,11 @@ public:
 	void Initiate(UINT32 id);
 	void Terminate();
 
-	void MoveForward(ULONGLONG tickDiff);
-	void MoveBackward(ULONGLONG tickDiff);
-	void RotateRight(ULONGLONG tickDiff);
-	void RotateLeft(ULONGLONG tickDiff);
+	void StartMove(EMOVEMENT movement);
+	void EndMove(EMOVEMENT movement);
+
+	void StartRotate(EROTATION rotation);
+	void EndRotate(EROTATION rotation);
 
 	void GetTurretInfo(Vector3* out_position, Vector3* out_direction) const;
 
@@ -29,4 +30,15 @@ public:
 private:
 	Vector3 _forwardDirection;
 	UINT32 _ownerId = 0;
+	
+	bool _isMovingFoward = false;
+	bool _isMovingBackward = false;
+	bool _isRotatingLeft = false;
+	bool _isRotatingRight = false;
+
+	void MoveForward(ULONGLONG tickDiff);
+	void MoveBackward(ULONGLONG tickDiff);
+	void RotateRight(ULONGLONG tickDiff);
+	void RotateLeft(ULONGLONG tickDiff);
+
 };

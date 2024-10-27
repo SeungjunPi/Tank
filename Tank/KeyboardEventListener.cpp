@@ -12,10 +12,7 @@ char KeyboardEventListener::_movingFlag = 0;
 char KeyboardEventListener::_prevMovingFlag = 0;
 
 
-static const char s_wFlag = 0b00000001;
-static const char s_sFlag = 0b00000010;
-static const char s_aFlag = 0b00000100;
-static const char s_dFlag = 0b00001000;
+
 
 
 void KeyboardEventListener::Initiate()
@@ -145,42 +142,59 @@ EKeyboardMovementStatus KeyboardEventListener::GetAndUpdateKeyboardMovingStatus(
 	return KEYBOARD_MOVEMENT_STATUS_STARTED;
 }
 
+void KeyboardEventListener::ResetKeyboardMovementStatus()
+{
+	KeyboardEventListener::_movingFlag = 0;
+	KeyboardEventListener::_prevMovingFlag = 0;
+}
+
+void KeyboardEventListener::GetAndUpdateKeyboardMovementStatus(char* out_startFlag, char* out_endFlag, char* out_movingFlag)
+{
+	char edgeTrigger = _movingFlag ^ _prevMovingFlag;
+
+	*out_startFlag = edgeTrigger & _movingFlag;
+	*out_endFlag = edgeTrigger & (~_movingFlag);
+	*out_movingFlag = _movingFlag;
+
+	_prevMovingFlag = _movingFlag;
+}
+
 void KeyboardEventListener::OnKeyDown_W()
 {
-	KeyboardEventListener::_movingFlag = KeyboardEventListener::_movingFlag | s_wFlag;
+	KeyboardEventListener::_movingFlag = KeyboardEventListener::_movingFlag | KEYBOARD_INPUT_FLAG_W;
 }
 
 void KeyboardEventListener::OnKeyUp_W()
 {
-	KeyboardEventListener::_movingFlag = KeyboardEventListener::_movingFlag & (~s_wFlag);
+	KeyboardEventListener::_movingFlag = KeyboardEventListener::_movingFlag & (~KEYBOARD_INPUT_FLAG_W);
 }
 
 void KeyboardEventListener::OnKeyDown_S()
 {
-	KeyboardEventListener::_movingFlag = KeyboardEventListener::_movingFlag | s_sFlag;
+	KeyboardEventListener::_movingFlag = KeyboardEventListener::_movingFlag | KEYBOARD_INPUT_FLAG_S;
 }
 
 void KeyboardEventListener::OnKeyUp_S()
 {
-	KeyboardEventListener::_movingFlag = KeyboardEventListener::_movingFlag & (~s_sFlag);
+	KeyboardEventListener::_movingFlag = KeyboardEventListener::_movingFlag & (~KEYBOARD_INPUT_FLAG_S);
 }
 
 void KeyboardEventListener::OnKeyDown_A()
 {
-	KeyboardEventListener::_movingFlag = KeyboardEventListener::_movingFlag | s_aFlag;
+	KeyboardEventListener::_movingFlag = KeyboardEventListener::_movingFlag | KEYBOARD_INPUT_FLAG_A;
 }
 
 void KeyboardEventListener::OnKeyUp_A()
 {
-	KeyboardEventListener::_movingFlag = KeyboardEventListener::_movingFlag & (~s_aFlag);
+	KeyboardEventListener::_movingFlag = KeyboardEventListener::_movingFlag & (~KEYBOARD_INPUT_FLAG_A);
 }
 
 void KeyboardEventListener::OnKeyDown_D()
 {
-	KeyboardEventListener::_movingFlag = KeyboardEventListener::_movingFlag | s_dFlag;
+	KeyboardEventListener::_movingFlag = KeyboardEventListener::_movingFlag | KEYBOARD_INPUT_FLAG_D;
 }
 
 void KeyboardEventListener::OnKeyUp_D()
 {
-	KeyboardEventListener::_movingFlag = KeyboardEventListener::_movingFlag & (~s_dFlag);
+	KeyboardEventListener::_movingFlag = KeyboardEventListener::_movingFlag & (~KEYBOARD_INPUT_FLAG_D);
 }

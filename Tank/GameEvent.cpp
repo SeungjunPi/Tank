@@ -115,7 +115,18 @@ void GamePacket::HandleStartMove(BYTE* pGameEvent, UINT32 senderId)
 		// update if transforms are diffrent
 	}
 	else {
-		g_objectManager.UpdateObjectTransform(GAME_OBJECT_KIND_TANK, pScStartMove->objectId, &pScStartMove->transform);
+		if (pScStartMove->movementFlag & FLAG_MOVE_FORWARD) {
+			g_objectManager.StartTankMove(pScStartMove->objectId, EMOVEMENT::FORWARD);
+		}
+		if (pScStartMove->movementFlag & FLAG_MOVE_BACKWARD) {
+			g_objectManager.StartTankMove(pScStartMove->objectId, EMOVEMENT::BACKWARD);
+		}
+		if (pScStartMove->movementFlag & FLAG_ROTATE_LEFT) {
+			g_objectManager.StartTankRotate(pScStartMove->objectId, EROTATION::LEFT);
+		}
+		if (pScStartMove->movementFlag & FLAG_ROTATE_RIGHT) {
+			g_objectManager.StartTankRotate(pScStartMove->objectId, EROTATION::RIGHT);
+		}
 	}
 }
 
@@ -137,7 +148,18 @@ void GamePacket::HandleEndMove(BYTE* pGameEvent, UINT32 senderId)
 		// update if transforms are diffrent
 	}
 	else {
-		g_objectManager.UpdateObjectTransform(GAME_OBJECT_KIND_TANK, pScEndMove->objectId, &pScEndMove->transform);
+		if (pScEndMove->movementFlag & FLAG_MOVE_FORWARD) {
+			g_objectManager.EndTankMove(pScEndMove->objectId, EMOVEMENT::FORWARD, &pScEndMove->transform);
+		}
+		if (pScEndMove->movementFlag & FLAG_MOVE_BACKWARD) {
+			g_objectManager.EndTankMove(pScEndMove->objectId, EMOVEMENT::BACKWARD, &pScEndMove->transform);
+		}
+		if (pScEndMove->movementFlag & FLAG_ROTATE_LEFT) {
+			g_objectManager.EndTankRotate(pScEndMove->objectId, EROTATION::LEFT, &pScEndMove->transform);
+		}
+		if (pScEndMove->movementFlag & FLAG_ROTATE_RIGHT) {
+			g_objectManager.EndTankRotate(pScEndMove->objectId, EROTATION::RIGHT, &pScEndMove->transform);
+		}
 	}
 }
 
@@ -271,7 +293,7 @@ void GamePacket::SendDeleteTank(UINT32 objectId)
 	g_pNetCore->SendMessageTo(g_serverId, pRawPacket, contentsMsgSize);
 }
 
-void GamePacket::SendStartMove(const Transform* pTankTransform)
+void GamePacket::SendStartMove(const Transform* pTankTransform, char moveFlag)
 {
 	const UINT32 contentsMsgSize = sizeof(PACKET_CS_START_MOVE) + sizeof(EGameEventCode);
 	BYTE pRawPacket[contentsMsgSize] = { 0, };
@@ -279,11 +301,11 @@ void GamePacket::SendStartMove(const Transform* pTankTransform)
 	PACKET_CS_START_MOVE* pContentsMsgBody = (PACKET_CS_START_MOVE*)(pRawPacket + sizeof(EGameEventCode));
 
 	*pEvCode = GAME_EVENT_CODE_CS_START_MOVE;
-	memcpy(&pContentsMsgBody->transform, pTankTransform, sizeof(Transform));
+	pContentsMsgBody->movementFlag = moveFlag;
 	g_pNetCore->SendMessageTo(g_serverId, pRawPacket, contentsMsgSize);
 }
 
-void GamePacket::SendEndMove(const Transform* pTankTransform)
+void GamePacket::SendEndMove(const Transform* pTankTransform, char moveFlag)
 {
 	const UINT32 contentsMsgSize = sizeof(PACKET_CS_END_MOVE) + sizeof(EGameEventCode);
 	BYTE pRawPacket[contentsMsgSize] = { 0, };
@@ -292,6 +314,7 @@ void GamePacket::SendEndMove(const Transform* pTankTransform)
 
 	*pEvCode = GAME_EVENT_CODE_CS_END_MOVE;
 	memcpy(&pContentsMsgBody->transform, pTankTransform, sizeof(Transform));
+	pContentsMsgBody->movementFlag = moveFlag;
 	g_pNetCore->SendMessageTo(g_serverId, pRawPacket, contentsMsgSize);
 }
 

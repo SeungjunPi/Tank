@@ -4,6 +4,7 @@
 
 
 
+
 class Tank : public GameObject
 {
 public:
@@ -15,6 +16,14 @@ public:
 
 	void Initiate(UINT32 id);
 	void Terminate();
+
+	void StartMove(EMOVEMENT movement);
+	void EndMove(EMOVEMENT movement);
+	void EndMove(EMOVEMENT movement, const Transform* pTransform);
+
+	void StartRotate(EROTATION rotation);
+	void EndRotate(EROTATION rotation);
+	void EndRotate(EROTATION rotation, const Transform* pTransform);
 
 	void MoveForward(ULONGLONG tickDiff);
 	void MoveBackward(ULONGLONG tickDiff);
@@ -28,6 +37,11 @@ public:
 private:
 	Vector3 _forwardDirection;
 	UINT32 _ownerId = 0;
+
+	bool _isMovingFoward = false;
+	bool _isMovingBackward = false;
+	bool _isRotatingLeft = false;
+	bool _isRotatingRight = false;
 };
 
 
