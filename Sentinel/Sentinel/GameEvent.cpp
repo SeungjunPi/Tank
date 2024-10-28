@@ -15,12 +15,6 @@ void GamePacket::HandlePacket(BYTE* pGameEvent, UINT32 senderId)
 {
 	EGameEventCode eventCode = *(EGameEventCode*)pGameEvent;
 	switch (eventCode) {
-	case GAME_EVENT_CODE_CS_CREATE_TANK:
-		HandleCreateTank(pGameEvent, senderId);
-		break;
-	case GAME_EVENT_CODE_CS_DELETE_TANK:
-		HandleDeleteTank(pGameEvent, senderId);
-		break;
 	case GAME_EVENT_CODE_CS_START_MOVE:
 		HandleStartMove(pGameEvent, senderId);
 		break;
@@ -125,75 +119,6 @@ void GamePacket::BroadcastDeleteObstacle(UINT16 obstacleId, UINT32 shooterId)
 	pScDeleteObstacle->shooterId = shooterId;
 
 	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
-}
-
-void GamePacket::HandleCreateTank(BYTE* pGameEvent, UINT32 senderId)
-{
-	bool isValid = ValidateCreateTank(pGameEvent, senderId);
-	if (!isValid) {
-		printf("Invalid CreateTank packet from %u\n", senderId);
-		return;
-	}
-
-	// hmm... the position of tank is determined by server.
-	// PACKET_CS_CREATE_TANK* pCsPacketCreateTank = (PACKET_CS_CREATE_TANK*)(pGameEvent + sizeof(EGameEventCode));
-
-
-	Tank* pTank = g_objectManager.CreateTank(senderId);
-
-	const size_t PACKET_SIZE = sizeof(EGameEventCode) + sizeof(PACKET_SC_CREATE_TANK);
-	BYTE pRawPacket[PACKET_SIZE] = { 0, };
-
-	EGameEventCode* pEvCode = (EGameEventCode*)pRawPacket;
-	*pEvCode = GAME_EVENT_CODE_SC_CREATE_TANK;
-	PACKET_SC_CREATE_TANK* pSCCreateTank = (PACKET_SC_CREATE_TANK*)(pRawPacket + sizeof(EGameEventCode));
-	pSCCreateTank->objectId = pTank->GetID();
-	pSCCreateTank->ownerId = senderId;
-	// 
-	memcpy(&pSCCreateTank->transform, pTank->GetTransformPtr(), sizeof(Transform));
-
-	printf("CreateTank: owner=%u, tankId=%u\n", senderId, pSCCreateTank->objectId);
-
-	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
-}
-
-BOOL GamePacket::ValidateCreateTank(BYTE* pGameEvent, UINT32 senderId)
-{
-	Player* pPlayer = g_playerManager.GetPlayer(senderId);
-	UINT32 tankId = pPlayer->GetTankId();
-	if (tankId == 0) {
-		return true;
-	}
-	return false;
-}
-
-void GamePacket::HandleDeleteTank(BYTE* pGameEvent, UINT32 senderId)
-{
-	bool isValid = ValidateDeleteTank(pGameEvent, senderId);
-	if (!isValid) {
-		printf("Invalid DeleteTank packet from %u\n", senderId);
-		return;
-	}
-
-	PACKET_CS_DELETE_TANK* pCsDeleteTank = (PACKET_CS_DELETE_TANK*)(pGameEvent + sizeof(EGameEventCode));
-	g_objectManager.RemoveTank(pCsDeleteTank->objectId, senderId);
-	
-	const size_t PACKET_SIZE = sizeof(PACKET_SC_DELETE_TANK) + sizeof(EGameEventCode);
-	BYTE pRawPacket[PACKET_SIZE] = { 0, };
-	EGameEventCode* pGameEvCode = (EGameEventCode*)pRawPacket;
-	*pGameEvCode = GAME_EVENT_CODE_SC_DELETE_TANK;
-
-	PACKET_SC_DELETE_TANK* pScDeleteTank = (PACKET_SC_DELETE_TANK*)(pRawPacket + sizeof(EGameEventCode));
-	pScDeleteTank->objectId = pCsDeleteTank->objectId;
-
-	printf("DeleteTank: owner=%u, tankId=%u\n", senderId, pScDeleteTank->objectId);
-
-	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
-}
-
-BOOL GamePacket::ValidateDeleteTank(BYTE* pGameEvent, UINT32 senderId)
-{
-	return true;
 }
 
 void GamePacket::HandleStartMove(BYTE* pGameEvent, UINT32 senderId)

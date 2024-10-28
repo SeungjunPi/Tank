@@ -88,27 +88,17 @@ void KeyboardEventListener::ProcessInputs()
 	}
 
 	if (GetAsyncKeyState('I') || GetAsyncKeyState('i')) {
-		if (!inputs.spawn) {
-
-		}
-		inputs.spawn = true;
+		
 	}
 	else {
-		if (inputs.spawn) {
-			inputs.spawn = false;
-		}
+		
 	}
 
 	if (GetAsyncKeyState('K') || GetAsyncKeyState('k')) {
-		if (!inputs.despawn) {
-
-		}
-		inputs.despawn = true;
+		
 	}
 	else {
-		if (inputs.despawn) {
-			inputs.despawn = false;
-		}
+		
 	}
 
 	if (GetAsyncKeyState(VK_ESCAPE)) {

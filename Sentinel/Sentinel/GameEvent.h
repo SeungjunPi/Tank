@@ -9,9 +9,7 @@ enum EGameEventCode
 {
 	GAME_EVENT_CODE_SC_PLAYER_ID = 0x00010102,
 	GAME_EVENT_CODE_SC_SNAPSHOT = 0x00010202,
-	GAME_EVENT_CODE_CS_CREATE_TANK = 0x01010101, // Deprecated
 	GAME_EVENT_CODE_SC_CREATE_TANK = 0x01010102,
-	GAME_EVENT_CODE_CS_DELETE_TANK = 0x01010201, // Deprecated
 	GAME_EVENT_CODE_SC_DELETE_TANK = 0x01010202,
 	GAME_EVENT_CODE_CS_START_MOVE = 0x02010101,
 	GAME_EVENT_CODE_SC_START_MOVE = 0x02010102,
@@ -36,21 +34,11 @@ struct PACKET_SC_PLAYER_ID
 	UINT32 id;
 };
 
-struct PACKET_CS_CREATE_TANK
-{
-	Transform transform;
-};
-
 struct PACKET_SC_CREATE_TANK
 {
 	UINT32 ownerId;
 	UINT32 objectId;
 	Transform transform;
-};
-
-struct PACKET_CS_DELETE_TANK
-{
-	UINT32 objectId;
 };
 
 struct PACKET_SC_DELETE_TANK
@@ -157,12 +145,6 @@ public:
 	static void BroadcastDeleteObstacle(UINT16 obstacleId, UINT32 shooterId);
 private:
 	
-	static void HandleCreateTank(BYTE* pGameEvent, UINT32 senderId);
-	static BOOL ValidateCreateTank(BYTE* pGameEvent, UINT32 senderId);
-
-	static void HandleDeleteTank(BYTE* pGameEvent, UINT32 senderId);
-	static BOOL ValidateDeleteTank(BYTE* pGameEvent, UINT32 senderId);
-
 	static void HandleStartMove(BYTE* pGameEvent, UINT32 senderId);
 	static BOOL ValidateStartMove(BYTE* pGameEvent, UINT32 senderId);
 

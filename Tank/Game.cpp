@@ -114,21 +114,6 @@ void s_ApplyKeyboardEvents(ULONGLONG tickDiff)
 		return;
 	}
 
-	if (KeyboardEventListener::inputs.spawn) {
-		if (g_pPlayerTank == NULL && !g_isTankCreateRequest) {
-			g_isTankCreateRequest = true;
-			Transform t;
-			GamePacket::SendCreateTank(&t);
-		}
-	}
-
-	if (KeyboardEventListener::inputs.despawn) {
-		if (g_pPlayerTank != NULL) {
-			UINT32 objId = g_pPlayerTank->GetID();
-			GamePacket::SendDeleteTank(objId);
-		}
-	}
-
 	if (g_pPlayerTank != NULL) {
 		char startFlag;
 		char endFlag;

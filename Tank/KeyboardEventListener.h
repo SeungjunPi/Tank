@@ -14,8 +14,6 @@ struct KeyboardInputs
 	bool down;
 	bool left;
 	bool right;
-	bool spawn;
-	bool despawn;
 	bool escape;
 	bool shoot;
 };

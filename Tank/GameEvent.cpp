@@ -294,31 +294,6 @@ BOOL GamePacket::ValidateDeleteObstacle(BYTE* pGameEvent, UINT32 senderId)
 	return true;
 }
 
-void GamePacket::SendCreateTank(Transform* pTransform)
-{	
-	const UINT32 contentsMsgSize = sizeof(PACKET_CS_CREATE_TANK) + sizeof(EGameEventCode);
-	BYTE pRawPacket[contentsMsgSize] = { 0, };
-	EGameEventCode* pEvCode = (EGameEventCode*)pRawPacket;
-	*pEvCode = EGameEventCode::GAME_EVENT_CODE_CS_CREATE_TANK;
-	PACKET_CS_CREATE_TANK* pContentsMessageBody = (PACKET_CS_CREATE_TANK*)(pRawPacket + sizeof(EGameEventCode));
-	memcpy(&pContentsMessageBody->transform, pTransform, sizeof(Transform));
-	g_pNetCore->SendMessageTo(g_serverId, pRawPacket, contentsMsgSize);
-	
-	
-}
-
-void GamePacket::SendDeleteTank(UINT32 objectId)
-{
-	const UINT32 contentsMsgSize = sizeof(PACKET_CS_DELETE_TANK) + sizeof(EGameEventCode);
-	BYTE pRawPacket[contentsMsgSize] = { 0, };
-	EGameEventCode* pEvCode = (EGameEventCode*)pRawPacket;
-	PACKET_CS_DELETE_TANK* pContentsMessageBody = (PACKET_CS_DELETE_TANK*)(pRawPacket + sizeof(EGameEventCode));
-
-	*pEvCode = EGameEventCode::GAME_EVENT_CODE_CS_DELETE_TANK;
-	pContentsMessageBody->objectId = objectId;
-	g_pNetCore->SendMessageTo(g_serverId, pRawPacket, contentsMsgSize);
-}
-
 void GamePacket::SendStartMove(const Transform* pTankTransform, char moveFlag)
 {
 	const UINT32 contentsMsgSize = sizeof(PACKET_CS_START_MOVE) + sizeof(EGameEventCode);

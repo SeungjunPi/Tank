@@ -1,4 +1,4 @@
-#pragma once
+Ôªø#pragma once
 
 #include "GameStruct.h"
 
@@ -7,9 +7,7 @@ enum EGameEventCode
 {
 	GAME_EVENT_CODE_SC_PLAYER_ID = 0x00010102,
 	GAME_EVENT_CODE_SC_SNAPSHOT = 0x00010202,
-	GAME_EVENT_CODE_CS_CREATE_TANK = 0x01010101,
 	GAME_EVENT_CODE_SC_CREATE_TANK = 0x01010102,
-	GAME_EVENT_CODE_CS_DELETE_TANK = 0x01010201,
 	GAME_EVENT_CODE_SC_DELETE_TANK = 0x01010202,
 	GAME_EVENT_CODE_CS_START_MOVE = 0x02010101,
 	GAME_EVENT_CODE_SC_START_MOVE = 0x02010102,
@@ -34,21 +32,11 @@ struct PACKET_SC_PLAYER_ID
 	UINT32 id;
 };
 
-struct PACKET_CS_CREATE_TANK
-{
-	Transform transform;
-};
-
 struct PACKET_SC_CREATE_TANK
 {
 	UINT32 ownerId;
 	UINT32 objectId;
 	Transform transform;
-};
-
-struct PACKET_CS_DELETE_TANK
-{
-	UINT32 objectId;
 };
 
 struct PACKET_SC_DELETE_TANK
@@ -71,13 +59,13 @@ struct PACKET_SC_START_MOVE
 {
 	char movementFlag;
 	UINT32 objectId;
-	Transform transform; // ≈¨∂Û¿Ãæ∆Æ∞° »Æ¿Œ«œ±‚ ¿ß«— øÎµµ
+	Transform transform; // ÌÅ¥ÎùºÏù¥Ïñ∏Ìä∏Í∞Ä ÌôïÏù∏ÌïòÍ∏∞ ÏúÑÌïú Ïö©ÎèÑ
 };
 
 struct PACKET_CS_END_MOVE
 {
 	char movementFlag;
-	Transform transform; // ∫∏¡§øÎ
+	Transform transform; // Î≥¥Ï†ïÏö©
 };
 
 struct PACKET_SC_END_MOVE
@@ -146,10 +134,6 @@ class GamePacket
 public:
 	static BOOL Validate(BYTE* pGameEvent, UINT32 senderId);
 	static void HandlePacket(BYTE* pGameEvent, UINT32 senderId);
-
-
-	static void SendCreateTank(Transform* pTransform);
-	static void SendDeleteTank(UINT32 objectId);
 
 	static void SendStartMove(const Transform* pTankTransform, char moveFlag);
 	static void SendEndMove(const Transform* pTankTransform, char moveFlag);
