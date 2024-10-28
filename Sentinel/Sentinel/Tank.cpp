@@ -89,6 +89,7 @@ void Tank::EndRotate(EROTATION rotation)
 
 void Tank::MoveForward(ULONGLONG tickDiff)
 {
+	_forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
 	_transform.Position.x = _transform.Position.x + _forwardDirection.x * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
 	_transform.Position.y = _transform.Position.y + _forwardDirection.y * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
 	_transform.Position.z = _transform.Position.z + _forwardDirection.z * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
@@ -97,6 +98,7 @@ void Tank::MoveForward(ULONGLONG tickDiff)
 
 void Tank::MoveBackward(ULONGLONG tickDiff)
 {
+	_forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
 	_transform.Position.x = _transform.Position.x - _forwardDirection.x * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
 	_transform.Position.y = _transform.Position.y - _forwardDirection.y * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
 	_transform.Position.z = _transform.Position.z - _forwardDirection.z * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
@@ -108,8 +110,7 @@ void Tank::RotateRight(ULONGLONG tickDiff)
 	const float angularVelocity = 3.14159265358979323846f / 1000.f * 60.f / 32.f;
 	float radian = tickDiff * angularVelocity;
 
-	_transform.Rotation = Vector4::RotateZP(radian, _transform.Rotation);
-	_forwardDirection = Vector3::RotateZP(radian, _forwardDirection);
+	_transform.Rotation = Quaternion::RotateZP(radian, _transform.Rotation);
 
 	_dirty = true;
 }
@@ -119,9 +120,7 @@ void Tank::RotateLeft(ULONGLONG tickDiff)
 	const float angularVelocity = 3.14159265358979323846f / 1000.f * 60.f / 32.f;
 	float radian = tickDiff * angularVelocity;
 
-	_transform.Rotation = Vector4::RotateZM(radian, _transform.Rotation);
-	_forwardDirection = Vector3::RotateZM(radian, _forwardDirection);
-
+	_transform.Rotation = Quaternion::RotateZM(radian, _transform.Rotation);
 
 	_dirty = true;
 }
@@ -129,7 +128,7 @@ void Tank::RotateLeft(ULONGLONG tickDiff)
 void Tank::GetTurretInfo(Vector3* out_position, Vector3* out_direction) const
 {
 	Vector3 position = _transform.Position;
-	Vector4 rotation = _transform.Rotation;
+	Quaternion rotation = _transform.Rotation;
 
 	Vector3 v = { 0, -1.f, 0 };
 	v = Vector3::Rotate(v, rotation);
@@ -138,7 +137,9 @@ void Tank::GetTurretInfo(Vector3* out_position, Vector3* out_direction) const
 	v.z += position.z;
 	*out_position = v;
 
-	memcpy(out_direction, &_forwardDirection, sizeof(Vector3));
+	const Vector3 forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
+
+	memcpy(out_direction, &forwardDirection, sizeof(Vector3));
 }
 
 UINT32 Tank::GetOwnerId() const
@@ -161,6 +162,24 @@ void Tank::OnFrame(ULONGLONG tickDiff)
 		RotateRight(tickDiff);
 	}
 	return;
+}
+
+BOOL Tank::IsTransformCloseEnough(const Transform* other)
+{
+	const float TOLERANCE_POSITION_SQUARE = 75.0;
+	const float TOLERANCE_ROTATION = 3.0;
+
+	float posDistanceSq = Vector3::DistanceSquared(_transform.Position, other->Position);
+	float rotDisctance = Quaternion::AngularDistance(_transform.Rotation, other->Rotation);
+
+	if (posDistanceSq < TOLERANCE_POSITION_SQUARE && rotDisctance < TOLERANCE_ROTATION) {
+		printf("Accept Client's Transform, Diff: [%f, %f]\n", posDistanceSq, rotDisctance);
+		return true;
+	}
+	else {
+		printf("Accept Server's Transform, Diff: [%f, %f]\n", posDistanceSq, rotDisctance);
+		return false;
+	}
 }
 
 

@@ -205,7 +205,7 @@ void GamePacket::HandleStartMove(BYTE* pGameEvent, UINT32 senderId)
 
 	PACKET_CS_START_MOVE* pCsStartMove = (PACKET_CS_START_MOVE*)(pGameEvent + sizeof(EGameEventCode));
 	
-	Tank* pTank = g_objectManager.GetTank(senderId);
+	Tank* pTank = g_objectManager.GetTankByOwnerId(senderId);
 	if (pTank == nullptr) {
 		// Hit 등으로 인해 서버에서 먼저 사라졌을 수도 있다.
 		return;
@@ -257,11 +257,10 @@ void GamePacket::HandleEndMove(BYTE* pGameEvent, UINT32 senderId)
 	
 	printf("EndMove: owner=%u\n", senderId);
 
-	Tank* pTank = g_objectManager.GetTank(senderId);
+	Tank* pTank = g_objectManager.GetTankByOwnerId(senderId);
 	if (pTank == nullptr) {
 		return;
 	}
-	g_objectManager.UpdateTankTransform(senderId, &pCsEndMove->transform); // TODO: 현재 transform과 비교 후 일정 이하면 적용
 
 	if (pCsEndMove->movementFlag & FLAG_MOVE_FORWARD) {
 		g_objectManager.EndTankMove(senderId, EMOVEMENT::FORWARD);
@@ -279,6 +278,8 @@ void GamePacket::HandleEndMove(BYTE* pGameEvent, UINT32 senderId)
 		g_objectManager.EndTankRotate(senderId, EROTATION::RIGHT);
 	}
 
+	BOOL isChanged = pTank->UpdateTransformIfValid(&pCsEndMove->transform);
+
 	const size_t PACKET_SIZE = sizeof(PACKET_SC_END_MOVE) + sizeof(EGameEventCode);
 	BYTE pRawPacket[PACKET_SIZE] = { 0, };
 	EGameEventCode* pGameEvCode = (EGameEventCode*)pRawPacket;
@@ -290,7 +291,14 @@ void GamePacket::HandleEndMove(BYTE* pGameEvent, UINT32 senderId)
 
 	pScEndMove->movementFlag = pCsEndMove->movementFlag;
 
-	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
+	if (isChanged) {
+		// 유저의 위치 정보를 그대로 사용하므로, 해당 유저에게는 재전송할 필요 없음
+		GameServer::BroadcastExcept(pRawPacket, PACKET_SIZE, senderId);
+	}
+	else {
+		// 서버의 위치 정보를 사용하므로, 해당 유저에게도 보내줘야 함
+		GameServer::Broadcast(pRawPacket, PACKET_SIZE);
+	}
 }
 
 BOOL GamePacket::ValidateEndMove(BYTE* pGameEvent, UINT32 senderId)
@@ -308,7 +316,7 @@ void GamePacket::HandleMoving(BYTE* pGameEvent, UINT32 senderId)
 	PACKET_CS_MOVING* pCsMoving = (PACKET_CS_MOVING*)(pGameEvent + sizeof(EGameEventCode));
 	g_objectManager.UpdateTankTransform(senderId, &pCsMoving->transform); // return failure
 
-	Tank* pTank = g_objectManager.GetTank(senderId);
+	Tank* pTank = g_objectManager.GetTankByOwnerId(senderId);
 	if (pTank == nullptr) {
 		return;
 	}

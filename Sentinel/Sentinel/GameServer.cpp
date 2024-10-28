@@ -118,6 +118,16 @@ void GameServer::Broadcast(BYTE* msg, int len)
 	g_pNetCore->SendMessageTo(g_sessionIds, numPlayers, msg, len);
 }
 
+void GameServer::BroadcastExcept(BYTE* msg, int len, UINT32 sessionId)
+{
+	UINT16 numPlayers = g_playerManager.GetAllKeys(g_sessionIds);
+	for (UINT16 i = 0; i < numPlayers; ++i) {
+		if (g_sessionIds[i] != sessionId) {
+			g_pNetCore->SendMessageTo(g_sessionIds[i], msg, len);
+		}
+	}
+}
+
 
 void OnSessionCreate(UINT32 sessionID)
 {
@@ -162,7 +172,7 @@ void OnSessionDisconnect(UINT32 sessionID)
 
 	Player* pPlayer = g_playerManager.GetPlayer(sessionID);
 	g_playerManager.TryDeletePlayer(sessionID);
-	Tank* pTank = g_objectManager.GetTank(sessionID);
+	Tank* pTank = g_objectManager.GetTankByOwnerId(sessionID);
 	if (pTank != nullptr) {
 		printf("RemoveTank: owner=%u, tankId=%u\n", sessionID, pTank->GetID());
 		g_objectManager.RemoveTank(pTank->GetID(), sessionID);

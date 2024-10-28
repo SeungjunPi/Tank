@@ -27,6 +27,10 @@ public:
 	UINT32 GetOwnerId() const;
 
 	void OnFrame(ULONGLONG tickDiff) override;
+
+protected:
+	virtual BOOL IsTransformCloseEnough(const Transform* other) override;
+
 private:
 	Vector3 _forwardDirection;
 	UINT32 _ownerId = 0;

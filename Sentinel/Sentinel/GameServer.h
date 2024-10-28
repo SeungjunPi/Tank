@@ -18,5 +18,6 @@ public:
 	static void CleanUp();
 
 	static void Broadcast(BYTE* msg, int len);
+	static void BroadcastExcept(BYTE* msg, int len, UINT32 sessionId);
 };
 

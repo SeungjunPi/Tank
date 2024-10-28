@@ -23,8 +23,8 @@ public:
 	Projectile* CreateProjectile(UINT32 ownerId, Transform* pTransform);
 	void RemoveProjectile(UINT16 objectId);
 
-	Tank* GetTank(UINT16 objectId);
-	Tank* GetTank(UINT32 ownerId);
+	Tank* GetTankByObjectId(UINT16 objectId);
+	Tank* GetTankByOwnerId(UINT32 ownerId);
 
 	void StartTankMove(UINT32 ownerId, EMOVEMENT movement);
 	void EndTankMove(UINT32 ownerId, EMOVEMENT movement);

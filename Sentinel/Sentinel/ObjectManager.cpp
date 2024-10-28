@@ -104,14 +104,14 @@ void ObjectManager::RemoveProjectile(UINT16 objectId)
 	delete pProjectile;
 }
 
-Tank* ObjectManager::GetTank(UINT16 objectId)
+Tank* ObjectManager::GetTankByObjectId(UINT16 objectId)
 {
 	Tank* pTank = (Tank*)_tankTable.Get(objectId);
 	assert(pTank != nullptr);
 	return pTank;
 }
 
-Tank* ObjectManager::GetTank(UINT32 ownerId)
+Tank* ObjectManager::GetTankByOwnerId(UINT32 ownerId)
 {
 	Tank* pTank = (Tank*)_tankTableByOwner.Get(ownerId);
 	return pTank;

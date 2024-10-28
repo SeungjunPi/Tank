@@ -145,21 +145,20 @@ void GamePacket::HandleEndMove(BYTE* pGameEvent, UINT32 senderId)
 	PACKET_SC_END_MOVE* pScEndMove = (PACKET_SC_END_MOVE*)(pGameEvent + sizeof(EGameEventCode));
 	
 	if (g_pPlayerTank != nullptr && pScEndMove->objectId == g_pPlayerTank->GetID()) {
-		// update if transforms are diffrent
+		// TODO: Log "Adjusted based on ther server's transform\n"
 	}
-	else {
-		if (pScEndMove->movementFlag & FLAG_MOVE_FORWARD) {
-			g_objectManager.EndTankMove(pScEndMove->objectId, EMOVEMENT::FORWARD, &pScEndMove->transform);
-		}
-		if (pScEndMove->movementFlag & FLAG_MOVE_BACKWARD) {
-			g_objectManager.EndTankMove(pScEndMove->objectId, EMOVEMENT::BACKWARD, &pScEndMove->transform);
-		}
-		if (pScEndMove->movementFlag & FLAG_ROTATE_LEFT) {
-			g_objectManager.EndTankRotate(pScEndMove->objectId, EROTATION::LEFT, &pScEndMove->transform);
-		}
-		if (pScEndMove->movementFlag & FLAG_ROTATE_RIGHT) {
-			g_objectManager.EndTankRotate(pScEndMove->objectId, EROTATION::RIGHT, &pScEndMove->transform);
-		}
+
+	if (pScEndMove->movementFlag & FLAG_MOVE_FORWARD) {
+		g_objectManager.EndTankMove(pScEndMove->objectId, EMOVEMENT::FORWARD, &pScEndMove->transform);
+	}
+	if (pScEndMove->movementFlag & FLAG_MOVE_BACKWARD) {
+		g_objectManager.EndTankMove(pScEndMove->objectId, EMOVEMENT::BACKWARD, &pScEndMove->transform);
+	}
+	if (pScEndMove->movementFlag & FLAG_ROTATE_LEFT) {
+		g_objectManager.EndTankRotate(pScEndMove->objectId, EROTATION::LEFT, &pScEndMove->transform);
+	}
+	if (pScEndMove->movementFlag & FLAG_ROTATE_RIGHT) {
+		g_objectManager.EndTankRotate(pScEndMove->objectId, EROTATION::RIGHT, &pScEndMove->transform);
 	}
 }
 

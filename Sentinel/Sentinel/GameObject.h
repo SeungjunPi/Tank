@@ -36,6 +36,7 @@ public:
 	// other object
 	BOOL UpdateFrom(const GameObject* pOther);
 	void UpdateTransform(const Transform* pTransform);
+	BOOL UpdateTransformIfValid(const Transform* pTransform);
 
 	void SetPosition(Vector3 position);
 
@@ -60,6 +61,9 @@ protected:
 	ULONGLONG _hitTick = 0;
 
 	const static UINT DESTROY_DELAY = 0x1000;
+
+	// 기본적으로 완전히 일치해야 같다고 판정
+	virtual BOOL IsTransformCloseEnough(const Transform* other);
 private:
 
 };

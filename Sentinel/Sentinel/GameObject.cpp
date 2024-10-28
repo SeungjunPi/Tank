@@ -57,6 +57,18 @@ void GameObject::UpdateTransform(const Transform* pTransform)
 	memcpy(&_transform, pTransform, sizeof(Transform));
 }
 
+BOOL GameObject::UpdateTransformIfValid(const Transform* pTransform)
+{
+	BOOL isClosed = IsTransformCloseEnough(pTransform);
+	if (isClosed) {
+		UpdateTransform(pTransform);
+		return true;
+	}
+	
+	return false;
+	
+}
+
 void GameObject::SetPosition(Vector3 position)
 {
 	_transform.Position.x = position.x;
@@ -79,5 +91,14 @@ void GameObject::OnHit(ULONGLONG currentTick)
 BOOL GameObject::IsDestroyed(ULONGLONG currentTick) const
 {
 	return !_isAlive || _hitTick != 0;
+}
+
+BOOL GameObject::IsTransformCloseEnough(const Transform* other)
+{
+	if (memcmp(&_transform, other, sizeof(Transform)) == 0) {
+		return true;
+	}
+	
+	return false;
 }
 

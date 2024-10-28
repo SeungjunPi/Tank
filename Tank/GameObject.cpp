@@ -41,7 +41,7 @@ Vector3 GameObject::GetPosition() const
 UINT GameObject::GetTransformedModel(Vertex* out_vertices)
 {
 	Vector3 position = _transform.Position;
-	Vector4 rotation = _transform.Rotation;
+	Quaternion rotation = _transform.Rotation;
 	for (UINT i = 0; i < _model.numVertices; ++i) {
 		Vector3 v = _model.vertices[i].v;
 

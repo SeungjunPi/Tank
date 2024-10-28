@@ -126,6 +126,7 @@ void Tank::EndRotate(EROTATION rotation, const Transform* pTransform)
 
 void Tank::MoveForward(ULONGLONG tickDiff)
 {
+	_forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
 	_transform.Position.x = _transform.Position.x + _forwardDirection.x * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
 	_transform.Position.y = _transform.Position.y + _forwardDirection.y * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
 	_transform.Position.z = _transform.Position.z + _forwardDirection.z * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
@@ -134,6 +135,7 @@ void Tank::MoveForward(ULONGLONG tickDiff)
 
 void Tank::MoveBackward(ULONGLONG tickDiff)
 {
+	_forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
 	_transform.Position.x = _transform.Position.x - _forwardDirection.x * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
 	_transform.Position.y = _transform.Position.y - _forwardDirection.y * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
 	_transform.Position.z = _transform.Position.z - _forwardDirection.z * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
@@ -145,8 +147,7 @@ void Tank::RotateRight(ULONGLONG tickDiff)
 	const float angularVelocity = 3.14159265358979323846f / 1000.f * 60.f / 32.f;
 	float radian = tickDiff * angularVelocity * VELOCITY_WEIGHT;
 
-	_transform.Rotation = Vector4::RotateZP(radian, _transform.Rotation);
-	_forwardDirection = Vector3::RotateZP(radian, _forwardDirection);
+	_transform.Rotation = Quaternion::RotateZP(radian, _transform.Rotation);
 	
 	_dirty = true;
 }
@@ -156,9 +157,7 @@ void Tank::RotateLeft(ULONGLONG tickDiff)
 	const float angularVelocity = 3.14159265358979323846f / 1000.f * 60.f / 32.f;
 	float radian = tickDiff * angularVelocity * VELOCITY_WEIGHT;
 
-	_transform.Rotation = Vector4::RotateZM(radian, _transform.Rotation);
-	_forwardDirection = Vector3::RotateZM(radian, _forwardDirection);
-
+	_transform.Rotation = Quaternion::RotateZM(radian, _transform.Rotation);
 
 	_dirty = true;
 }
@@ -166,7 +165,7 @@ void Tank::RotateLeft(ULONGLONG tickDiff)
 void Tank::GetTurretInfo(Vector3* out_position, Vector3* out_direction) const
 {
 	Vector3 position = _transform.Position;
-	Vector4 rotation = _transform.Rotation;
+	Quaternion rotation = _transform.Rotation;
 
 	Vector3 v = _model.vertices[0].v;
 	v = Vector3::Rotate(v, rotation);
@@ -175,12 +174,14 @@ void Tank::GetTurretInfo(Vector3* out_position, Vector3* out_direction) const
 	v.z += position.z;
 	*out_position = v;
 
-	memcpy(out_direction, &_forwardDirection, sizeof(Vector3));
+	const Vector3 forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
+
+	memcpy(out_direction, &forwardDirection, sizeof(Vector3));
 }
 
 void Tank::GetTurretInfo(Transform* out_transform) const
 {
-	Vector4 rotation = _transform.Rotation;
+	Quaternion rotation = _transform.Rotation;
 
 	Vector3 v = _model.vertices[0].v;
 	v = Vector3::Rotate(v, rotation);
