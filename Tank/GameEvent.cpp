@@ -112,7 +112,9 @@ void GamePacket::HandleStartMove(BYTE* pGameEvent, UINT32 senderId)
 
 	PACKET_SC_START_MOVE* pScStartMove = (PACKET_SC_START_MOVE*)(pGameEvent + sizeof(EGameEventCode));
 	if (g_pPlayerTank != nullptr && pScStartMove->objectId == g_pPlayerTank->GetID()) {
-		// update if transforms are diffrent
+		// 현재는 받을일 없는 패킷.
+		// Transform이 다르다면 업데이트 하는 로직을 넣어야할지도
+		g_lastOwnTankSyncTick = g_currentGameTick; // 현재는 올 일이 없긴 하나, 만약을 위해 작성
 	}
 	else {
 		if (pScStartMove->movementFlag & FLAG_MOVE_FORWARD) {
@@ -146,6 +148,7 @@ void GamePacket::HandleEndMove(BYTE* pGameEvent, UINT32 senderId)
 	
 	if (g_pPlayerTank != nullptr && pScEndMove->objectId == g_pPlayerTank->GetID()) {
 		// TODO: Log "Adjusted based on ther server's transform\n"
+		g_lastOwnTankSyncTick = g_currentGameTick;
 	}
 
 	if (pScEndMove->movementFlag & FLAG_MOVE_FORWARD) {

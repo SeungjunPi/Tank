@@ -16,6 +16,7 @@ void CallbackSessionDisconnected(UINT32 sessionId);
 
 static void s_ApplyKeyboardEvents(ULONGLONG tickDiff);
 static void s_ApplyObjectLogic(ULONGLONG tickDiff);
+static void s_SyncOwnTankTransform();
 static void s_HandleNetEvents();
 static void s_CollideObjects(ULONGLONG curTick);
 static BOOL s_IsShootable();
@@ -71,11 +72,11 @@ void Game::Start()
 		ULONGLONG gameTickDiff = g_currentGameTick - g_previousGameTick;
 		
 		if (gameTickDiff > TICK_PER_GAME_FRAME) {
-			// Get Keyboard Inputs
-			s_ApplyKeyboardEvents(gameTickDiff);
-
 			// Apply Net Events
 			s_HandleNetEvents();
+
+			// Get Keyboard Inputs
+			s_ApplyKeyboardEvents(gameTickDiff);
 
 			s_CleanupDestroyedObjects(g_currentGameTick);
 
@@ -133,6 +134,7 @@ void s_ApplyKeyboardEvents(ULONGLONG tickDiff)
 				g_pPlayerTank->StartRotate(EROTATION::RIGHT);
 			}
 			GamePacket::SendStartMove(g_pPlayerTank->GetTransformPtr(), startFlag);
+			g_lastOwnTankSyncTick = g_currentGameTick;
 		}
 
 		if (endFlag) {
@@ -149,10 +151,11 @@ void s_ApplyKeyboardEvents(ULONGLONG tickDiff)
 				g_pPlayerTank->EndRotate(EROTATION::RIGHT);
 			}
 			GamePacket::SendEndMove(g_pPlayerTank->GetTransformPtr(), endFlag);
+			g_lastOwnTankSyncTick = g_currentGameTick;
 		}
 
 		if (movingFlag) {
-			// TODO: send moving status periodically
+			s_SyncOwnTankTransform();
 		}
 
 		if (KeyboardEventListener::inputs.shoot) {
@@ -183,6 +186,20 @@ void s_ApplyObjectLogic(ULONGLONG tickDiff)
 			pObject->OnFrame(tickDiff);
 		}
 	}
+}
+
+void s_SyncOwnTankTransform()
+{
+	if (g_pPlayerTank == nullptr) {
+		return;
+	}
+
+	if (g_currentGameTick - g_lastOwnTankSyncTick < TICK_OWN_TANK_SYNC) {
+		return;
+	}
+
+	g_lastOwnTankSyncTick = g_currentGameTick;
+	GamePacket::SendMoving(g_pPlayerTank->GetTransformPtr());
 }
 
 void s_HandleNetEvents()

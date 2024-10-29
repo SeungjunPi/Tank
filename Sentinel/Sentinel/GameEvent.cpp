@@ -239,12 +239,14 @@ void GamePacket::HandleMoving(BYTE* pGameEvent, UINT32 senderId)
 	}
 
 	PACKET_CS_MOVING* pCsMoving = (PACKET_CS_MOVING*)(pGameEvent + sizeof(EGameEventCode));
-	g_objectManager.UpdateTankTransform(senderId, &pCsMoving->transform); // return failure
-
+	
 	Tank* pTank = g_objectManager.GetTankByOwnerId(senderId);
 	if (pTank == nullptr) {
 		return;
 	}
+
+	BOOL isChanged = pTank->UpdateTransformIfValid(&pCsMoving->transform);
+
 	const size_t PACKET_SIZE = sizeof(PACKET_SC_MOVING) + sizeof(EGameEventCode);
 	BYTE pRawPacket[PACKET_SIZE] = { 0, };
 	EGameEventCode* pGameEvCode = (EGameEventCode*)pRawPacket;
@@ -254,9 +256,14 @@ void GamePacket::HandleMoving(BYTE* pGameEvent, UINT32 senderId)
 	pScMoving->objectId = pTank->GetID();
 	memcpy(&pScMoving->transform, &pCsMoving->transform, sizeof(Transform));
 
-	printf("Moving: owner=%u\n", senderId);
-
-	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
+	if (isChanged) {
+		printf("Moving, accepted: owner=%u\n", senderId);
+		GameServer::BroadcastExcept(pRawPacket, PACKET_SIZE, senderId);
+	}
+	else {
+		printf("Moving, rejected: owner=%u\n", senderId);
+		GameServer::Broadcast(pRawPacket, PACKET_SIZE);
+	}
 }
 
 BOOL GamePacket::ValidateMoving(BYTE* pGameEvent, UINT32 senderId)
