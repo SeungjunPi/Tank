@@ -149,7 +149,7 @@
       <AdditionalDependencies>Ws2_32.lib;Mswsock.lib;C:\dev\Tank\Sentinel\x64\Debug\NetCore.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /E /Y "$(TargetDir)*" "$(ProjectDir)..\..\exe\Debug\"</Command>
+      <Command>xcopy /E /Y "$(TargetDir)*" "$(ProjectDir)\..\..\exe\Debug\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

@@ -121,7 +121,7 @@
       <PerUserRedirection>true</PerUserRedirection>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /E /Y "$(TargetDir)*" "$(ProjectDir)..\exe\Debug\"</Command>
+      <Command>xcopy /E /Y "$(TargetDir)*" "$(ProjectDir)\..\exe\Debug\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
