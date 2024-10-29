@@ -108,7 +108,7 @@ void Tank::MoveBackward(ULONGLONG tickDiff)
 void Tank::RotateRight(ULONGLONG tickDiff)
 {
 	const float angularVelocity = 3.14159265358979323846f / 1000.f * 60.f / 32.f;
-	float radian = tickDiff * angularVelocity;
+	float radian = tickDiff * angularVelocity * VELOCITY_WEIGHT;
 
 	_transform.Rotation = Quaternion::RotateZP(radian, _transform.Rotation);
 
@@ -118,7 +118,7 @@ void Tank::RotateRight(ULONGLONG tickDiff)
 void Tank::RotateLeft(ULONGLONG tickDiff)
 {
 	const float angularVelocity = 3.14159265358979323846f / 1000.f * 60.f / 32.f;
-	float radian = tickDiff * angularVelocity;
+	float radian = tickDiff * angularVelocity * VELOCITY_WEIGHT;
 
 	_transform.Rotation = Quaternion::RotateZM(radian, _transform.Rotation);
 
@@ -166,8 +166,8 @@ void Tank::OnFrame(ULONGLONG tickDiff)
 
 BOOL Tank::IsTransformCloseEnough(const Transform* other)
 {
-	const float TOLERANCE_POSITION_SQUARE = 75.0;
-	const float TOLERANCE_ROTATION = 3.0;
+	const float TOLERANCE_POSITION_SQUARE = 3.0; // x, y, z의 차이가 각 1.0 미만인 경우를 간단하게 판단
+	const float TOLERANCE_ROTATION = 0.26; // 30도 미만
 
 	float posDistanceSq = Vector3::DistanceSquared(_transform.Position, other->Position);
 	float rotDisctance = Quaternion::AngularDistance(_transform.Rotation, other->Rotation);
