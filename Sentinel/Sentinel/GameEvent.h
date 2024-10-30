@@ -37,13 +37,13 @@ struct PACKET_SC_PLAYER_ID
 struct PACKET_SC_CREATE_TANK
 {
 	UINT32 ownerId;
-	UINT32 objectId;
+	UINT16 objectId;
 	Transform transform;
 };
 
 struct PACKET_SC_DELETE_TANK
 {
-	UINT32 objectId;
+	UINT16 objectId;
 };
 
 
@@ -60,7 +60,7 @@ struct PACKET_CS_START_MOVE
 struct PACKET_SC_START_MOVE
 {
 	char movementFlag;
-	UINT32 objectId;
+	UINT16 objectId;
 	Transform transform; // 클라이언트가 확인하기 위한 용도
 };
 
@@ -73,7 +73,7 @@ struct PACKET_CS_END_MOVE
 struct PACKET_SC_END_MOVE
 {
 	char movementFlag;
-	UINT32 objectId;
+	UINT16 objectId;
 	Transform transform;
 };
 
@@ -84,7 +84,7 @@ struct PACKET_CS_MOVING
 
 struct PACKET_SC_MOVING
 {
-	UINT32 objectId;
+	UINT16 objectId;
 	Transform transform;
 };
 
@@ -140,6 +140,7 @@ public:
 
 	static void SendSnapshot(UINT32 sessionId);
 	static void SendTankHit(UINT32 sessionId, UINT16 tankId, UINT16 projectileId);
+	static void BroadcastDeleteTank(UINT16 tankId);
 	static void BroadcastTankHit(UINT16 tankId, UINT16 projectileId);
 	static void BroadcastCreateObstacle(UINT16 obstacleId, Transform* pTransform);
 	static void BroadcastDeleteObstacle(UINT16 obstacleId, UINT32 shooterId);

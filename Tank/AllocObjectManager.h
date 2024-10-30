@@ -19,11 +19,11 @@ public:
 	void Initiate();
 	void Terminate();
 
-	Tank* CreateTank(UINT32 serverKey);
+	Tank* CreateTank(UINT16 serverKey);
 	Projectile* CreateProjectile(UINT serverKey, Transform* pInitTransform);
 	Obstacle* CreateObstacle(UINT key, Transform* pInitTransform);
 
-	void RemoveObject(EGameObjectKind objectKind, UINT32 key);
+	void RemoveObject(EGameObjectKind objectKind, UINT16 key);
 
 	void UpdateObject(EGameObjectKind objectKind, GameObject* obj);
 
@@ -39,11 +39,11 @@ public:
 	int GetCountObjects() const;
 
 
-	void StartTankMove(UINT32 objectId, EMOVEMENT movement);
-	void EndTankMove(UINT32 objectId, EMOVEMENT movement, const Transform* pTransform);
+	void StartTankMove(UINT16 objectId, EMOVEMENT movement);
+	void EndTankMove(UINT16 objectId, EMOVEMENT movement, const Transform* pTransform);
 
-	void StartTankRotate(UINT32 objectId, EROTATION rotation);
-	void EndTankRotate(UINT32 objectId, EROTATION rotation, const Transform* pTransform);
+	void StartTankRotate(UINT16 objectId, EROTATION rotation);
+	void EndTankRotate(UINT16 objectId, EROTATION rotation, const Transform* pTransform);
 
 private:
 	PointerTable _tankTable;

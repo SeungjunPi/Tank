@@ -175,8 +175,8 @@ void OnSessionDisconnect(UINT32 sessionID)
 	Tank* pTank = g_objectManager.GetTankByOwnerId(sessionID);
 	if (pTank != nullptr) {
 		printf("RemoveTank: owner=%u, tankId=%u\n", sessionID, pTank->GetID());
+		GamePacket::BroadcastDeleteTank(pTank->GetID());
 		g_objectManager.RemoveTank(pTank->GetID(), sessionID);
-		
 	}
 }
 

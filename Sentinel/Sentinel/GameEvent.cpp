@@ -78,6 +78,20 @@ void GamePacket::SendTankHit(UINT32 sessionId, UINT16 tankId, UINT16 projectileI
 	g_pNetCore->SendMessageTo(sessionId, pRawPacket, PACKET_SIZE);
 }
 
+void GamePacket::BroadcastDeleteTank(UINT16 tankId)
+{
+	const size_t PACKET_SIZE = sizeof(EGameEventCode) + sizeof(PACKET_SC_DELETE_TANK);
+	BYTE pRawPacket[PACKET_SIZE];
+
+	EGameEventCode* pEvCode = (EGameEventCode*)pRawPacket;
+	*pEvCode = GAME_EVENT_CODE_SC_DELETE_TANK;
+	PACKET_SC_DELETE_TANK* pScDeleteTank = (PACKET_SC_DELETE_TANK*)(pRawPacket + sizeof(EGameEventCode));
+
+	pScDeleteTank->objectId = tankId;
+	
+	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
+}
+
 void GamePacket::BroadcastTankHit(UINT16 tankId, UINT16 projectileId)
 {
 	const size_t PACKET_SIZE = sizeof(EGameEventCode) + sizeof(PACKET_SC_TANK_HIT);

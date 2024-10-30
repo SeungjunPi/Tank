@@ -3,7 +3,7 @@
 
 const float VELOCITY_WEIGHT = 0.75f;
 
-Tank::Tank(UINT32 id)
+Tank::Tank(UINT16 id)
 	: GameObject(id)
 {
 	_forwardDirection = { .0f, -1.0f, .0f };
@@ -16,7 +16,7 @@ Tank::~Tank()
 {
 }
 
-void Tank::Initiate(UINT32 id)
+void Tank::Initiate(UINT16 id)
 {
 	_id = id;
 	_forwardDirection = { .0f, -1.0f, .0f };

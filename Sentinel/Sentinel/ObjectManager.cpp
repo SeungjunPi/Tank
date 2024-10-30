@@ -47,6 +47,7 @@ void ObjectManager::Terminate()
 	
 	delete[] keys;
 
+	_obstacleTable.Terminate();
 	_projectileTable.Terminate();
 	_tankTableByOwner.Terminate();
 	_tankTable.Terminate();

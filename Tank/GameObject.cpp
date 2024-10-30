@@ -6,7 +6,7 @@ GameObject::GameObject()
 {
 }
 
-GameObject::GameObject(UINT32 id)
+GameObject::GameObject(UINT16 id)
 	: _transform{ 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f }
 	, _id(id)
 	, _model{ nullptr, 0 }
@@ -17,7 +17,7 @@ GameObject::~GameObject()
 {
 }
 
-UINT32 GameObject::GetID() const
+UINT16 GameObject::GetID() const
 {
 	return _id;
 }

@@ -43,7 +43,7 @@ void AllocObjectManager::Terminate()
 	_tankTable.Terminate();
 }
 
-Tank* AllocObjectManager::CreateTank(UINT32 serverKey)
+Tank* AllocObjectManager::CreateTank(UINT16 serverKey)
 {
 	Tank* pTank = new Tank;
 	pTank->Initiate(serverKey);
@@ -68,7 +68,7 @@ Obstacle* AllocObjectManager::CreateObstacle(UINT key, Transform* pInitTransform
 	return pObstacle;
 }
 
-void AllocObjectManager::RemoveObject(EGameObjectKind objectKind, UINT32 key)
+void AllocObjectManager::RemoveObject(EGameObjectKind objectKind, UINT16 key)
 {
 	void* ptr = nullptr;
 	switch (objectKind) {
@@ -199,7 +199,7 @@ int AllocObjectManager::GetCountObjects() const
 	return countObject;
 }
 
-void AllocObjectManager::StartTankMove(UINT32 objectId, EMOVEMENT movement)
+void AllocObjectManager::StartTankMove(UINT16 objectId, EMOVEMENT movement)
 {
 	Tank* pTank = (Tank*)_tankTable.Get(objectId);
 	if (pTank == nullptr) {
@@ -209,7 +209,7 @@ void AllocObjectManager::StartTankMove(UINT32 objectId, EMOVEMENT movement)
 	pTank->StartMove(movement);
 }
 
-void AllocObjectManager::EndTankMove(UINT32 objectId, EMOVEMENT movement, const Transform* pTransform)
+void AllocObjectManager::EndTankMove(UINT16 objectId, EMOVEMENT movement, const Transform* pTransform)
 {
 	Tank* pTank = (Tank*)_tankTable.Get(objectId);
 	if (pTank == nullptr) {
@@ -219,7 +219,7 @@ void AllocObjectManager::EndTankMove(UINT32 objectId, EMOVEMENT movement, const 
 	pTank->EndMove(movement, pTransform);
 }
 
-void AllocObjectManager::StartTankRotate(UINT32 objectId, EROTATION rotation)
+void AllocObjectManager::StartTankRotate(UINT16 objectId, EROTATION rotation)
 {
 	Tank* pTank = (Tank*)_tankTable.Get(objectId);
 	if (pTank == nullptr) {
@@ -229,7 +229,7 @@ void AllocObjectManager::StartTankRotate(UINT32 objectId, EROTATION rotation)
 	pTank->StartRotate(rotation);
 }
 
-void AllocObjectManager::EndTankRotate(UINT32 objectId, EROTATION rotation, const Transform* pTransform)
+void AllocObjectManager::EndTankRotate(UINT16 objectId, EROTATION rotation, const Transform* pTransform)
 {
 	Tank* pTank = (Tank*)_tankTable.Get(objectId);
 	if (pTank == nullptr) {

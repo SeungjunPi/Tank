@@ -35,20 +35,20 @@ struct PACKET_SC_PLAYER_ID
 struct PACKET_SC_CREATE_TANK
 {
 	UINT32 ownerId;
-	UINT32 objectId;
+	UINT16 objectId;
 	Transform transform;
 };
 
 struct PACKET_SC_DELETE_TANK
 {
-	UINT32 objectId;
+	UINT16 objectId;
 };
 
 
-const char FLAG_MOVE_FORWARD	= 0b00000001;
-const char FLAG_MOVE_BACKWARD	= 0b00000010;
-const char FLAG_ROTATE_LEFT		= 0b00000100;
-const char FLAG_ROTATE_RIGHT	= 0b00001000;
+const char FLAG_MOVE_FORWARD = 0b00000001;
+const char FLAG_MOVE_BACKWARD = 0b00000010;
+const char FLAG_ROTATE_LEFT = 0b00000100;
+const char FLAG_ROTATE_RIGHT = 0b00001000;
 
 struct PACKET_CS_START_MOVE
 {
@@ -58,7 +58,7 @@ struct PACKET_CS_START_MOVE
 struct PACKET_SC_START_MOVE
 {
 	char movementFlag;
-	UINT32 objectId;
+	UINT16 objectId;
 	Transform transform; // 클라이언트가 확인하기 위한 용도
 };
 
@@ -71,7 +71,7 @@ struct PACKET_CS_END_MOVE
 struct PACKET_SC_END_MOVE
 {
 	char movementFlag;
-	UINT32 objectId;
+	UINT16 objectId;
 	Transform transform;
 };
 
@@ -82,7 +82,7 @@ struct PACKET_CS_MOVING
 
 struct PACKET_SC_MOVING
 {
-	UINT32 objectId;
+	UINT16 objectId;
 	Transform transform;
 };
 
@@ -98,6 +98,7 @@ struct PACKET_SC_SNAPSHOT
 {
 	UINT16 countObjects;
 };
+
 
 struct PACKET_CS_SHOOT
 {

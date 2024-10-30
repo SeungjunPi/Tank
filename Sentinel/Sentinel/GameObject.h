@@ -23,10 +23,10 @@ class GameObject
 {
 public:
 	GameObject();
-	GameObject(UINT32 id);
+	GameObject(UINT16 id);
 	~GameObject();
 
-	UINT32 GetID() const;
+	UINT16 GetID() const;
 	Transform GetTransform() const;
 	const Transform* GetTransformPtr() const;
 	Vector3 GetPosition() const;
@@ -54,7 +54,7 @@ public:
 
 protected:
 	Transform _transform = { 0, };
-	UINT32 _id = 0;
+	UINT16 _id = 0;
 	float _colliderSize = 0;
 	BOOL _dirty = false;
 	BOOL _isAlive = true;

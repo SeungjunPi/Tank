@@ -8,13 +8,11 @@
 class Tank : public GameObject
 {
 public:
-	const static UINT OBJ_KEY = 0x10000;
-
-	Tank(UINT32 id);
+	Tank(UINT16 id);
 	Tank() = default;
 	~Tank();
 
-	void Initiate(UINT32 id);
+	void Initiate(UINT16 id);
 	void Terminate();
 
 	void StartMove(EMOVEMENT movement);
