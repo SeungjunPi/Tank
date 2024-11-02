@@ -118,6 +118,8 @@ struct PACKET_SC_TANK_HIT
 {
 	UINT16 tankId;
 	UINT16 projectileId;
+	UINT32 shooter;
+	UINT32 target;
 };
 
 struct PACKET_SC_CREATE_OBSTACLE
@@ -141,7 +143,7 @@ public:
 	static void SendSnapshot(UINT32 sessionId);
 	static void SendTankHit(UINT32 sessionId, UINT16 tankId, UINT16 projectileId);
 	static void BroadcastDeleteTank(UINT16 tankId);
-	static void BroadcastTankHit(UINT16 tankId, UINT16 projectileId);
+	static void BroadcastTankHit(UINT16 tankId, UINT16 projectileId, UINT32 shooterId, UINT32 targetId);
 	static void BroadcastCreateObstacle(UINT16 obstacleId, Transform* pTransform);
 	static void BroadcastDeleteObstacle(UINT16 obstacleId, UINT32 shooterId);
 private:

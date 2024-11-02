@@ -23,7 +23,7 @@ class GameObject
 {
 public:
 	GameObject();
-	GameObject(UINT16 id);
+	GameObject(UINT16 id, UINT32 ownerId);
 	~GameObject();
 
 	UINT16 GetID() const;
@@ -42,6 +42,8 @@ public:
 
 	BOOL IsDirty();
 
+	UINT32 GetOwnerId() const;
+
 
 
 	virtual void OnFrame(ULONGLONG tickDiff) { }
@@ -55,6 +57,7 @@ public:
 protected:
 	Transform _transform = { 0, };
 	UINT16 _id = 0;
+	UINT32 _ownerId = 0;
 	float _colliderSize = 0;
 	BOOL _dirty = false;
 	BOOL _isAlive = true;

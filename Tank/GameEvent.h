@@ -116,6 +116,8 @@ struct PACKET_SC_TANK_HIT
 {
 	UINT16 tankId;
 	UINT16 projectileId;
+	UINT32 shooter;
+	UINT32 target;
 };
 
 struct PACKET_SC_CREATE_OBSTACLE

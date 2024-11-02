@@ -5,9 +5,10 @@ GameObject::GameObject()
 {
 }
 
-GameObject::GameObject(UINT16 id)
+GameObject::GameObject(UINT16 id, UINT32 ownerId)
 	: _transform{ 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f }
 	, _id(id)
+	, _ownerId(ownerId)
 {
 }
 
@@ -79,6 +80,11 @@ void GameObject::SetPosition(Vector3 position)
 BOOL GameObject::IsDirty()
 {
 	return _dirty;
+}
+
+UINT32 GameObject::GetOwnerId() const
+{
+	return _ownerId;
 }
 
 void GameObject::OnHit(ULONGLONG currentTick)

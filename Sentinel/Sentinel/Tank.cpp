@@ -3,8 +3,7 @@
 const float VELOCITY_WEIGHT = 0.75f;
 
 Tank::Tank(UINT16 id, UINT32 ownerId)
-	: GameObject(id)
-	, _ownerId(ownerId)
+	: GameObject(id, ownerId)
 {
 	_forwardDirection = { .0f, -1.0f, .0f };
 	_colliderSize = 1;
@@ -140,11 +139,6 @@ void Tank::GetTurretInfo(Vector3* out_position, Vector3* out_direction) const
 	const Vector3 forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
 
 	memcpy(out_direction, &forwardDirection, sizeof(Vector3));
-}
-
-UINT32 Tank::GetOwnerId() const
-{
-	return _ownerId;
 }
 
 void Tank::OnFrame(ULONGLONG tickDiff)

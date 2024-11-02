@@ -22,8 +22,6 @@ public:
 
 	void GetTurretInfo(Vector3* out_position, Vector3* out_direction) const;
 
-	UINT32 GetOwnerId() const;
-
 	void OnFrame(ULONGLONG tickDiff) override;
 
 protected:
@@ -31,7 +29,6 @@ protected:
 
 private:
 	Vector3 _forwardDirection;
-	UINT32 _ownerId = 0;
 	
 	bool _isMovingFoward = false;
 	bool _isMovingBackward = false;

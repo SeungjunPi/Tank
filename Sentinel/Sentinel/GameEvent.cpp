@@ -92,7 +92,7 @@ void GamePacket::BroadcastDeleteTank(UINT16 tankId)
 	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
 }
 
-void GamePacket::BroadcastTankHit(UINT16 tankId, UINT16 projectileId)
+void GamePacket::BroadcastTankHit(UINT16 tankId, UINT16 projectileId, UINT32 shooterId, UINT32 targetId)
 {
 	const size_t PACKET_SIZE = sizeof(EGameEventCode) + sizeof(PACKET_SC_TANK_HIT);
 	BYTE pRawPacket[PACKET_SIZE];
@@ -102,6 +102,8 @@ void GamePacket::BroadcastTankHit(UINT16 tankId, UINT16 projectileId)
 	PACKET_SC_TANK_HIT* pScTankHit = (PACKET_SC_TANK_HIT*)(pRawPacket + sizeof(EGameEventCode));
 	pScTankHit->projectileId = projectileId;
 	pScTankHit->tankId = tankId;
+	pScTankHit->shooter = shooterId;
+	pScTankHit->target = targetId;
 
 	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
 }

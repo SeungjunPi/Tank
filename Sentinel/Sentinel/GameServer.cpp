@@ -277,8 +277,8 @@ void s_CollideObjects(ULONGLONG currentTick)
 					pProjectile->OnHit(currentTick);
 					pOtherObj->OnHit(currentTick);
 
-					GamePacket::BroadcastTankHit(pOtherObj->GetID(), pProjectile->GetID());
-					printf("Tank Hit: tankId=%u, projectileId=%d\n", pOtherObj->GetID(), pProjectile->GetID());
+					GamePacket::BroadcastTankHit(pOtherObj->GetID(), pProjectile->GetID(), pProjectile->GetOwnerId(), pOtherObj->GetOwnerId());
+					printf("Tank Hit: shooter=%u, target=%u, tankId=%u, projectileId=%d\n", pProjectile->GetOwnerId(), pOtherObj->GetOwnerId(), pOtherObj->GetID(), pProjectile->GetID());
 				}
 			}
 		}

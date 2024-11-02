@@ -6,6 +6,13 @@ class NetCore;
 class Tank;
 class AllocObjectManager;
 
+struct Score
+{
+	SHORT kill;
+	SHORT death;
+	SHORT hit;
+};
+
 
 const ULONGLONG GAME_FPS = 60;
 const ULONGLONG TICK_PER_GAME_FRAME = 1000 / GAME_FPS; // 
@@ -26,6 +33,8 @@ extern Tank* g_pPlayerTank;
 extern AllocObjectManager g_objectManager;
 
 extern UINT32 g_playerId;
+
+extern Score g_score;
 
 class Global
 {

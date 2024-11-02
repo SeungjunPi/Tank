@@ -89,7 +89,7 @@ Projectile* ObjectManager::CreateProjectile(UINT32 ownerId, Transform* pTransfor
 	assert(objectId != UINT16_MAX);
 
 	Projectile* pProjectile = new Projectile;
-	pProjectile->Initiate(objectId, pTransform);
+	pProjectile->Initiate(objectId, pTransform, ownerId);
 	
 	bool res = _projectileTable.Insert(objectId, pProjectile);
 	assert(res);
