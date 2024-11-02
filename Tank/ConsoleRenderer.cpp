@@ -202,6 +202,12 @@ void ConsoleRenderer::DrawObjects()
 			UINT numVectors;
 			UINT key = keys[i];
 
+			GameObject* pObj = _pAllocObjManager->GetObjectPtrOrNull(kind, key);
+			if (!pObj->IsAlive()) {
+				continue;
+			}
+
+
 			_pAllocObjManager->GetTransformedModelOf(kind, key, s_vertices, &numVectors);
 
 			Vertex* pVertex = s_vertices;

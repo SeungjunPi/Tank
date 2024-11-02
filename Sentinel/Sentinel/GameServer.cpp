@@ -49,6 +49,7 @@ void GameServer::Start()
 	while (s_isRunning) {
 		// Handle Keyboard Events
 		ULONGLONG currentTick = GetTickCount64();
+		g_currentGameTick = currentTick;
 		ULONGLONG gameTickDiff = currentTick - g_previousGameTick;
 
 		// Handle NetCore Session Events
@@ -72,6 +73,7 @@ void GameServer::Start()
 
 		// Erase Destroyed Objects
 		s_CleanupDestroyedObjects(currentTick);
+		
 
 		// Apply Object Logics
 		s_ApplyObjectLogic(gameTickDiff);
@@ -265,6 +267,10 @@ void s_CollideObjects(ULONGLONG currentTick)
 				GameObject* pOtherObj = g_objectManager.GetObjectPtrOrNull(kind, otherObjectKeys[k]);
 				if (pOtherObj == nullptr) {
 					__debugbreak();
+				}
+
+				if (!pOtherObj->IsAlive()) {
+					continue;
 				}
 
 				Vector3 projectilePosition = pProjectile->GetPosition();

@@ -243,6 +243,10 @@ void s_CollideObjects(ULONGLONG currentTick)
 					__debugbreak();
 				}
 
+				if (!pOtherObj->IsAlive()) {
+					continue;
+				}
+
 				Vector3 projectilePosition = pProjectile->GetPosition();
 				Vector3 otherObjPosition = pOtherObj->GetPosition();
 				float distanceSquared = Vector3::DistanceSquared(projectilePosition, otherObjPosition);

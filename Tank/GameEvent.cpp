@@ -40,6 +40,9 @@ void GamePacket::HandlePacket(BYTE* pGameEvent, UINT32 senderId)
 	case GAME_EVENT_CODE_SC_TANK_HIT:
 		HandleTankHit(pGameEvent, senderId);
 		break;
+	case GAME_EVENT_CODE_SC_RESPAWN_TANK:
+		HandleRespawnTank(pGameEvent, senderId);
+		break;
 	default:
 		__debugbreak();
 		break;
@@ -300,6 +303,23 @@ void GamePacket::HandleDeleteObstacle(BYTE* pGameEvent, UINT32 senderId)
 }
 
 BOOL GamePacket::ValidateDeleteObstacle(BYTE* pGameEvent, UINT32 senderId)
+{
+	return true;
+}
+
+void GamePacket::HandleRespawnTank(BYTE* pGameEvent, UINT32 senderId)
+{
+	bool isValid = ValidateRespawnTank(pGameEvent, senderId);
+	if (!isValid) {
+		return;
+	}
+
+	PACKET_SC_RESPAWN_TANK* pScTankHit = (PACKET_SC_RESPAWN_TANK*)(pGameEvent + sizeof(EGameEventCode));
+	GameObject* pTank = g_objectManager.GetObjectPtrOrNull(GAME_OBJECT_KIND_TANK, pScTankHit->tankId);
+	pTank->Respawn();
+}
+
+BOOL GamePacket::ValidateRespawnTank(BYTE* pGameEvent, UINT32 senderId)
 {
 	return true;
 }

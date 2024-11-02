@@ -24,6 +24,8 @@ public:
 
 	void OnFrame(ULONGLONG tickDiff) override;
 
+	virtual void OnHit(ULONGLONG currentTick) override;
+
 protected:
 	virtual BOOL IsTransformCloseEnough(const Transform* other) override;
 
