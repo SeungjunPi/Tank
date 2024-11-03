@@ -23,7 +23,8 @@ class GameObject
 {
 public:
 	GameObject();
-	GameObject(UINT16 id);
+	GameObject(UINT16 id, UINT32 ownerId);
+	GameObject(UINT16 id, UINT32 ownerId, BOOL activatable);
 	~GameObject();
 
 	UINT16 GetID() const;
@@ -42,19 +43,25 @@ public:
 
 	BOOL IsDirty();
 
+	UINT32 GetOwnerId() const;
+
 
 
 	virtual void OnFrame(ULONGLONG tickDiff) { }
 
 	virtual BOOL IsAlive() const { return _isAlive; }
 
+	virtual void Respawn();
+
 	virtual void OnHit(ULONGLONG currentTick);
 	virtual BOOL IsDestroyed(ULONGLONG currentTick) const;
 
 
 protected:
+	BOOL _isActivatable = false; // TODO: 탱크 외에도 이런게 없으면 탱크 처리 로직을 아예 분리하는 편이 나으므로, 고려해보기.
 	Transform _transform = { 0, };
 	UINT16 _id = 0;
+	UINT32 _ownerId = 0;
 	float _colliderSize = 0;
 	BOOL _dirty = false;
 	BOOL _isAlive = true;

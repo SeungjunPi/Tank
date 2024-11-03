@@ -9,6 +9,7 @@ enum EGameEventCode
 	GAME_EVENT_CODE_SC_SNAPSHOT = 0x00010202,
 	GAME_EVENT_CODE_SC_CREATE_TANK = 0x01010102,
 	GAME_EVENT_CODE_SC_DELETE_TANK = 0x01010202,
+	GAME_EVENT_CODE_SC_RESPAWN_TANK = 0x01010302,
 	GAME_EVENT_CODE_CS_START_MOVE = 0x02010101,
 	GAME_EVENT_CODE_SC_START_MOVE = 0x02010102,
 	GAME_EVENT_CODE_CS_END_MOVE = 0x02010201,
@@ -19,7 +20,7 @@ enum EGameEventCode
 	GAME_EVENT_CODE_SC_SHOOT = 0x02010402,
 	GAME_EVENT_CODE_SC_TANK_HIT = 0x02010502,
 	GAME_EVENT_CODE_SC_CREATE_OBSTACLE = 0x02010102,
-	GAME_EVENT_CODE_SC_DELETE_OBSTACLE = 0x02010202
+	GAME_EVENT_CODE_SC_DELETE_OBSTACLE = 0x02010202,
 };
 
 struct GameNetEvent
@@ -116,6 +117,8 @@ struct PACKET_SC_TANK_HIT
 {
 	UINT16 tankId;
 	UINT16 projectileId;
+	UINT32 shooter;
+	UINT32 target;
 };
 
 struct PACKET_SC_CREATE_OBSTACLE
@@ -128,6 +131,12 @@ struct PACKET_SC_DELETE_OBSTACLE
 {
 	UINT16 obstacleId;
 	UINT32 shooterId;
+};
+
+struct PACKET_SC_RESPAWN_TANK
+{
+	UINT16 tankId;
+	Vector3 position;
 };
 
 class GamePacket
@@ -174,4 +183,7 @@ private:
 
 	static void HandleDeleteObstacle(BYTE* pGameEvent, UINT32 senderId);
 	static BOOL ValidateDeleteObstacle(BYTE* pGameEvent, UINT32 senderId);
+
+	static void HandleRespawnTank(BYTE* pGameEvent, UINT32 senderId);
+	static BOOL ValidateRespawnTank(BYTE* pGameEvent, UINT32 senderId);
 };

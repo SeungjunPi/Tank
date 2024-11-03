@@ -6,11 +6,18 @@ class NetCore;
 class Tank;
 class AllocObjectManager;
 
+struct Score
+{
+	SHORT kill;
+	SHORT death;
+	SHORT hit;
+};
+
 
 const ULONGLONG GAME_FPS = 60;
 const ULONGLONG TICK_PER_GAME_FRAME = 1000 / GAME_FPS; // 
 
-const ULONGLONG TICK_OWN_TANK_SYNC = TICK_PER_GAME_FRAME * 10; // once at 10 frames
+const ULONGLONG TICK_OWN_TANK_SYNC = TICK_PER_GAME_FRAME * 30; // once at 10 frames
 
 extern ULONGLONG g_previousGameTick;
 extern ULONGLONG g_currentGameTick;
@@ -26,6 +33,8 @@ extern Tank* g_pPlayerTank;
 extern AllocObjectManager g_objectManager;
 
 extern UINT32 g_playerId;
+
+extern Score g_score;
 
 class Global
 {

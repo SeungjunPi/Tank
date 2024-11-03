@@ -49,6 +49,7 @@ void GameServer::Start()
 	while (s_isRunning) {
 		// Handle Keyboard Events
 		ULONGLONG currentTick = GetTickCount64();
+		g_currentGameTick = currentTick;
 		ULONGLONG gameTickDiff = currentTick - g_previousGameTick;
 
 		// Handle NetCore Session Events
@@ -72,6 +73,7 @@ void GameServer::Start()
 
 		// Erase Destroyed Objects
 		s_CleanupDestroyedObjects(currentTick);
+		
 
 		// Apply Object Logics
 		s_ApplyObjectLogic(gameTickDiff);
@@ -267,6 +269,10 @@ void s_CollideObjects(ULONGLONG currentTick)
 					__debugbreak();
 				}
 
+				if (!pOtherObj->IsAlive()) {
+					continue;
+				}
+
 				Vector3 projectilePosition = pProjectile->GetPosition();
 				Vector3 otherObjPosition = pOtherObj->GetPosition();
 				float distanceSquared = Vector3::DistanceSquared(projectilePosition, otherObjPosition);
@@ -277,8 +283,8 @@ void s_CollideObjects(ULONGLONG currentTick)
 					pProjectile->OnHit(currentTick);
 					pOtherObj->OnHit(currentTick);
 
-					GamePacket::BroadcastTankHit(pOtherObj->GetID(), pProjectile->GetID());
-					printf("Tank Hit: tankId=%u, projectileId=%d\n", pOtherObj->GetID(), pProjectile->GetID());
+					GamePacket::BroadcastTankHit(pOtherObj->GetID(), pProjectile->GetID(), pProjectile->GetOwnerId(), pOtherObj->GetOwnerId());
+					printf("Tank Hit: shooter=%u, target=%u, tankId=%u, projectileId=%d\n", pProjectile->GetOwnerId(), pOtherObj->GetOwnerId(), pOtherObj->GetID(), pProjectile->GetID());
 				}
 			}
 		}

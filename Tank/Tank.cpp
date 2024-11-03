@@ -1,10 +1,12 @@
 #include "Tank.h"
 #include "StaticData.h"
+#include "Global.h"
+#include "GameEvent.h"
 
 const float VELOCITY_WEIGHT = 0.75f;
 
 Tank::Tank(UINT16 id)
-	: GameObject(id)
+	: GameObject(id, true)
 {
 	_forwardDirection = { .0f, -1.0f, .0f };
 
@@ -19,6 +21,7 @@ Tank::~Tank()
 void Tank::Initiate(UINT16 id)
 {
 	_id = id;
+	_isActivatable = true;
 	_forwardDirection = { .0f, -1.0f, .0f };
 	_transform = { 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f };
 	_model = g_pTankModel;
@@ -195,19 +198,33 @@ void Tank::GetTurretInfo(Transform* out_transform) const
 
 void Tank::OnFrame(ULONGLONG tickDiff)
 {
-	if (_isMovingFoward) {
-		MoveForward(tickDiff);
+	if (IsAlive()) {
+		if (_isMovingFoward) {
+			MoveForward(tickDiff);
+		}
+		if (_isMovingBackward) {
+			MoveBackward(tickDiff);
+		}
+		if (_isRotatingLeft) {
+			RotateLeft(tickDiff);
+		}
+		if (_isRotatingRight) {
+			RotateRight(tickDiff);
+		}
+
+		return;
 	}
-	if (_isMovingBackward) {
-		MoveBackward(tickDiff);
-	}
-	if (_isRotatingLeft) {
-		RotateLeft(tickDiff);
-	}
-	if (_isRotatingRight) {
-		RotateRight(tickDiff);
-	}
+
 	return;
 }
 
+void Tank::OnHit(ULONGLONG currentTick)
+{
+	_hitTick = currentTick;
+	_isAlive = false;
+	_isMovingFoward = false;
+	_isMovingBackward = false;
+	_isRotatingLeft = false;
+	_isRotatingRight = false;
+}
 

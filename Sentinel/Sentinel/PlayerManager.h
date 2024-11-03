@@ -21,6 +21,12 @@ public:
 
 	Player* GetPlayer(UINT32 id) const;
 
+	void IncreaseNumOtherTanksHit(UINT32 id);
+	void IncreaseNumHitsTaken(UINT32 id);
+
+	
+
+
 private:
 	PointerTable _playerTable;
 	UINT32* _usedKeys = nullptr;

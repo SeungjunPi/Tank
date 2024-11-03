@@ -1,4 +1,4 @@
-#include "GameEvent.h"
+癤�#include "GameEvent.h"
 #include "Global.h"
 #include "NetCore.h"
 #include "Tank.h"
@@ -39,6 +39,9 @@ void GamePacket::HandlePacket(BYTE* pGameEvent, UINT32 senderId)
 		break;
 	case GAME_EVENT_CODE_SC_TANK_HIT:
 		HandleTankHit(pGameEvent, senderId);
+		break;
+	case GAME_EVENT_CODE_SC_RESPAWN_TANK:
+		HandleRespawnTank(pGameEvent, senderId);
 		break;
 	default:
 		__debugbreak();
@@ -92,10 +95,10 @@ void GamePacket::HandleDeleteTank(BYTE* pGameEvent, UINT32 senderId)
 	}
 
 	PACKET_SC_DELETE_TANK* pScDeleteTank = (PACKET_SC_DELETE_TANK*)(pGameEvent + sizeof(EGameEventCode));
-	g_objectManager.RemoveObject(GAME_OBJECT_KIND_TANK, pScDeleteTank->objectId);
 	if (pScDeleteTank->objectId == g_pPlayerTank->GetID()) {
 		g_pPlayerTank = NULL;
 	}
+	g_objectManager.RemoveObject(GAME_OBJECT_KIND_TANK, pScDeleteTank->objectId);
 }
 
 BOOL GamePacket::ValidateDeleteTank(BYTE* pGameEvent, UINT32 senderId)
@@ -112,9 +115,7 @@ void GamePacket::HandleStartMove(BYTE* pGameEvent, UINT32 senderId)
 
 	PACKET_SC_START_MOVE* pScStartMove = (PACKET_SC_START_MOVE*)(pGameEvent + sizeof(EGameEventCode));
 	if (g_pPlayerTank != nullptr && pScStartMove->objectId == g_pPlayerTank->GetID()) {
-		// 현재는 받을일 없는 패킷.
-		// Transform이 다르다면 업데이트 하는 로직을 넣어야할지도
-		g_lastOwnTankSyncTick = g_currentGameTick; // 현재는 올 일이 없긴 하나, 만약을 위해 작성
+		g_lastOwnTankSyncTick = g_currentGameTick;
 	}
 	else {
 		if (pScStartMove->movementFlag & FLAG_MOVE_FORWARD) {
@@ -266,6 +267,15 @@ void GamePacket::HandleTankHit(BYTE* pGameEvent, UINT32 senderId)
 
 	PACKET_SC_TANK_HIT* pScTankHit = (PACKET_SC_TANK_HIT*)(pGameEvent + sizeof(EGameEventCode));
 	GameObject* pTank = g_objectManager.GetObjectPtrOrNull(GAME_OBJECT_KIND_TANK, pScTankHit->tankId);
+	
+	if (g_playerId == pScTankHit->target) {
+		g_score.death++;
+	}
+
+	if (g_playerId == pScTankHit->shooter) {
+		g_score.hit++;
+	}
+
 	pTank->OnHit(g_currentGameTick);
 
 	GameObject* pProjectile = g_objectManager.GetObjectPtrOrNull(GAME_OBJECT_KIND_PROJECTILE, pScTankHit->projectileId);
@@ -293,6 +303,23 @@ void GamePacket::HandleDeleteObstacle(BYTE* pGameEvent, UINT32 senderId)
 }
 
 BOOL GamePacket::ValidateDeleteObstacle(BYTE* pGameEvent, UINT32 senderId)
+{
+	return true;
+}
+
+void GamePacket::HandleRespawnTank(BYTE* pGameEvent, UINT32 senderId)
+{
+	bool isValid = ValidateRespawnTank(pGameEvent, senderId);
+	if (!isValid) {
+		return;
+	}
+
+	PACKET_SC_RESPAWN_TANK* pScTankHit = (PACKET_SC_RESPAWN_TANK*)(pGameEvent + sizeof(EGameEventCode));
+	GameObject* pTank = g_objectManager.GetObjectPtrOrNull(GAME_OBJECT_KIND_TANK, pScTankHit->tankId);
+	pTank->Respawn();
+}
+
+BOOL GamePacket::ValidateRespawnTank(BYTE* pGameEvent, UINT32 senderId)
 {
 	return true;
 }

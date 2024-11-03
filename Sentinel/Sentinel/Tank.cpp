@@ -1,10 +1,11 @@
 #include "Tank.h"
+#include "Global.h"
+#include "GameEvent.h"
 
 const float VELOCITY_WEIGHT = 0.75f;
 
 Tank::Tank(UINT16 id, UINT32 ownerId)
-	: GameObject(id)
-	, _ownerId(ownerId)
+	: GameObject(id, ownerId, true)
 {
 	_forwardDirection = { .0f, -1.0f, .0f };
 	_colliderSize = 1;
@@ -17,6 +18,7 @@ Tank::~Tank()
 void Tank::Initiate(UINT16 id)
 {
 	_id = id;
+	_isActivatable = true;
 	_forwardDirection = { .0f, -1.0f, .0f };
 	_transform = { 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f };
 	_colliderSize = 1;
@@ -142,26 +144,41 @@ void Tank::GetTurretInfo(Vector3* out_position, Vector3* out_direction) const
 	memcpy(out_direction, &forwardDirection, sizeof(Vector3));
 }
 
-UINT32 Tank::GetOwnerId() const
-{
-	return _ownerId;
-}
-
 void Tank::OnFrame(ULONGLONG tickDiff)
 {
-	if (_isMovingFoward) {
-		MoveForward(tickDiff);
+	if (IsAlive()) {
+		if (_isMovingFoward) {
+			MoveForward(tickDiff);
+		}
+		if (_isMovingBackward) {
+			MoveBackward(tickDiff);
+		}
+		if (_isRotatingLeft) {
+			RotateLeft(tickDiff);
+		}
+		if (_isRotatingRight) {
+			RotateRight(tickDiff);
+		}
+
+		return;
 	}
-	if (_isMovingBackward) {
-		MoveBackward(tickDiff);
+
+	if (g_currentGameTick - _hitTick > TICK_TANK_RESPAWN_INTERVAL) {
+		Respawn();
+		GamePacket::BroadcastRespawnTank(_id);
 	}
-	if (_isRotatingLeft) {
-		RotateLeft(tickDiff);
-	}
-	if (_isRotatingRight) {
-		RotateRight(tickDiff);
-	}
+	
 	return;
+}
+
+void Tank::OnHit(ULONGLONG currentTick)
+{
+	_hitTick = currentTick;
+	_isAlive = false;
+	_isMovingFoward = false;
+	_isMovingBackward = false;
+	_isRotatingLeft = false;
+	_isRotatingRight = false;
 }
 
 BOOL Tank::IsTransformCloseEnough(const Transform* other)

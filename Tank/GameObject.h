@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 
 #include "GameStruct.h"
@@ -24,6 +24,7 @@ class GameObject
 public:
 	GameObject();
 	GameObject(UINT16 id);
+	GameObject(UINT16 id, BOOL activatable);
 	~GameObject();
 
 	UINT16 GetID() const;
@@ -43,6 +44,8 @@ public:
 
 	BOOL IsDirty();
 
+	virtual void Respawn();
+
 	
 
 	virtual void OnFrame(ULONGLONG tickDiff) { }
@@ -54,6 +57,7 @@ public:
 
 	
 protected:
+	BOOL _isActivatable = false; // TODO: 탱크 외에도 이런게 없으면 탱크 처리 로직을 아예 분리하는 편이 나으므로, 고려해보기.
 	Transform _transform = { 0, };
 	UINT16 _id = 0;
 	Model _model;

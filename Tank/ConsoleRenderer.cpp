@@ -49,6 +49,7 @@ void s_ClearBackBuffer();
 void s_PrintDebugInfos();
 void s_Draw(SHORT x, SHORT y, WCHAR c);
 void s_DrawFPS(SHORT x, SHORT y);
+void s_DrawScore(SHORT x, SHORT y);
 
 
 
@@ -125,6 +126,8 @@ void ConsoleRenderer::Render()
 
 	DrawObjects();
 
+	s_DrawScore(s_consoleWidth - 20, 1);
+
 	// Overwrite Debug Infos
 	if (s_bIsDisplayDebugInfo) {
 		s_DrawFPS(1, 1);
@@ -185,7 +188,7 @@ void s_Draw(SHORT x, SHORT y, WCHAR c)
 void ConsoleRenderer::DrawObjects()
 {
 	int countObjects = 0;
-	UINT keys[20];
+	UINT keys[128];
 
 
 	int objectKindMax = (int)GAME_OBJECT_KIND_OBSTACLE;
@@ -198,6 +201,12 @@ void ConsoleRenderer::DrawObjects()
 
 			UINT numVectors;
 			UINT key = keys[i];
+
+			GameObject* pObj = _pAllocObjManager->GetObjectPtrOrNull(kind, key);
+			if (!pObj->IsAlive()) {
+				continue;
+			}
+
 
 			_pAllocObjManager->GetTransformedModelOf(kind, key, s_vertices, &numVectors);
 
@@ -239,6 +248,17 @@ void s_DrawFPS(SHORT x, SHORT y)
 
 	WCHAR txt[32];
 	DWORD len = swprintf_s(txt, L"FPS:%u", g_currentFPS);
+
+	memcpy(dst, txt, sizeof(WCHAR) * len);
+}
+
+void s_DrawScore(SHORT x, SHORT y)
+{
+	SHORT offset = x + y * s_consoleWidth;
+	WCHAR* dst = s_backBuffer + offset;
+
+	WCHAR txt[32];
+	DWORD len = swprintf_s(txt, L"Score: (%hd, %hd, %hd)", g_score.kill, g_score.death, g_score.hit);
 
 	memcpy(dst, txt, sizeof(WCHAR) * len);
 }

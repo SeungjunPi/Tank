@@ -5,9 +5,18 @@ GameObject::GameObject()
 {
 }
 
-GameObject::GameObject(UINT16 id)
+GameObject::GameObject(UINT16 id, UINT32 ownerId)
 	: _transform{ 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f }
 	, _id(id)
+	, _ownerId(ownerId)
+{
+}
+
+GameObject::GameObject(UINT16 id, UINT32 ownerId, BOOL activatable)
+	: _transform{ 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f }
+	, _id(id)
+	, _ownerId(ownerId)
+	, _isActivatable(activatable)
 {
 }
 
@@ -81,6 +90,21 @@ BOOL GameObject::IsDirty()
 	return _dirty;
 }
 
+UINT32 GameObject::GetOwnerId() const
+{
+	return _ownerId;
+}
+
+void GameObject::Respawn()
+{
+	if (!_isActivatable) {
+		__debugbreak();
+	}
+	_isAlive = true;
+	_transform = { 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f };
+	_hitTick = 0;
+}
+
 void GameObject::OnHit(ULONGLONG currentTick)
 {
 	if (_hitTick == 0) {
@@ -90,7 +114,7 @@ void GameObject::OnHit(ULONGLONG currentTick)
 
 BOOL GameObject::IsDestroyed(ULONGLONG currentTick) const
 {
-	return !_isAlive || _hitTick != 0;
+	return !_isActivatable && (!_isAlive || _hitTick != 0);
 }
 
 BOOL GameObject::IsTransformCloseEnough(const Transform* other)

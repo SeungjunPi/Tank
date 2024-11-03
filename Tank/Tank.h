@@ -32,6 +32,9 @@ public:
 	void GetTurretInfo(Transform* out_transform) const;
 
 	void OnFrame(ULONGLONG tickDiff) override;
+
+	virtual void OnHit(ULONGLONG currentTick) override;
+
 private:
 	Vector3 _forwardDirection;
 	UINT32 _ownerId = 0;

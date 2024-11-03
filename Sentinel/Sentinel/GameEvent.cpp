@@ -92,7 +92,7 @@ void GamePacket::BroadcastDeleteTank(UINT16 tankId)
 	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
 }
 
-void GamePacket::BroadcastTankHit(UINT16 tankId, UINT16 projectileId)
+void GamePacket::BroadcastTankHit(UINT16 tankId, UINT16 projectileId, UINT32 shooterId, UINT32 targetId)
 {
 	const size_t PACKET_SIZE = sizeof(EGameEventCode) + sizeof(PACKET_SC_TANK_HIT);
 	BYTE pRawPacket[PACKET_SIZE];
@@ -102,6 +102,8 @@ void GamePacket::BroadcastTankHit(UINT16 tankId, UINT16 projectileId)
 	PACKET_SC_TANK_HIT* pScTankHit = (PACKET_SC_TANK_HIT*)(pRawPacket + sizeof(EGameEventCode));
 	pScTankHit->projectileId = projectileId;
 	pScTankHit->tankId = tankId;
+	pScTankHit->shooter = shooterId;
+	pScTankHit->target = targetId;
 
 	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
 }
@@ -131,6 +133,22 @@ void GamePacket::BroadcastDeleteObstacle(UINT16 obstacleId, UINT32 shooterId)
 
 	pScDeleteObstacle->obstacleId = obstacleId;
 	pScDeleteObstacle->shooterId = shooterId;
+
+	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
+}
+
+void GamePacket::BroadcastRespawnTank(UINT16 tankId)
+{
+	const size_t PACKET_SIZE = sizeof(EGameEventCode) + sizeof(PACKET_SC_RESPAWN_TANK);
+	BYTE pRawPacket[PACKET_SIZE];
+	
+	EGameEventCode* pEvCode = (EGameEventCode*)pRawPacket;
+	*pEvCode = GAME_EVENT_CODE_SC_RESPAWN_TANK;
+
+	PACKET_SC_RESPAWN_TANK* pScRespawnTank = (PACKET_SC_RESPAWN_TANK*)(pRawPacket + sizeof(EGameEventCode));
+
+	pScRespawnTank->tankId = tankId;
+	pScRespawnTank->position = { 0, };
 
 	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
 }

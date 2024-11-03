@@ -10,22 +10,31 @@ UINT32 Player::GetSessionId() const
 	return _sessionId;
 }
 
-UINT32 Player::GetChatObjId() const
-{
-	return _chatObjId;
-}
-
-void Player::SetChatObjId(UINT32 chatObjId)
-{
-	_chatObjId = chatObjId;
-}
-
-UINT32 Player::GetTankId() const
+UINT16 Player::GetTankId() const
 {
 	return _tankId;
 }
 
-void Player::SetTankId(UINT32 tankId)
+void Player::SetTankId(UINT16 tankId)
 {
 	_tankId = tankId;
+}
+
+void Player::IncreaseNumOtherTanksHit()
+{
+	++_numOtherTanksHit;
+}
+
+void Player::IncreaseNumHitsTaken()
+{
+	++_numHitsTaken;
+}
+
+UINT16 Player::GetScore() const
+{
+	
+	if (_numOtherTanksHit * 10 < _numHitsTaken) {
+		return 0;
+	}
+	return _numOtherTanksHit * 10 - _numHitsTaken;;
 }

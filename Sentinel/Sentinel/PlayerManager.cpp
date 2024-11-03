@@ -76,3 +76,19 @@ Player* PlayerManager::GetPlayer(UINT32 id) const
 {
 	return (Player*)_playerTable.Get(id);
 }
+
+void PlayerManager::IncreaseNumOtherTanksHit(UINT32 id)
+{
+	Player* pPlayer = (Player*)_playerTable.Get(id);
+	assert(pPlayer != nullptr);
+
+	pPlayer->IncreaseNumOtherTanksHit();
+}
+
+void PlayerManager::IncreaseNumHitsTaken(UINT32 id)
+{
+	Player* pPlayer = (Player*)_playerTable.Get(id);
+	assert(pPlayer != nullptr);
+
+	pPlayer->IncreaseNumHitsTaken();
+}
