@@ -127,7 +127,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DBStructs.cpp" />
+    <ClCompile Include="JunDB.cpp" />
     <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CQueue.h" />
+    <ClInclude Include="DBStructs.h" />
+    <ClInclude Include="IJunDB.h" />
+    <ClInclude Include="JunDB.h" />
+    <ClInclude Include="pch.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
