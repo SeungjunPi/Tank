@@ -11,8 +11,6 @@ public:
 	DBErrorCode Start(SHORT numThreads) override;
 	DBErrorCode End() override;
 
-	void QueryAsync(SQLWCHAR* pQuery) override;
-
 	void ValidatePlayerInfo(WCHAR* ID, WCHAR* pw) override;
 	void LoadStat(WCHAR* ID) override;
 	void StoreStat(WCHAR* ID, int hitCount, int killCount, int deathCount) override;

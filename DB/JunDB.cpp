@@ -52,11 +52,6 @@ DBErrorCode JunDB::End()
 	return DBErrorCode::NONE;
 }
 
-void JunDB::QueryAsync(SQLWCHAR* pQuery)
-{
-
-}
-
 void JunDB::ValidatePlayerInfo(WCHAR* ID, WCHAR* pw)
 {
 	DBEvent ev;
