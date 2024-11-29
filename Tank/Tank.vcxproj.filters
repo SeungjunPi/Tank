@@ -31,6 +31,9 @@
     <Filter Include="Data Structs">
       <UniqueIdentifier>{dd65a473-3a3c-4298-89d4-205c612aed54}</UniqueIdentifier>
     </Filter>
+    <Filter Include="login">
+      <UniqueIdentifier>{4ee3364b-5559-4184-9058-fc5f74219801}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">

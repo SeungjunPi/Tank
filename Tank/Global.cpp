@@ -24,12 +24,13 @@ UINT32 g_playerId;
 
 Score g_score = { 0, };
 
+std::wstring g_playerID;
+std::wstring g_password;
+
 void Global::Initiate()
 {
-	// Todo: 전역적으로 사용하는 초기화가 필요한 변수들의 초기화를 여기로 옮기기 
 }
 
 void Global::Terminate()
 {
-	// Todo: 위 Initiate에서 사용한 변수들 여기서 해제
 }

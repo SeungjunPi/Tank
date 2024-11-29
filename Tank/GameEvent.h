@@ -1,10 +1,15 @@
 ﻿#pragma once
 
 #include "GameStruct.h"
+#include "StaticData.h"
 
 // [Kind3][Kind2][Kind1][SC, CS] 
 enum EGameEventCode
 {
+	GAME_EVENT_CODE_CS_LOGIN,
+	GAME_EVENT_CODE_SC_LOGIN,
+	GAME_EVENT_CODE_CS_LOAD_SCORE,
+	GAME_EVENT_CODE_SC_LOAD_SCORE,
 	GAME_EVENT_CODE_SC_PLAYER_ID = 0x00010102,
 	GAME_EVENT_CODE_SC_SNAPSHOT = 0x00010202,
 	GAME_EVENT_CODE_SC_CREATE_TANK = 0x01010102,
@@ -26,6 +31,18 @@ enum EGameEventCode
 struct GameNetEvent
 {
 	EGameEventCode evCode;
+};
+
+struct PACKET_CS_LOGIN
+{
+	WCHAR id[20];
+	WCHAR pw[20];
+};
+
+struct PACKET_SC_LOGIN
+{
+	BOOL result;
+	UINT32 playerKey;
 };
 
 struct PACKET_SC_PLAYER_ID
@@ -145,6 +162,7 @@ public:
 	static BOOL Validate(BYTE* pGameEvent, UINT32 senderId);
 	static void HandlePacket(BYTE* pGameEvent, UINT32 senderId);
 
+	static void SendLogin(const std::wstring& wID, const std::wstring& wPw);
 	static void SendStartMove(const Transform* pTankTransform, char moveFlag);
 	static void SendEndMove(const Transform* pTankTransform, char moveFlag);
 	static void SendMoving(const Transform* pTankTransform);

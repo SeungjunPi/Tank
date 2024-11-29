@@ -13,6 +13,12 @@ void GamePacket::HandlePacket(BYTE* pGameEvent, UINT32 senderId)
 {
 	EGameEventCode* evCode = (EGameEventCode*)pGameEvent;
 	switch (*evCode) {
+	case GAME_EVENT_CODE_SC_LOGIN:
+		// TODO: Handle login packet
+		break;
+	case GAME_EVENT_CODE_SC_LOAD_SCORE:
+		// TODO: Handle score packet
+		break;
 	case GAME_EVENT_CODE_SC_PLAYER_ID:
 		HandlePlayerId(pGameEvent, senderId);
 		break;
@@ -322,6 +328,21 @@ void GamePacket::HandleRespawnTank(BYTE* pGameEvent, UINT32 senderId)
 BOOL GamePacket::ValidateRespawnTank(BYTE* pGameEvent, UINT32 senderId)
 {
 	return true;
+}
+
+void GamePacket::SendLogin(const std::wstring& wID, const std::wstring& wPw)
+{
+	const UINT32 contentsMsgSize = sizeof(PACKET_CS_LOGIN) + sizeof(EGameEventCode);
+
+	BYTE pRawPacket[contentsMsgSize] = { 0, };
+
+	EGameEventCode* pEvCode = (EGameEventCode*)pRawPacket;
+	PACKET_CS_LOGIN* pLogin = (PACKET_CS_LOGIN*)(pRawPacket + sizeof(EGameEventCode));
+
+	// cpy id to login packet
+	// cpy pw to login packet
+
+	g_pNetCore->SendMessageTo(g_serverId, pRawPacket, contentsMsgSize);
 }
 
 void GamePacket::SendStartMove(const Transform* pTankTransform, char moveFlag)
