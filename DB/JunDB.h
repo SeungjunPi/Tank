@@ -8,15 +8,18 @@
 class JunDB : public IJunDB
 {
 public:
-	DBErrorCode Start(SHORT numThreads) override;
+	DBErrorCode Start(const DBConnectionInfo connectionInfo, SHORT numThreads) override;
 	DBErrorCode End() override;
 
-	void ValidatePlayerInfo(WCHAR* ID, WCHAR* pw) override;
-	void LoadStat(WCHAR* ID) override;
-	void StoreStat(WCHAR* ID, int hitCount, int killCount, int deathCount) override;
+	void ValidatePlayerInfo(const WCHAR* ID, const WCHAR* pw) override;
+	void LoadStat(const WCHAR* ID) override;
+	void StoreStat(const WCHAR* ID, int hitCount, int killCount, int deathCount) override;
 private:
 	DWORD _numThreads;
 	HANDLE* _hThreads;
+	
+	std::wstring _dbConnectionInfo;
+
 	HANDLE _hQueryEvent;
 	HANDLE _endEvent;
 

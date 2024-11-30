@@ -153,6 +153,21 @@ void GamePacket::BroadcastRespawnTank(UINT16 tankId)
 	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
 }
 
+void GamePacket::HandleLogin(BYTE* pGameEvent, UINT32 senderId)
+{
+	bool isValid = ValidateLogin(pGameEvent, senderId);
+	if (!isValid) {
+		return;
+	}
+
+
+}
+
+BOOL GamePacket::ValidateLogin(BYTE* pGameEvent, UINT32 senderId)
+{
+	return TRUE;
+}
+
 void GamePacket::HandleStartMove(BYTE* pGameEvent, UINT32 senderId)
 {
 	bool isValid = ValidateStartMove(pGameEvent, senderId);

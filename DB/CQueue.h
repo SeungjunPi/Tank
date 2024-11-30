@@ -34,6 +34,7 @@ public:
 		if (!_queue.empty()) {
 			success = true;
 			*out = _queue.front();
+			_queue.pop();
 		}
 		ReleaseSRWLockExclusive(&_srwLock);
 		return success;

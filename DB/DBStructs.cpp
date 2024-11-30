@@ -1,17 +1,24 @@
 #include "DBStructs.h"
 
-DBQueryPlayerInfo::DBQueryPlayerInfo(const WCHAR* ID, const WCHAR* password)
+DBQuery::DBQuery(const WCHAR* ID)
 {
-	size_t idLength = wcsnlen_s(ID, PLAYER_ID_MAX_LENGTH + 1);
-	size_t pwLength = wcsnlen_s(password, PASSWORD_MAX_LENGTH + 1);
-
-	assert(idLength <= PLAYER_ID_MAX_LENGTH);
-	assert(pwLength <= PLAYER_ID_MAX_LENGTH);
+	memset(_playerID, 0, sizeof(WCHAR) * (PLAYER_ID_MAX_LENGTH + 1));
+	_idLen = wcsnlen_s(ID, PLAYER_ID_MAX_LENGTH + 1);
+	assert(_idLen <= PLAYER_ID_MAX_LENGTH);
+	memcpy(_playerID, ID, sizeof(WCHAR) * (_idLen + 1));
 
 	_query = new WCHAR[QUERY_MAX_LENGTH];
 	memset(_query, 0, sizeof(WCHAR) * QUERY_MAX_LENGTH);
+}
 
-	
+void DBQuery::GetPlayerID(WCHAR* out) const
+{
+	memcpy(out, &_playerID, sizeof(WCHAR) * (_idLen + 1));
+}
+
+DBQueryPlayerInfo::DBQueryPlayerInfo(const WCHAR* ID, const WCHAR* password)
+	: DBQuery(ID)
+{
 	swprintf_s(_query, QUERY_MAX_LENGTH, 
 		L"select case when exists (select 1 from tankDB.dbo.Players where PlayerID = '%ls' and Password = '%ls') then 1 else 0 end as existance;", 
 		ID, password);
@@ -22,26 +29,20 @@ DBQueryPlayerInfo::~DBQueryPlayerInfo()
 	delete[] _query;
 }
 
-void DBQueryPlayerInfo::SetResult(BOOL result)
+void DBQueryPlayerInfo::SetResult(BOOL isSuccess)
 {
-	_result = result;
+	GetPlayerID(_result.ID);
+	_result.isSuccess = isSuccess;
 }
 
 void DBQueryPlayerInfo::GetResult(DBResultPlayerInfo* out) const
 {
-	if (_result) {
-		out->ID = _pPlayerID;
-		out->isSuccess = _result;
-	}
+	*out = _result;
 }
 
 DBQueryLoadStat::DBQueryLoadStat(const WCHAR* ID)
+	: DBQuery(ID)
 {
-	size_t idLength = wcsnlen_s(ID, PLAYER_ID_MAX_LENGTH + 1);
-	assert(idLength <= PLAYER_ID_MAX_LENGTH);
-
-	_query = new WCHAR[QUERY_MAX_LENGTH];
-	memset(_query, 0, sizeof(WCHAR) * QUERY_MAX_LENGTH);
 	swprintf_s(_query, QUERY_MAX_LENGTH, 
 		L"select * from tankDB.dbo.Scores where PlayerID = '%ls'", 
 		ID);
@@ -59,7 +60,7 @@ void DBQueryLoadStat::SetResult(int hitCount, int killCount, int deathCount, BOO
 		return;
 	}
 	_result.isSuccess = isSuccess;
-	_result.ID = _pPlayerID;
+	GetPlayerID(_result.ID);
 	_result.hitCount = hitCount;
 	_result.deathCount = deathCount;
 	_result.killCount = killCount;
@@ -71,13 +72,8 @@ void DBQueryLoadStat::GetResult(DBResultLoadStat* out) const
 }
 
 DBQueryUpdateStat::DBQueryUpdateStat(const WCHAR* ID, int hitCount, int killCount, int deathCount)
+	: DBQuery(ID)
 {
-	size_t idLength = wcsnlen_s(ID, PLAYER_ID_MAX_LENGTH + 1);
-	assert(idLength <= PLAYER_ID_MAX_LENGTH);
-
-	_query = new WCHAR[QUERY_MAX_LENGTH];
-	memset(_query, 0, sizeof(WCHAR) * QUERY_MAX_LENGTH);
-
 	swprintf_s(_query, QUERY_MAX_LENGTH,
 		L"update tankDB.dbo.Scores set Hit = %i, KillCount = %i, Death = %i where PlayerID = '%ls';", 
 		hitCount, killCount, deathCount, ID);
@@ -90,7 +86,7 @@ DBQueryUpdateStat::~DBQueryUpdateStat()
 
 void DBQueryUpdateStat::SetResult(BOOL isSuccess)
 {
-	_result.ID = _pPlayerID;
+	GetPlayerID(_result.ID);
 	_result.isSuccess = isSuccess;
 }
 

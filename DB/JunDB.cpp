@@ -1,7 +1,10 @@
 #include "pch.h"
 
 #include "JunDB.h"
+#include <atlconv.h>
 
+
+std::wstring dbConnectionInfo;
 
 unsigned WINAPI ThreadDB(LPVOID pParam);
 void HandleQueryPlayerInfo(void* pQueryPlayerInfo);
@@ -20,18 +23,27 @@ void TerminateJunDB(IJunDB* pJunDB)
 	delete pJunDB;
 }
 
-
-DBErrorCode JunDB::Start(SHORT numThreads)
+DBErrorCode JunDB::Start(const DBConnectionInfo connectionInfo, SHORT numThreads)
 {
-	_hThreads = new HANDLE[numThreads];
-	_hQueryEvent = CreateEvent(NULL, TRUE, FALSE, TEXT("QUERY"));
-	_endEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	USES_CONVERSION;
+	dbConnectionInfo = L"DRIVER={SQL Server};SERVER=";
+	dbConnectionInfo.append(A2W(connectionInfo.ip.c_str()));
+	dbConnectionInfo.append(L",");
+	dbConnectionInfo.append(A2W(connectionInfo.port.c_str()));
+	dbConnectionInfo.append(L";DATABASE=");
+	dbConnectionInfo.append(A2W(connectionInfo.dbName.c_str()));
+	dbConnectionInfo.append(L";UID=");
+	dbConnectionInfo.append(A2W(connectionInfo.uid.c_str()));
+	dbConnectionInfo.append(L";PWD=");
+	dbConnectionInfo.append(A2W(connectionInfo.pwd.c_str()));
+	dbConnectionInfo.append(L";");
 
+	_hThreads = new HANDLE[numThreads];
+	_hQueryEvent = CreateEvent(NULL, FALSE, FALSE, TEXT("QUERY"));
+	_endEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
 	for (int i = 0; i < numThreads; ++i) {
 		_hThreads[i] = (HANDLE)_beginthreadex(NULL, 0, ThreadDB, &_hQueryEvent, 0, NULL);
-		
-		// TODO: Error Handling
 	}
 	
 	return DBErrorCode::NONE;
@@ -39,20 +51,20 @@ DBErrorCode JunDB::Start(SHORT numThreads)
 
 DBErrorCode JunDB::End()
 {
-	// Send End Event to Threads
-
+	SetEvent(_endEvent);
 	DWORD result = WaitForMultipleObjects(_numThreads, _hThreads, TRUE, 10000); // wait 10s
+	for (int i = 0; i < _numThreads; ++i) {
+		CloseHandle(_hThreads[i]);
+	}
+	CloseHandle(_endEvent);
 	if (result == WAIT_OBJECT_0) {
 		delete[] _hThreads;
 		return DBErrorCode::NONE;
 	}
-
-	// TODO: Error Handling
-
 	return DBErrorCode::NONE;
 }
 
-void JunDB::ValidatePlayerInfo(WCHAR* ID, WCHAR* pw)
+void JunDB::ValidatePlayerInfo(const WCHAR* ID, const WCHAR* pw)
 {
 	DBEvent ev;
 	ev.code = DBEventCode::QUERY_PLAYER_INFO;
@@ -61,9 +73,10 @@ void JunDB::ValidatePlayerInfo(WCHAR* ID, WCHAR* pw)
 	ev.pEvent = (void*)query;
 
 	_queryCQueue.Push(ev);
+	SetEvent(_hQueryEvent);
 }
 
-void JunDB::LoadStat(WCHAR* ID)
+void JunDB::LoadStat(const WCHAR* ID)
 {
 	DBEvent ev;
 	ev.code = DBEventCode::QUERY_LOAD_STAT;
@@ -73,9 +86,10 @@ void JunDB::LoadStat(WCHAR* ID)
 	ev.pEvent = (void*)query;
 
 	_queryCQueue.Push(ev);
+	SetEvent(_hQueryEvent);
 }
 
-void JunDB::StoreStat(WCHAR* ID, int hitCount, int killCount, int deathCount)
+void JunDB::StoreStat(const WCHAR* ID, int hitCount, int killCount, int deathCount)
 {
 	DBEvent ev;
 	ev.code = DBEventCode::QUERY_STORE_STAT;
@@ -84,6 +98,7 @@ void JunDB::StoreStat(WCHAR* ID, int hitCount, int killCount, int deathCount)
 	ev.pEvent = (void*)query;
 
 	_queryCQueue.Push(ev);
+	SetEvent(_hQueryEvent);
 }
 
 unsigned WINAPI ThreadDB(LPVOID pParam)
@@ -106,7 +121,8 @@ unsigned WINAPI ThreadDB(LPVOID pParam)
 
 	SQLAllocHandle(SQL_HANDLE_DBC, hEnv, &hDbc);
 
-	SQLWCHAR connectionStr[] = L"DRIVER={SQL Server};SERVER=192.168.0.33,1433;DATABASE=tankDB;UID=pearson;PWD=mathematics;";
+	//SQLWCHAR connectionStr[] = L"DRIVER={SQL Server};SERVER=192.168.0.33,1433;DATABASE=tankDB;UID=pearson;PWD=mathematics;";
+	SQLWCHAR* connectionStr = (SQLWCHAR*)dbConnectionInfo.c_str();
 	retCode = SQLDriverConnect(hDbc, NULL, connectionStr, SQL_NTS, NULL, 0, NULL, SQL_DRIVER_COMPLETE);
 
 	if (!SQL_SUCCEEDED(retCode)) {
@@ -142,6 +158,10 @@ unsigned WINAPI ThreadDB(LPVOID pParam)
 				DBQueryPlayerInfo* queryPlayerInfo = (DBQueryPlayerInfo*)dbEvent.pEvent;
 				retCode = SQLExecDirect(hStmt, (SQLWCHAR*)queryPlayerInfo->GetQuery(), SQL_NTS);
 
+				DBResultPlayerInfo resultPlayerInfo;
+				
+
+				// handle validation result
 
 				break;
 			}
@@ -149,11 +169,15 @@ unsigned WINAPI ThreadDB(LPVOID pParam)
 			{
 				DBQueryLoadStat* queryLoadStat = (DBQueryLoadStat*)dbEvent.pEvent;
 
+				// handle load stat result
+
 				break;
 			}
 			case DBEventCode::QUERY_STORE_STAT:
 			{
 				DBQueryUpdateStat* queryUpdateStat = (DBQueryUpdateStat*)dbEvent.pEvent;
+
+				// handle store stat result
 
 				break;
 			}
@@ -163,7 +187,7 @@ unsigned WINAPI ThreadDB(LPVOID pParam)
 
 
 		//////////////////////////////////////////////////////////////////////////////
-		retCode = SQLExecDirect(hStmt, (SQLWCHAR*)L"SELECT * from Players;", SQL_NTS);
+		//retCode = SQLExecDirect(hStmt, (SQLWCHAR*)L"SELECT * from Players;", SQL_NTS);
 
 		if (SQL_SUCCEEDED(retCode)) {
 			while (SQLFetch(hStmt) == SQL_SUCCESS) {

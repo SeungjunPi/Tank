@@ -340,7 +340,12 @@ void GamePacket::SendLogin(const std::wstring& wID, const std::wstring& wPw)
 	PACKET_CS_LOGIN* pLogin = (PACKET_CS_LOGIN*)(pRawPacket + sizeof(EGameEventCode));
 
 	// cpy id to login packet
+	// 
 	// cpy pw to login packet
+	const WCHAR* rawID = wID.c_str();
+	const WCHAR* rawPW = wPw.c_str();
+	memcpy(&pLogin->id, rawID, sizeof(WCHAR) * wID.length());
+	memcpy(&pLogin->pw, rawPW, sizeof(WCHAR) * wPw.length());
 
 	g_pNetCore->SendMessageTo(g_serverId, pRawPacket, contentsMsgSize);
 }

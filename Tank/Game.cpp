@@ -65,6 +65,8 @@ void Game::CleanUp()
 
 void Game::Start()
 {
+	// Send Login
+
 	g_previousGameTick = GetTickCount64();
 
 	while (s_isRunning) {

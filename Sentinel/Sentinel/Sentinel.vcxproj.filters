@@ -31,6 +31,9 @@
     <Filter Include="GameEvent">
       <UniqueIdentifier>{ba847093-744b-4d6f-8e10-051fb9862ef8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="DB">
+      <UniqueIdentifier>{27f74832-1696-452b-a59c-226416013eca}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SentinelMain.cpp">

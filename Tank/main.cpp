@@ -40,8 +40,6 @@ int main()
 
 	USES_CONVERSION;
 	g_playerID = std::wstring(A2W(id));
-
-	
 	g_password = std::wstring(A2W(pw));
 
 

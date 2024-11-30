@@ -3,13 +3,15 @@
 #include "GameStruct.h"
 #include "StaticData.h"
 
+const int ID_LENGTH_MAX = 16;
+const int PW_LENGTH_MAX = 16;
+
+
 // [Kind3][Kind2][Kind1][SC, CS] 
 enum EGameEventCode
 {
 	GAME_EVENT_CODE_CS_LOGIN,
 	GAME_EVENT_CODE_SC_LOGIN,
-	GAME_EVENT_CODE_CS_LOAD_SCORE,
-	GAME_EVENT_CODE_SC_LOAD_SCORE,
 	GAME_EVENT_CODE_SC_PLAYER_ID = 0x00010102,
 	GAME_EVENT_CODE_SC_SNAPSHOT = 0x00010202,
 	GAME_EVENT_CODE_SC_CREATE_TANK = 0x01010102,
@@ -35,14 +37,17 @@ struct GameNetEvent
 
 struct PACKET_CS_LOGIN
 {
-	WCHAR id[20];
-	WCHAR pw[20];
+	WCHAR id[ID_LENGTH_MAX];
+	WCHAR pw[PW_LENGTH_MAX];
 };
 
 struct PACKET_SC_LOGIN
 {
 	BOOL result;
 	UINT32 playerKey;
+	int hitCount;
+	int killCount;
+	int deathCount;
 };
 
 struct PACKET_SC_PLAYER_ID

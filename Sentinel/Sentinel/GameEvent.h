@@ -4,9 +4,14 @@
 
 #include "GameStruct.h"
 
+const int ID_LENGTH_MAX = 16;
+const int PW_LENGTH_MAX = 16;
+
 // [Kind3][Kind2][Kind1][SC, CS] 
 enum EGameEventCode
 {
+	GAME_EVENT_CODE_CS_LOGIN,
+	GAME_EVENT_CODE_SC_LOGIN,
 	GAME_EVENT_CODE_SC_PLAYER_ID = 0x00010102,
 	GAME_EVENT_CODE_SC_SNAPSHOT = 0x00010202,
 	GAME_EVENT_CODE_SC_CREATE_TANK = 0x01010102,
@@ -29,6 +34,23 @@ struct GameNetEvent
 {
 	EGameEventCode evCode;
 };
+
+
+struct PACKET_CS_LOGIN
+{
+	WCHAR id[ID_LENGTH_MAX];
+	WCHAR pw[PW_LENGTH_MAX];
+};
+
+struct PACKET_SC_LOGIN
+{
+	BOOL result;
+	UINT32 playerKey;
+	int hitCount;
+	int killCount;
+	int deathCount;
+};
+
 
 struct PACKET_SC_PLAYER_ID
 {
@@ -155,7 +177,9 @@ public:
 	static void BroadcastDeleteObstacle(UINT16 obstacleId, UINT32 shooterId);
 	static void BroadcastRespawnTank(UINT16 tankId);
 private:
-	
+	static void HandleLogin(BYTE* pGameEvent, UINT32 senderId);
+	static BOOL ValidateLogin(BYTE* pGameEvent, UINT32 senderId);
+
 	static void HandleStartMove(BYTE* pGameEvent, UINT32 senderId);
 	static BOOL ValidateStartMove(BYTE* pGameEvent, UINT32 senderId);
 
@@ -167,6 +191,8 @@ private:
 
 	static void HandleShoot(BYTE* pGameEvent, UINT32 senderId);
 	static BOOL ValidateShoot(BYTE* pGameEvent, UINT32 senderId);
+
+	
 };
 
 
