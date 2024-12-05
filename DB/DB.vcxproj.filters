@@ -24,6 +24,9 @@
     <ClCompile Include="DBStructs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LiteWString.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IJunDB.h">
@@ -39,6 +42,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CQueue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LiteWString.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

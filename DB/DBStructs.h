@@ -1,16 +1,25 @@
 #pragma once
 
+
 #include "pch.h"
+#include "LiteWString.h"
 
 const unsigned int PLAYER_ID_MAX_LENGTH = 16;
 const unsigned int PASSWORD_MAX_LENGTH = 16;
-const unsigned int QUERY_MAX_LENGTH = 1024;
 
 enum class DBEventCode
 {
 	QUERY_PLAYER_INFO,
 	QUERY_LOAD_STAT,
-	QUERY_STORE_STAT
+	QUERY_STORE_STAT,
+};
+
+enum class DBResultCode
+{
+	SUCCESS,
+	FAIL_CONNECTION_FAIL,
+	FAIL_WRONG_QUERY,
+
 };
 
 struct DBEvent
@@ -21,36 +30,32 @@ struct DBEvent
 
 struct DBResultPlayerInfo
 {
-	WCHAR ID[PLAYER_ID_MAX_LENGTH + 1];
-	BOOL isSuccess = FALSE;
+	DBResultCode code;
 };
 
 struct DBResultLoadStat
 {
-	WCHAR ID[PLAYER_ID_MAX_LENGTH + 1];
 	int hitCount = 0;
 	int killCount = 0;
 	int deathCount = 0;
-	BOOL isSuccess = FALSE;
+	DBResultCode code;
 };
 
 struct DBResultUpdateStat
 {
-	WCHAR ID[PLAYER_ID_MAX_LENGTH + 1];
-	BOOL isSuccess = FALSE;
+	DBResultCode code;
 };
 
 class DBQuery
 {
 public:
 	DBQuery(const WCHAR* ID);
-	void GetPlayerID(WCHAR* out) const;
-	WCHAR* GetQuery() const { return _query; }
+	const WCHAR* GetPlayerID() const;
+	const WCHAR* GetQuery() const { return _query.GetWString(); }
 
 protected:
-	WCHAR* _query;
-	WCHAR _playerID[PLAYER_ID_MAX_LENGTH + 1];
-	CHAR _idLen;
+	LiteWString _query;
+	LiteWString _playerID;
 };
 
 class DBQueryPlayerInfo: public DBQuery
@@ -59,7 +64,7 @@ public:
 	DBQueryPlayerInfo(const WCHAR* ID, const WCHAR* password);
 	~DBQueryPlayerInfo();
 
-	void SetResult(BOOL isSuccess);
+	void SetResult(DBResultCode code);
 	void GetResult(DBResultPlayerInfo* out) const;
 private:
 	DBResultPlayerInfo _result;
@@ -71,7 +76,7 @@ public:
 	DBQueryLoadStat(const WCHAR* ID);
 	~DBQueryLoadStat();
 
-	void SetResult(int hitCount, int killCount, int deathCount, BOOL isSuccess);
+	void SetResult(DBResultCode code, int hitCount, int killCount, int deathCount);
 	void GetResult(DBResultLoadStat* out) const;
 	
 private:
@@ -84,7 +89,7 @@ public:
 	DBQueryUpdateStat(const WCHAR* ID, int hitCount, int killCount, int deathCount);
 	~DBQueryUpdateStat();
 
-	void SetResult(BOOL isSuccess);
+	void SetResult(DBResultCode code);
 	void GetResult(DBResultUpdateStat* out) const;
 private:
 	DBResultUpdateStat _result;

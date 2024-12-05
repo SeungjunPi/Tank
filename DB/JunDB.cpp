@@ -4,7 +4,16 @@
 #include <atlconv.h>
 
 
-std::wstring dbConnectionInfo;
+static LiteWString s_dbConnectionInfo;
+
+static HANDLE* s_hQueryEvents = nullptr;
+static HANDLE s_hEndEvent;
+
+static CQueue<DBEvent> s_queryCQueue;
+static CQueue<DBEvent> s_resultCQueueFront;
+static CQueue<DBEvent> s_resultCQueueBack;
+
+static SRWLOCK s_resultQueueLock;
 
 unsigned WINAPI ThreadDB(LPVOID pParam);
 void HandleQueryPlayerInfo(void* pQueryPlayerInfo);
@@ -25,25 +34,30 @@ void TerminateJunDB(IJunDB* pJunDB)
 
 DBErrorCode JunDB::Start(const DBConnectionInfo connectionInfo, SHORT numThreads)
 {
-	USES_CONVERSION;
-	dbConnectionInfo = L"DRIVER={SQL Server};SERVER=";
-	dbConnectionInfo.append(A2W(connectionInfo.ip.c_str()));
-	dbConnectionInfo.append(L",");
-	dbConnectionInfo.append(A2W(connectionInfo.port.c_str()));
-	dbConnectionInfo.append(L";DATABASE=");
-	dbConnectionInfo.append(A2W(connectionInfo.dbName.c_str()));
-	dbConnectionInfo.append(L";UID=");
-	dbConnectionInfo.append(A2W(connectionInfo.uid.c_str()));
-	dbConnectionInfo.append(L";PWD=");
-	dbConnectionInfo.append(A2W(connectionInfo.pwd.c_str()));
-	dbConnectionInfo.append(L";");
 
-	_hThreads = new HANDLE[numThreads];
-	_hQueryEvent = CreateEvent(NULL, FALSE, FALSE, TEXT("QUERY"));
-	_endEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	char buffer[LiteWString::MAX_WSTR_LENGTH + 1];
+		
+	size_t length = sprintf_s(buffer, LiteWString::MAX_WSTR_LENGTH, 
+		"DRIVER={SQL Server};SERVER=%s, %s; DATABASE=%s; UID=%s; PWD=%s;",
+		connectionInfo.ip.c_str(),
+		connectionInfo.port.c_str(),
+		connectionInfo.dbName.c_str(),
+		connectionInfo.uid.c_str(),
+		connectionInfo.pwd.c_str());
+
+	USES_CONVERSION_EX;
+	s_dbConnectionInfo.Append(A2W_EX(buffer, length));
+
+	s_hThreads = new HANDLE[numThreads];
+	s_hQueryEvents = new HANDLE[numThreads];
+		
+	s_hEndEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+
+	s_resultQueueLock = SRWLOCK_INIT;
 
 	for (int i = 0; i < numThreads; ++i) {
-		_hThreads[i] = (HANDLE)_beginthreadex(NULL, 0, ThreadDB, &_hQueryEvent, 0, NULL);
+		s_hQueryEvents[i] = CreateEvent(NULL, FALSE, FALSE, TEXT("QUERY"));
+		s_hThreads[i] = (HANDLE)_beginthreadex(NULL, 0, ThreadDB, &s_hQueryEvents, 0, NULL);
 	}
 	
 	return DBErrorCode::NONE;
@@ -51,14 +65,14 @@ DBErrorCode JunDB::Start(const DBConnectionInfo connectionInfo, SHORT numThreads
 
 DBErrorCode JunDB::End()
 {
-	SetEvent(_endEvent);
-	DWORD result = WaitForMultipleObjects(_numThreads, _hThreads, TRUE, 10000); // wait 10s
+	SetEvent(s_hEndEvent);
+	DWORD result = WaitForMultipleObjects(_numThreads, s_hThreads, TRUE, 10000); // wait 10s
 	for (int i = 0; i < _numThreads; ++i) {
-		CloseHandle(_hThreads[i]);
+		CloseHandle(s_hThreads[i]);
 	}
-	CloseHandle(_endEvent);
+	CloseHandle(s_hEndEvent);
 	if (result == WAIT_OBJECT_0) {
-		delete[] _hThreads;
+		delete[] s_hThreads;
 		return DBErrorCode::NONE;
 	}
 	return DBErrorCode::NONE;
@@ -72,8 +86,8 @@ void JunDB::ValidatePlayerInfo(const WCHAR* ID, const WCHAR* pw)
 	DBQueryPlayerInfo* query = new DBQueryPlayerInfo(ID, pw);
 	ev.pEvent = (void*)query;
 
-	_queryCQueue.Push(ev);
-	SetEvent(_hQueryEvent);
+	s_queryCQueue.Push(ev);
+	SetEvent(s_hQueryEvents);
 }
 
 void JunDB::LoadStat(const WCHAR* ID)
@@ -85,8 +99,8 @@ void JunDB::LoadStat(const WCHAR* ID)
 
 	ev.pEvent = (void*)query;
 
-	_queryCQueue.Push(ev);
-	SetEvent(_hQueryEvent);
+	s_queryCQueue.Push(ev);
+	SetEvent(s_hQueryEvents);
 }
 
 void JunDB::StoreStat(const WCHAR* ID, int hitCount, int killCount, int deathCount)
@@ -97,16 +111,15 @@ void JunDB::StoreStat(const WCHAR* ID, int hitCount, int killCount, int deathCou
 	DBQueryUpdateStat* query = new DBQueryUpdateStat(ID, hitCount, killCount, deathCount);
 	ev.pEvent = (void*)query;
 
-	_queryCQueue.Push(ev);
-	SetEvent(_hQueryEvent);
+	s_queryCQueue.Push(ev);
+	SetEvent(s_hQueryEvents);
 }
 
 unsigned WINAPI ThreadDB(LPVOID pParam)
 {
-	HANDLE* events = (HANDLE*)pParam;
-	CQueue<DBEvent>* pQueryQueue = (CQueue<DBEvent>*)(events + 2);
-	CQueue<DBEvent>* pResultQueue = (CQueue<DBEvent>*)(events + 3);
-
+	static LONG s_threadID = 0;
+	LONG threadID = InterlockedIncrement(&s_threadID);
+	--threadID;
 
 	SQLHENV hEnv = nullptr;
 	SQLHDBC hDbc = nullptr;
@@ -121,8 +134,7 @@ unsigned WINAPI ThreadDB(LPVOID pParam)
 
 	SQLAllocHandle(SQL_HANDLE_DBC, hEnv, &hDbc);
 
-	//SQLWCHAR connectionStr[] = L"DRIVER={SQL Server};SERVER=192.168.0.33,1433;DATABASE=tankDB;UID=pearson;PWD=mathematics;";
-	SQLWCHAR* connectionStr = (SQLWCHAR*)dbConnectionInfo.c_str();
+	SQLWCHAR* connectionStr = (SQLWCHAR*)s_dbConnectionInfo.GetWString();
 	retCode = SQLDriverConnect(hDbc, NULL, connectionStr, SQL_NTS, NULL, 0, NULL, SQL_DRIVER_COMPLETE);
 
 	if (!SQL_SUCCEEDED(retCode)) {
@@ -135,9 +147,12 @@ unsigned WINAPI ThreadDB(LPVOID pParam)
 	SQLCHAR sqlData[256];
 	SQLLEN indicator;
 	
+	HANDLE objects[2];
+	objects[0] = s_hQueryEvents[threadID];
+	objects[1] = s_hEndEvent;
 
 	while (true) {
-		DWORD result = WaitForMultipleObjects(2, events, FALSE, INFINITE);
+		DWORD result = WaitForMultipleObjects(2, objects, FALSE, INFINITE);
 		
 		switch (result) {
 		case WAIT_OBJECT_0: // Query Event
@@ -150,7 +165,7 @@ unsigned WINAPI ThreadDB(LPVOID pParam)
 		SQLAllocHandle(SQL_HANDLE_STMT, hDbc, &hStmt);
 
 		DBEvent dbEvent;
-		BOOL nonempty = pQueryQueue->TryGetAndPop(&dbEvent);
+		BOOL nonempty = s_queryCQueue.TryGetAndPop(&dbEvent);
 		if (nonempty) {
 			switch (dbEvent.code) {
 			case DBEventCode::QUERY_PLAYER_INFO:

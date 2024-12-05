@@ -3,6 +3,7 @@
 #include "CQueue.h"
 #include "DBStructs.h"
 #include "IJunDB.h"
+#include "LiteWString.h"
 
 
 class JunDB : public IJunDB
@@ -16,15 +17,8 @@ public:
 	void StoreStat(const WCHAR* ID, int hitCount, int killCount, int deathCount) override;
 private:
 	DWORD _numThreads;
-	HANDLE* _hThreads;
+	HANDLE* s_hThreads;
 	
-	std::wstring _dbConnectionInfo;
-
-	HANDLE _hQueryEvent;
-	HANDLE _endEvent;
-
-	CQueue<DBEvent> _queryCQueue;
-	CQueue<DBEvent> _resultCQueue;
 };
 
 
