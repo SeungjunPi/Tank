@@ -2,9 +2,6 @@
 
 #include "pch.h"
 
-
-class DBQuery;
-
 class LiteWString 
 {
 public:

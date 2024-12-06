@@ -18,7 +18,7 @@ DBQueryPlayerInfo::DBQueryPlayerInfo(const WCHAR* ID, const WCHAR* password)
 		L"select case when exists (select 1 from tankDB.dbo.Players where PlayerID = '%ls' and Password = '%ls') then 1 else 0 end as existance;", 
 		ID, password);
 	assert(writeLength < SHRT_MAX);
-	_query.SetLength(writeLength);
+	_query.SetLength((short)writeLength);
 	_result.code = DBResultCode::FAIL_CONNECTION_FAIL;
 }
 
@@ -44,7 +44,7 @@ DBQueryLoadStat::DBQueryLoadStat(const WCHAR* ID)
 		L"select * from tankDB.dbo.Scores where PlayerID = '%ls'", 
 		ID);
 	assert(writeLength < SHRT_MAX);
-	_query.SetLength(writeLength);
+	_query.SetLength((short)writeLength);
 	_result.code = DBResultCode::FAIL_CONNECTION_FAIL;
 }
 
@@ -77,7 +77,7 @@ DBQueryUpdateStat::DBQueryUpdateStat(const WCHAR* ID, int hitCount, int killCoun
 		L"update tankDB.dbo.Scores set Hit = %i, KillCount = %i, Death = %i where PlayerID = '%ls';",
 		hitCount, killCount, deathCount, ID);
 	assert(writeLength < SHRT_MAX);
-	_query.SetLength(writeLength);
+	_query.SetLength((short)writeLength);
 	_result.code = DBResultCode::FAIL_CONNECTION_FAIL;
 }
 

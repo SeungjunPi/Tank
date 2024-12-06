@@ -11,7 +11,7 @@ LiteWString::LiteWString(const WCHAR* str)
 {
 	memset(_buffer, 0, LiteWString::MAX_BUFFER_LENGTH);
 	size_t length = LiteWString::GetLengthOf(str);
-	_length = length;
+	_length = (short)length;
 
 	memcpy(_buffer, str, sizeof(WCHAR) * _length);
 }
@@ -47,7 +47,7 @@ BOOL LiteWString::Append(const WCHAR* str, short length)
 BOOL LiteWString::Append(const WCHAR* str)
 {
 	size_t length = LiteWString::GetLengthOf(str);
-	BOOL result = Append(str, length);
+	BOOL result = Append(str, (short)length);
 	return result;
 }
 

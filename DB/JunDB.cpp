@@ -1,7 +1,8 @@
-#include "pch.h"
-
-#include "JunDB.h"
 #include <atlconv.h>
+
+#include "pch.h"
+#include "JunDB.h"
+
 
 
 static LiteWString s_dbConnectionInfo;
@@ -10,15 +11,19 @@ static HANDLE* s_hQueryEvents = nullptr;
 static HANDLE s_hEndEvent;
 
 static CQueue<DBEvent> s_queryCQueue;
-static CQueue<DBEvent> s_resultCQueueFront;
-static CQueue<DBEvent> s_resultCQueueBack;
+static CQueue<DBEvent>* s_pResultCQueueFront;
+static CQueue<DBEvent>* s_pResultCQueueBack;
 
 static SRWLOCK s_resultQueueLock;
+static BOOL s_isResultQueueProcessing;
 
 unsigned WINAPI ThreadDB(LPVOID pParam);
-void HandleQueryPlayerInfo(void* pQueryPlayerInfo);
-void HandleQueryLoadPlayerStat(void* pQueryLoadPlayerStat);
-void HandleQueryStorePlayerStat(void* pQueryStorePlayerStat);
+
+void HandleQueryPlayerInfo(HANDLE hStmt, DBEvent dbEvent);
+void HandleQueryLoadPlayerStat(HANDLE hStmt, DBEvent dbEvent);
+void HandleQueryUpdatePlayerStat(HANDLE hStmt, DBEvent dbEvent);
+
+void PushResult(DBEvent dbEvent);
 
 
 
@@ -34,7 +39,7 @@ void TerminateJunDB(IJunDB* pJunDB)
 
 DBErrorCode JunDB::Start(const DBConnectionInfo connectionInfo, SHORT numThreads)
 {
-
+	_numThreads = numThreads;
 	char buffer[LiteWString::MAX_WSTR_LENGTH + 1];
 		
 	size_t length = sprintf_s(buffer, LiteWString::MAX_WSTR_LENGTH, 
@@ -45,8 +50,11 @@ DBErrorCode JunDB::Start(const DBConnectionInfo connectionInfo, SHORT numThreads
 		connectionInfo.uid.c_str(),
 		connectionInfo.pwd.c_str());
 
-	USES_CONVERSION_EX;
-	s_dbConnectionInfo.Append(A2W_EX(buffer, length));
+	USES_CONVERSION;
+	s_dbConnectionInfo.Append(A2W(buffer));
+
+	s_pResultCQueueFront = new CQueue<DBEvent>;
+	s_pResultCQueueBack = new CQueue<DBEvent>;
 
 	s_hThreads = new HANDLE[numThreads];
 	s_hQueryEvents = new HANDLE[numThreads];
@@ -54,6 +62,7 @@ DBErrorCode JunDB::Start(const DBConnectionInfo connectionInfo, SHORT numThreads
 	s_hEndEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
 	s_resultQueueLock = SRWLOCK_INIT;
+	s_isResultQueueProcessing = false;
 
 	for (int i = 0; i < numThreads; ++i) {
 		s_hQueryEvents[i] = CreateEvent(NULL, FALSE, FALSE, TEXT("QUERY"));
@@ -67,7 +76,7 @@ DBErrorCode JunDB::End()
 {
 	SetEvent(s_hEndEvent);
 	DWORD result = WaitForMultipleObjects(_numThreads, s_hThreads, TRUE, 10000); // wait 10s
-	for (int i = 0; i < _numThreads; ++i) {
+	for (DWORD i = 0; i < _numThreads; ++i) {
 		CloseHandle(s_hThreads[i]);
 	}
 	CloseHandle(s_hEndEvent);
@@ -75,6 +84,11 @@ DBErrorCode JunDB::End()
 		delete[] s_hThreads;
 		return DBErrorCode::NONE;
 	}
+
+	// TODO: Queue 비우기
+	delete s_pResultCQueueFront;
+	delete s_pResultCQueueBack;
+
 	return DBErrorCode::NONE;
 }
 
@@ -87,7 +101,7 @@ void JunDB::ValidatePlayerInfo(const WCHAR* ID, const WCHAR* pw)
 	ev.pEvent = (void*)query;
 
 	s_queryCQueue.Push(ev);
-	SetEvent(s_hQueryEvents);
+	SetQueryEvents();
 }
 
 void JunDB::LoadStat(const WCHAR* ID)
@@ -100,19 +114,52 @@ void JunDB::LoadStat(const WCHAR* ID)
 	ev.pEvent = (void*)query;
 
 	s_queryCQueue.Push(ev);
-	SetEvent(s_hQueryEvents);
+	SetQueryEvents();
 }
 
-void JunDB::StoreStat(const WCHAR* ID, int hitCount, int killCount, int deathCount)
+void JunDB::UpdateStat(const WCHAR* ID, int hitCount, int killCount, int deathCount)
 {
 	DBEvent ev;
-	ev.code = DBEventCode::QUERY_STORE_STAT;
+	ev.code = DBEventCode::QUERY_UPDATE_STAT;
 
 	DBQueryUpdateStat* query = new DBQueryUpdateStat(ID, hitCount, killCount, deathCount);
 	ev.pEvent = (void*)query;
 
 	s_queryCQueue.Push(ev);
-	SetEvent(s_hQueryEvents);
+	SetQueryEvents();
+}
+
+CQueue<DBEvent>* JunDB::BeginHandleResult()
+{
+	AcquireSRWLockExclusive(&s_resultQueueLock);
+	if (s_isResultQueueProcessing) {
+		__debugbreak();
+	}
+
+	s_isResultQueueProcessing = true;
+	auto tmp = s_pResultCQueueBack;
+	s_pResultCQueueBack = s_pResultCQueueFront;
+	s_pResultCQueueFront = tmp;
+	ReleaseSRWLockExclusive(&s_resultQueueLock);
+
+	return s_pResultCQueueFront;
+}
+
+void JunDB::EndHandleResult()
+{
+	AcquireSRWLockExclusive(&s_resultQueueLock);
+	if (!s_isResultQueueProcessing) {
+		__debugbreak();
+	}
+	s_isResultQueueProcessing = false;
+	ReleaseSRWLockExclusive(&s_resultQueueLock);
+}
+
+void JunDB::SetQueryEvents() const
+{
+	for (DWORD i = 0; i < _numThreads; ++i) {
+		SetEvent(s_hQueryEvents[i]);
+	}
 }
 
 unsigned WINAPI ThreadDB(LPVOID pParam)
@@ -143,9 +190,6 @@ unsigned WINAPI ThreadDB(LPVOID pParam)
 	}
 
 	printf("Successfully connected to the database.\n");
-
-	SQLCHAR sqlData[256];
-	SQLLEN indicator;
 	
 	HANDLE objects[2];
 	objects[0] = s_hQueryEvents[threadID];
@@ -162,74 +206,29 @@ unsigned WINAPI ThreadDB(LPVOID pParam)
 			break;
 		}
 		
-		SQLAllocHandle(SQL_HANDLE_STMT, hDbc, &hStmt);
+		
 
 		DBEvent dbEvent;
 		BOOL nonempty = s_queryCQueue.TryGetAndPop(&dbEvent);
-		if (nonempty) {
-			switch (dbEvent.code) {
-			case DBEventCode::QUERY_PLAYER_INFO:
-			{
-				DBQueryPlayerInfo* queryPlayerInfo = (DBQueryPlayerInfo*)dbEvent.pEvent;
-				retCode = SQLExecDirect(hStmt, (SQLWCHAR*)queryPlayerInfo->GetQuery(), SQL_NTS);
-
-				DBResultPlayerInfo resultPlayerInfo;
-				
-
-				// handle validation result
-
-				break;
-			}
-			case DBEventCode::QUERY_LOAD_STAT:
-			{
-				DBQueryLoadStat* queryLoadStat = (DBQueryLoadStat*)dbEvent.pEvent;
-
-				// handle load stat result
-
-				break;
-			}
-			case DBEventCode::QUERY_STORE_STAT:
-			{
-				DBQueryUpdateStat* queryUpdateStat = (DBQueryUpdateStat*)dbEvent.pEvent;
-
-				// handle store stat result
-
-				break;
-			}
-			}
-
-		}
-
-
-		//////////////////////////////////////////////////////////////////////////////
-		//retCode = SQLExecDirect(hStmt, (SQLWCHAR*)L"SELECT * from Players;", SQL_NTS);
-
-		if (SQL_SUCCEEDED(retCode)) {
-			while (SQLFetch(hStmt) == SQL_SUCCESS) {
-				for (int i = 1; ; ++i) {
-					retCode = SQLGetData(hStmt, i, SQL_C_WCHAR, sqlData, sizeof(sqlData), &indicator);
-					if (retCode == SQL_SUCCESS || retCode == SQL_SUCCESS_WITH_INFO) {
-						if (indicator == SQL_NULL_DATA) {
-							wprintf(L"NULL ");
-						}
-						else {
-							wprintf(L"%s ", (WCHAR*)sqlData);
-						}
-					}
-					else {
-						// Handle Errors
-						break;
-					}
+		while (nonempty) {
+			SQLAllocHandle(SQL_HANDLE_STMT, hDbc, &hStmt);
+			if (nonempty) {
+				switch (dbEvent.code) {
+				case DBEventCode::QUERY_PLAYER_INFO:
+					HandleQueryPlayerInfo(hStmt, dbEvent);
+					break;
+				case DBEventCode::QUERY_LOAD_STAT:
+					HandleQueryLoadPlayerStat(hStmt, dbEvent);
+					break;
+				case DBEventCode::QUERY_UPDATE_STAT:
+					HandleQueryUpdatePlayerStat(hStmt, dbEvent);
+					break;
 				}
-				wprintf(L"\n");
 			}
-		}
-		else {
-			printf("Failed to execute query.\n");
-		}
-		//////////////////////////////////////////////////////////////////////////////
+			SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
 
-		SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
+			nonempty = s_queryCQueue.TryGetAndPop(&dbEvent);
+		}
 	}
 
 CLOSE_SEQUENT:
@@ -241,20 +240,147 @@ CLOSE_SEQUENT:
 	return 0;
 }
 
-void HandleQueryPlayerInfo(void* pQueryPlayerInfo)
+void HandleQueryPlayerInfo(HANDLE hStmt, DBEvent dbEvent)
 {
-	SQLHSTMT hStmt = nullptr;
+	SQLRETURN retCode;
 
-	//DBQueryPlayerInfo* queryPlayerInfo = (DBQueryPlayerInfo*)dbEvent.pEvent;
-	//retCode = SQLExecDirect(hStmt, (SQLWCHAR*)queryPlayerInfo->GetQuery(), SQL_NTS);
+	DBQueryPlayerInfo* queryPlayerInfo = (DBQueryPlayerInfo*)dbEvent.pEvent;
+	retCode = SQLExecDirect(hStmt, (SQLWCHAR*)queryPlayerInfo->GetQuery(), SQL_NTS);
+	
+	SQLLEN indicator;
+	int validPlayerInfo = 0;
+	
+	if (SQL_SUCCEEDED(retCode)) {
+		SQLFetch(hStmt);
+		retCode = SQLGetData(hStmt, 1, SQL_INTEGER, &validPlayerInfo, sizeof(int), &indicator);
+		if (retCode == SQL_SUCCESS || retCode == SQL_SUCCESS_WITH_INFO) {
+			if (indicator == SQL_NULL_DATA) {
+				queryPlayerInfo->SetResult(DBResultCode::FAIL_VALIDATION_TYPE_MISMATCH);
+			}
+			else {
+				if (validPlayerInfo == 1) {
+					queryPlayerInfo->SetResult(DBResultCode::SUCCESS);
+				}
+				else {
+					queryPlayerInfo->SetResult(DBResultCode::FAIL_INVALID_PLAYER_INFO);
+				}
+			}
+		}
+		else {
+			queryPlayerInfo->SetResult(DBResultCode::FAIL_VALIDATION_TYPE_MISMATCH);
+		}
+	}
+	else {
+		printf("Failed to execute query.\n");
+		__debugbreak();
+	}
+
+	PushResult(dbEvent);
 }
 
-void HandleQueryLoadPlayerStat(void* pQueryLoadPlayerStat)
+void HandleQueryLoadPlayerStat(HANDLE hStmt, DBEvent dbEvent)
 {
+	SQLRETURN retCode;
+	
+	DBQueryLoadStat* queryLoadStat = (DBQueryLoadStat*)dbEvent.pEvent;
+	retCode = SQLExecDirect(hStmt, (SQLWCHAR*)queryLoadStat->GetQuery(), SQL_NTS);
+
+	SQLLEN indicator;
+	int hitCount = -1;
+	int killCount = -1;
+	int deathCount = -1;
+
+	if (SQL_SUCCEEDED(retCode)) {
+		SQLFetch(hStmt);
+		retCode = SQLGetData(hStmt, 2, SQL_INTEGER, &hitCount, sizeof(int), &indicator);
+		if (retCode == SQL_SUCCESS || retCode == SQL_SUCCESS_WITH_INFO) {
+			if (indicator == SQL_NULL_DATA) {
+				hitCount = -1;
+				queryLoadStat->SetResult(DBResultCode::FAIL_VALIDATION_TYPE_MISMATCH, -1, -1, -1);
+			}
+		}
+		else {
+			hitCount = -1;
+			queryLoadStat->SetResult(DBResultCode::FAIL_VALIDATION_TYPE_MISMATCH, -1, -1, -1);
+		}
+
+		retCode = SQLGetData(hStmt, 3, SQL_INTEGER, &killCount, sizeof(int), &indicator);
+		if (retCode == SQL_SUCCESS || retCode == SQL_SUCCESS_WITH_INFO) {
+			if (indicator == SQL_NULL_DATA) {
+				hitCount = -1;
+				queryLoadStat->SetResult(DBResultCode::FAIL_VALIDATION_TYPE_MISMATCH, -1, -1, -1);
+			}
+		}
+		else {
+			hitCount = -1;
+			queryLoadStat->SetResult(DBResultCode::FAIL_VALIDATION_TYPE_MISMATCH, -1, -1, -1);
+		}
+
+		retCode = SQLGetData(hStmt, 4, SQL_INTEGER, &deathCount, sizeof(int), &indicator);
+		if (retCode == SQL_SUCCESS || retCode == SQL_SUCCESS_WITH_INFO) {
+			if (indicator == SQL_NULL_DATA) {
+				hitCount = -1;
+				queryLoadStat->SetResult(DBResultCode::FAIL_VALIDATION_TYPE_MISMATCH, -1, -1, -1);
+			}
+		}
+		else {
+			hitCount = -1;
+			queryLoadStat->SetResult(DBResultCode::FAIL_VALIDATION_TYPE_MISMATCH, -1, -1, -1);
+		}
+
+		if (hitCount >= 0 && killCount >= 0 && deathCount >= 0) {
+			queryLoadStat->SetResult(DBResultCode::SUCCESS, hitCount, killCount, deathCount);
+		}
+	}
+	else {
+		printf("Failed to execute query.\n");
+		__debugbreak();
+	}
+
+	PushResult(dbEvent);
 }
 
-void HandleQueryStorePlayerStat(void* pQueryStorePlayerStat)
+void HandleQueryUpdatePlayerStat(HANDLE hStmt, DBEvent dbEvent)
 {
+	SQLRETURN retCode;
+
+	DBQueryUpdateStat* queryUpdateStat = (DBQueryUpdateStat*)dbEvent.pEvent;
+	
+	retCode = SQLExecDirect(hStmt, (SQLWCHAR*)queryUpdateStat->GetQuery(), SQL_NTS);
+
+	SQLLEN rowsAffected;
+
+	if (retCode == SQL_SUCCESS || retCode == SQL_SUCCESS_WITH_INFO) {
+		retCode = SQLRowCount(hStmt, &rowsAffected);
+		if (retCode == SQL_SUCCESS || retCode == SQL_SUCCESS_WITH_INFO) {
+			if (rowsAffected == 1) {
+				queryUpdateStat->SetResult(DBResultCode::SUCCESS);
+			}
+			else {
+				queryUpdateStat->SetResult(DBResultCode::FAIL_UPDATE_STAT_WRONG_AFFECTED_COUNT);
+			}
+		}
+		else {
+			// 오류 상황
+			__debugbreak();
+		}
+	}
+	else if (retCode == SQL_NO_DATA) {
+		queryUpdateStat->SetResult(DBResultCode::FAIL_UPDATE_STAT_NO_DATA_WITH_PLAYER_ID);
+	}
+	else {
+		// 오류 상황
+		__debugbreak();
+	}
+
+	PushResult(dbEvent);
+}
+
+void PushResult(DBEvent dbEvent)
+{
+	AcquireSRWLockExclusive(&s_resultQueueLock);
+	s_pResultCQueueBack->Push(dbEvent);
+	ReleaseSRWLockExclusive(&s_resultQueueLock);
 }
 
 

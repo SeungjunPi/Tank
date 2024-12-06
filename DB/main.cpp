@@ -1,5 +1,5 @@
 
-#include <string>
+
 #include "JunDB.h"
 
 //
@@ -89,9 +89,18 @@ int main(int argc, char* args[])
 	pDb->Start(dbConnInfo, 1);	
 
 	pDb->ValidatePlayerInfo(L"player001", L"passw0rd001");
-
+	pDb->LoadStat(L"player001");
+	pDb->UpdateStat(L"player001", 12, 3, 2);
 	
-	Sleep(1000000);
+	Sleep(100000);
+
+	auto queue = pDb->BeginHandleResult();
+	DBEvent pEvent;
+	queue->TryGetAndPop(&pEvent);
+	queue->TryGetAndPop(&pEvent);
+	queue->TryGetAndPop(&pEvent);
+
+	pDb->EndHandleResult();
 
 	TerminateJunDB(pDb);
 
