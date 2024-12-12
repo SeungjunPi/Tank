@@ -8,6 +8,7 @@
 
 #include "GameEvent.h"
 #include "Tank.h"
+#include "JunDB.h"
 
 
 
@@ -28,10 +29,10 @@ void OnSessionDisconnect(UINT32 sessionID);
 void GameServer::Initialize()
 {
 	CreateNetCore(&g_pNetCore);
+	CreateJunDB(&g_pJunDB);
 
 	g_playerManager.Initiate(2048);
 	g_objectManager.Initiate();
-
 
 	g_sessionIds = new UINT32[2048];
 }
@@ -40,6 +41,19 @@ void GameServer::Start()
 {
 	g_pNetCore->StartNetCore();
 	g_pNetCore->StartAccept();
+
+
+	//// temporal ////
+	DBConnectionInfo dbConnectionInfo;
+	dbConnectionInfo.ip = "127.0.0.1";
+	dbConnectionInfo.port = "1434";
+	dbConnectionInfo.dbName = "tankDB";
+	dbConnectionInfo.uid = "pearson";
+	dbConnectionInfo.pwd = "mathematics";
+	//////////////////
+
+	g_pJunDB->Start(dbConnectionInfo, 1);
+	
 	UINT32 senderID = 0;
 
 	s_isRunning = true;

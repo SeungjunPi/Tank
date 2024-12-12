@@ -1,52 +1,52 @@
-#include "DBStructs.h"
+#include "DBStruct.h"
 
-DBQuery::DBQuery(int userID)
-	: _userID(userID)
+DBQuery::DBQuery(const WCHAR* ID)
+	: _playerID(ID)
 {
 }
 
-DBQueryValidation::DBQueryValidation(const WCHAR* ID, const WCHAR* password)
-	: DBQuery(0)
+const WCHAR* DBQuery::GetPlayerID() const
+{
+	return _playerID.GetWString();
+}
+
+DBQueryPlayerInfo::DBQueryPlayerInfo(const WCHAR* ID, const WCHAR* password)
+	: DBQuery(ID)
 {
 	WCHAR* strBuffer = _query.GetWStringBuffer();
 	size_t writeLength = swprintf_s(strBuffer, LiteWString::MAX_WSTR_LENGTH,
-		L"select UserID from tankDB.dbo.Users where UserName='%ls' and Password='%ls';", 
+		L"select case when exists (select 1 from tankDB.dbo.Players where PlayerID = '%ls' and Password = '%ls') then 1 else 0 end as existance;",
 		ID, password);
-	_userName.Clear();
-	_userName.Append(ID);
 	assert(writeLength < SHRT_MAX);
 	_query.SetLength((short)writeLength);
 	_result.code = DBResultCode::FAIL_CONNECTION_FAIL;
 }
 
-DBQueryValidation::~DBQueryValidation()
+DBQueryPlayerInfo::~DBQueryPlayerInfo()
 {
 }
 
-void DBQueryValidation::SetResult(DBResultCode code, int userID)
+void DBQueryPlayerInfo::SetResult(DBResultCode code)
 {
 	_result.code = code;
-	_userID = userID;
 }
 
-void DBQueryValidation::GetResult(DBResultUserValidation* out) const
+void DBQueryPlayerInfo::GetResult(DBResultPlayerInfo* out) const
 {
 	*out = _result;
 }
 
-
-DBQueryLoadStat::DBQueryLoadStat(int userID)
-	: DBQuery(userID)
+DBQueryLoadStat::DBQueryLoadStat(const WCHAR* ID)
+	: DBQuery(ID)
 {
 	WCHAR* strBuffer = _query.GetWStringBuffer();
 	size_t writeLength = swprintf_s(strBuffer, LiteWString::MAX_WSTR_LENGTH,
-		L"select HitCount, KillCount, DeathCount from tankDB.dbo.TankScores where UserID=%d;",
-		userID);
+		L"select * from tankDB.dbo.Scores where PlayerID = '%ls'",
+		ID);
 	assert(writeLength < SHRT_MAX);
 	_query.SetLength((short)writeLength);
 	_result.code = DBResultCode::FAIL_CONNECTION_FAIL;
 }
-
 
 DBQueryLoadStat::~DBQueryLoadStat()
 {
@@ -58,7 +58,7 @@ void DBQueryLoadStat::SetResult(DBResultCode code, int hitCount, int killCount, 
 	if (code != DBResultCode::SUCCESS) {
 		return;
 	}
-	
+
 	_result.hitCount = hitCount;
 	_result.deathCount = deathCount;
 	_result.killCount = killCount;
@@ -69,13 +69,13 @@ void DBQueryLoadStat::GetResult(DBResultLoadStat* out) const
 	*out = _result;
 }
 
-DBQueryUpdateStat::DBQueryUpdateStat(int userID, int hitCount, int killCount, int deathCount)
-	: DBQuery(userID)
+DBQueryUpdateStat::DBQueryUpdateStat(const WCHAR* ID, int hitCount, int killCount, int deathCount)
+	: DBQuery(ID)
 {
 	WCHAR* strBuffer = _query.GetWStringBuffer();
 	size_t writeLength = swprintf_s(strBuffer, LiteWString::MAX_WSTR_LENGTH,
-		L"update tankDB.dbo.TankScores set HitCount=%d, KillCount=%d, DeathCount=%d where UserID=%d;",
-		hitCount, killCount, deathCount, userID);
+		L"update tankDB.dbo.Scores set Hit = %i, KillCount = %i, Death = %i where PlayerID = '%ls';",
+		hitCount, killCount, deathCount, ID);
 	assert(writeLength < SHRT_MAX);
 	_query.SetLength((short)writeLength);
 	_result.code = DBResultCode::FAIL_CONNECTION_FAIL;
@@ -83,7 +83,7 @@ DBQueryUpdateStat::DBQueryUpdateStat(int userID, int hitCount, int killCount, in
 
 DBQueryUpdateStat::~DBQueryUpdateStat()
 {
-	
+
 }
 
 void DBQueryUpdateStat::SetResult(DBResultCode code)
@@ -95,4 +95,3 @@ void DBQueryUpdateStat::GetResult(DBResultUpdateStat* out) const
 {
 	*out = _result;
 }
-

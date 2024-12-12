@@ -88,11 +88,11 @@ int main(int argc, char* args[])
 
 	pDb->Start(dbConnInfo, 1);	
 
-	pDb->ValidatePlayerInfo(L"player001", L"passw0rd001");
-	pDb->LoadStat(L"player001");
-	pDb->UpdateStat(L"player001", 12, 3, 2);
+	pDb->ValidateUserInfo(L"player001", L"passw0rd001");
+	pDb->LoadStat(2);
+	pDb->UpdateStat(2, 12, 3, 2);
 	
-	Sleep(100000);
+	Sleep(1000);
 
 	auto queue = pDb->BeginHandleResult();
 	DBEvent pEvent;
