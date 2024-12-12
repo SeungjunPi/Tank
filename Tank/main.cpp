@@ -39,7 +39,7 @@ int main()
 	pw[strnlen_s(pw, 20) - 1] = '\0';
 
 	USES_CONVERSION;
-	g_playerID = std::wstring(A2W(id));
+	g_userName = std::wstring(A2W(id));
 	g_password = std::wstring(A2W(pw));
 
 

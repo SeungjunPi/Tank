@@ -12,9 +12,9 @@ public:
 	DBErrorCode Start(const DBConnectionInfo connectionInfo, SHORT numThreads) override;
 	DBErrorCode End() override;
 
-	virtual void ValidatePlayerInfo(const WCHAR* ID, const WCHAR* pw) override;
-	virtual void LoadStat(const WCHAR* ID) override;
-	virtual void UpdateStat(const WCHAR* ID, int hitCount, int killCount, int deathCount) override;
+	virtual void ValidateUserInfo(const WCHAR* ID, const WCHAR* pw, UINT32 sessionID) override;
+	virtual void LoadStat(int userID) override;
+	virtual void UpdateStat(int userID, int hitCount, int killCount, int deathCount) override;
 
 	virtual CQueue<DBEvent>* BeginHandleResult() override;
 	virtual void EndHandleResult() override;

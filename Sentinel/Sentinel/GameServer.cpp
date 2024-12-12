@@ -22,8 +22,11 @@ static void s_ApplyObjectLogic(ULONGLONG tickDiff);
 static void s_CollideObjects(ULONGLONG curTick);
 static void s_CleanupDestroyedObjects(ULONGLONG curTick);
 static void s_OnSessionEvent(UINT32 sessionID, ESessionEvent sessionEvent);
+static void s_ProcessDBQueryResults();
 void OnSessionCreate(UINT32 sessionID);
 void OnSessionDisconnect(UINT32 sessionID);
+
+
 
 
 void GameServer::Initialize()
@@ -84,6 +87,9 @@ void GameServer::Start()
 			pMsg = msgs->GetNetMessageOrNull(&senderID);
 		}
 		g_pNetCore->EndHandleReceivedMessages();
+
+		// DB 
+		s_ProcessDBQueryResults();
 
 		// Erase Destroyed Objects
 		s_CleanupDestroyedObjects(currentTick);
@@ -148,37 +154,37 @@ void GameServer::BroadcastExcept(BYTE* msg, int len, UINT32 sessionId)
 void OnSessionCreate(UINT32 sessionID)
 {
 	printf("New session: %u\n", sessionID);
-	Player* pPlayer = g_playerManager.TryCreatePlayer(sessionID);
+	//Player* pPlayer = g_playerManager.TryCreatePlayer(sessionID);
 
-	const size_t msgSize = sizeof(EGameEventCode) + sizeof(PACKET_SC_PLAYER_ID);
-	BYTE pRawMsg[msgSize] = { 0, };
-	EGameEventCode* pEvCode = (EGameEventCode*)pRawMsg;
-	*pEvCode = GAME_EVENT_CODE_SC_PLAYER_ID;
-	PACKET_SC_PLAYER_ID* pScPlayerId = (PACKET_SC_PLAYER_ID*)(pRawMsg + sizeof(EGameEventCode));
-	pScPlayerId->id = sessionID;
-	g_pNetCore->SendMessageTo(sessionID, pRawMsg, msgSize);
-	GamePacket::SendSnapshot(sessionID);
+	//const size_t msgSize = sizeof(EGameEventCode) + sizeof(PACKET_SC_PLAYER_ID);
+	//BYTE pRawMsg[msgSize] = { 0, };
+	//EGameEventCode* pEvCode = (EGameEventCode*)pRawMsg;
+	//*pEvCode = GAME_EVENT_CODE_SC_PLAYER_ID;
+	//PACKET_SC_PLAYER_ID* pScPlayerId = (PACKET_SC_PLAYER_ID*)(pRawMsg + sizeof(EGameEventCode));
+	//pScPlayerId->id = sessionID;
+	//g_pNetCore->SendMessageTo(sessionID, pRawMsg, msgSize);
+	//GamePacket::SendSnapshot(sessionID);
 
 
-	{
-		// Auto create user's tank
-		Tank* pTank = g_objectManager.CreateTank(sessionID);
+	//{
+	//	// Auto create user's tank
+	//	Tank* pTank = g_objectManager.CreateTank(sessionID);
 
-		const size_t PACKET_SIZE = sizeof(EGameEventCode) + sizeof(PACKET_SC_CREATE_TANK);
-		BYTE pRawPacket[PACKET_SIZE] = { 0, };
+	//	const size_t PACKET_SIZE = sizeof(EGameEventCode) + sizeof(PACKET_SC_CREATE_TANK);
+	//	BYTE pRawPacket[PACKET_SIZE] = { 0, };
 
-		EGameEventCode* pEvCode = (EGameEventCode*)pRawPacket;
-		*pEvCode = GAME_EVENT_CODE_SC_CREATE_TANK;
-		PACKET_SC_CREATE_TANK* pSCCreateTank = (PACKET_SC_CREATE_TANK*)(pRawPacket + sizeof(EGameEventCode));
-		pSCCreateTank->objectId = pTank->GetID();
-		pSCCreateTank->ownerId = sessionID;
-		// 
-		memcpy(&pSCCreateTank->transform, pTank->GetTransformPtr(), sizeof(Transform));
+	//	EGameEventCode* pEvCode = (EGameEventCode*)pRawPacket;
+	//	*pEvCode = GAME_EVENT_CODE_SC_CREATE_TANK;
+	//	PACKET_SC_CREATE_TANK* pSCCreateTank = (PACKET_SC_CREATE_TANK*)(pRawPacket + sizeof(EGameEventCode));
+	//	pSCCreateTank->objectId = pTank->GetID();
+	//	pSCCreateTank->ownerId = sessionID;
+	//	// 
+	//	memcpy(&pSCCreateTank->transform, pTank->GetTransformPtr(), sizeof(Transform));
 
-		printf("CreateTank: owner=%u, tankId=%u\n", sessionID, pSCCreateTank->objectId);
+	//	printf("CreateTank: owner=%u, tankId=%u\n", sessionID, pSCCreateTank->objectId);
 
-		GameServer::Broadcast(pRawPacket, PACKET_SIZE);
-	}
+	//	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
+	//}
 }
 
 
@@ -232,6 +238,25 @@ void s_OnSessionEvent(UINT32 sessionID, ESessionEvent sessionEvent)
 	default:
 		__debugbreak();
 	}
+}
+
+void s_ProcessDBQueryResults()
+{
+	auto resultQueue = g_pJunDB->BeginHandleResult();
+	DBEvent dbEvent;
+	while (resultQueue->TryGetAndPop(&dbEvent)) {
+		switch (dbEvent.code) {
+		case DBEventCode::QUERY_VALIDATION:
+			// Create Player
+			// SUCCESS
+			break;
+		case DBEventCode::QUERY_LOAD_STAT:
+			break;
+		case DBEventCode::QUERY_UPDATE_STAT:
+			break;
+		}
+	}
+	g_pJunDB->EndHandleResult();
 }
 
 

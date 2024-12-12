@@ -23,9 +23,9 @@ void PlayerManager::Terminate()
 	assert(terminated);
 }
 
-Player* PlayerManager::TryCreatePlayer(UINT32 id)
+Player* PlayerManager::TryCreatePlayer(UINT32 id, UINT32 userID)
 {
-	Player* newPlayer = new Player(id);
+	Player* newPlayer = new Player(id, userID);
 	s_player = newPlayer;
 	bool isInserted = _playerTable.Insert(id, newPlayer);
 	if (!isInserted) {
@@ -39,7 +39,7 @@ Player* PlayerManager::TryCreatePlayer(UINT32 id)
 	return newPlayer;
 }
 
-BOOL PlayerManager::TryDeletePlayer(UINT32 id)
+BOOL PlayerManager::TryDeletePlayerBySessionID(UINT32 id)
 {
 	Player* pPlayer = (Player*)_playerTable.Pop(id);
 	if (pPlayer == nullptr) {
@@ -61,12 +61,19 @@ BOOL PlayerManager::TryDeletePlayer(UINT32 id)
 	return true;
 }
 
+BOOL PlayerManager::TryDeletePlayerByUserID(UINT32 userID)
+{
+	// TODO: Implement
+	__debugbreak();
+	return 0;
+}
+
 int PlayerManager::GetCapacity() const
 {
 	return _playerTable.GetCapacity();
 }
 
-UINT16 PlayerManager::GetAllKeys(UINT32* out)
+UINT16 PlayerManager::GetAllUserIDs(UINT32* out)
 {
 	memcpy(out, _usedKeys, sizeof(UINT32) * _countPlayers);
 	return _countPlayers;
@@ -77,17 +84,17 @@ Player* PlayerManager::GetPlayer(UINT32 id) const
 	return (Player*)_playerTable.Get(id);
 }
 
-void PlayerManager::IncreaseNumOtherTanksHit(UINT32 id)
+void PlayerManager::IncreaseNumOtherTanksHit(UINT32 userID)
 {
-	Player* pPlayer = (Player*)_playerTable.Get(id);
+	Player* pPlayer = (Player*)_playerTable.Get(userID);
 	assert(pPlayer != nullptr);
 
 	pPlayer->IncreaseNumOtherTanksHit();
 }
 
-void PlayerManager::IncreaseNumHitsTaken(UINT32 id)
+void PlayerManager::IncreaseNumHitsTaken(UINT32 userID)
 {
-	Player* pPlayer = (Player*)_playerTable.Get(id);
+	Player* pPlayer = (Player*)_playerTable.Get(userID);
 	assert(pPlayer != nullptr);
 
 	pPlayer->IncreaseNumHitsTaken();

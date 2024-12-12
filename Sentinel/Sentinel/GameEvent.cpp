@@ -4,6 +4,8 @@
 #include "NetCore.h"
 #include "Tank.h"
 #include "Projectile.h"
+#include "JunDB.h"
+
 
 
 BOOL GamePacket::Validate(BYTE* pGameEvent, UINT32 senderId)
@@ -15,6 +17,9 @@ void GamePacket::HandlePacket(BYTE* pGameEvent, UINT32 senderId)
 {
 	EGameEventCode eventCode = *(EGameEventCode*)pGameEvent;
 	switch (eventCode) {
+	case GAME_EVENT_CODE_CS_LOGIN:
+		HandleLogin(pGameEvent, senderId);
+		break;
 	case GAME_EVENT_CODE_CS_START_MOVE:
 		HandleStartMove(pGameEvent, senderId);
 		break;
@@ -160,7 +165,8 @@ void GamePacket::HandleLogin(BYTE* pGameEvent, UINT32 senderId)
 		return;
 	}
 
-
+	PACKET_CS_LOGIN* pCsLogin = (PACKET_CS_LOGIN*)(pGameEvent + sizeof(EGameEventCode));
+	g_pJunDB->ValidateUserInfo(pCsLogin->id, pCsLogin->pw, senderId);
 }
 
 BOOL GamePacket::ValidateLogin(BYTE* pGameEvent, UINT32 senderId)

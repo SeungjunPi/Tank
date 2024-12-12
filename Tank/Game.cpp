@@ -67,6 +67,8 @@ void Game::Start()
 {
 	// Send Login
 
+	GamePacket::SendLogin(g_userName, g_password);
+
 	g_previousGameTick = GetTickCount64();
 
 	while (s_isRunning) {

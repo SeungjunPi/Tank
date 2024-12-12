@@ -12,17 +12,18 @@ public:
 	void Initiate(int maxNumPlayers);
 	void Terminate();
 
-	Player* TryCreatePlayer(UINT32 id);
-	BOOL TryDeletePlayer(UINT32 id);
+	Player* TryCreatePlayer(UINT32 sessionID, UINT32 userID);
+	BOOL TryDeletePlayerBySessionID(UINT32 sessionID);
+	BOOL TryDeletePlayerByUserID(UINT32 userID);
 
 	int GetCapacity() const;
 
-	UINT16 GetAllKeys(UINT32* out);
+	UINT16 GetAllUserIDs(UINT32* out);
 
-	Player* GetPlayer(UINT32 id) const;
+	Player* GetPlayer(UINT32 userID) const;
 
-	void IncreaseNumOtherTanksHit(UINT32 id);
-	void IncreaseNumHitsTaken(UINT32 id);
+	void IncreaseNumOtherTanksHit(UINT32 userID);
+	void IncreaseNumHitsTaken(UINT32 userID);
 
 	
 

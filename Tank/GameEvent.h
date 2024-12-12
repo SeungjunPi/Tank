@@ -12,6 +12,8 @@ enum EGameEventCode
 {
 	GAME_EVENT_CODE_CS_LOGIN,
 	GAME_EVENT_CODE_SC_LOGIN,
+	GAME_EVENT_CODE_CS_LOAD_PLAYER_STAT,
+	GAME_EVENT_CODE_SC_LOAD_PLAYER_STAT,
 	GAME_EVENT_CODE_SC_PLAYER_ID = 0x00010102,
 	GAME_EVENT_CODE_SC_SNAPSHOT = 0x00010202,
 	GAME_EVENT_CODE_SC_CREATE_TANK = 0x01010102,
@@ -35,16 +37,29 @@ struct GameNetEvent
 	EGameEventCode evCode;
 };
 
+
 struct PACKET_CS_LOGIN
 {
-	WCHAR id[ID_LENGTH_MAX];
-	WCHAR pw[PW_LENGTH_MAX];
+	WCHAR id[ID_LENGTH_MAX + 1];
+	WCHAR pw[PW_LENGTH_MAX + 1];
 };
 
 struct PACKET_SC_LOGIN
 {
 	BOOL result;
 	UINT32 playerKey;
+	int hitCount;
+	int killCount;
+	int deathCount;
+};
+
+struct PACKET_CS_LOAD_PLAYER_STAT
+{
+	UINT32 playerKey;
+};
+
+struct PACKET_SC_LOAD_PLAYER_STAT
+{
 	int hitCount;
 	int killCount;
 	int deathCount;
@@ -64,7 +79,7 @@ struct PACKET_SC_CREATE_TANK
 
 struct PACKET_SC_DELETE_TANK
 {
-	UINT16 objectId;
+	UINT32 objectId;
 };
 
 

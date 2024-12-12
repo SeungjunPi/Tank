@@ -16,9 +16,6 @@ void GamePacket::HandlePacket(BYTE* pGameEvent, UINT32 senderId)
 	case GAME_EVENT_CODE_SC_LOGIN:
 		// TODO: Handle login packet
 		break;
-	case GAME_EVENT_CODE_SC_LOAD_SCORE:
-		// TODO: Handle score packet
-		break;
 	case GAME_EVENT_CODE_SC_PLAYER_ID:
 		HandlePlayerId(pGameEvent, senderId);
 		break;
@@ -339,13 +336,10 @@ void GamePacket::SendLogin(const std::wstring& wID, const std::wstring& wPw)
 	EGameEventCode* pEvCode = (EGameEventCode*)pRawPacket;
 	PACKET_CS_LOGIN* pLogin = (PACKET_CS_LOGIN*)(pRawPacket + sizeof(EGameEventCode));
 
-	// cpy id to login packet
-	// 
-	// cpy pw to login packet
 	const WCHAR* rawID = wID.c_str();
 	const WCHAR* rawPW = wPw.c_str();
-	memcpy(&pLogin->id, rawID, sizeof(WCHAR) * wID.length());
-	memcpy(&pLogin->pw, rawPW, sizeof(WCHAR) * wPw.length());
+	memcpy(&pLogin->id, rawID, sizeof(WCHAR) * (wID.length() + 1));
+	memcpy(&pLogin->pw, rawPW, sizeof(WCHAR) * (wPw.length() + 1));
 
 	g_pNetCore->SendMessageTo(g_serverId, pRawPacket, contentsMsgSize);
 }

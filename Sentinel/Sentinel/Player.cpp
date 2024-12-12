@@ -1,11 +1,12 @@
 #include "Player.h"
 
-Player::Player(UINT32 sessionId)
+Player::Player(UINT32 sessionId, UINT32 userID)
 	: _sessionId(sessionId)
+	, _userID(userID)
 {
 }
 
-UINT32 Player::GetSessionId() const
+UINT32 Player::GetSessionID() const
 {
 	return _sessionId;
 }

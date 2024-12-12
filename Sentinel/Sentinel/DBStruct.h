@@ -4,12 +4,12 @@
 #include "stdafx.h"
 #include "LiteWString.h"
 
-const unsigned int PLAYER_ID_MAX_LENGTH = 16;
+const unsigned int USER_NAME_MAX_LENGTH = 16;
 const unsigned int PASSWORD_MAX_LENGTH = 16;
 
 enum class DBEventCode
 {
-	QUERY_PLAYER_INFO,
+	QUERY_VALIDATION,
 	QUERY_LOAD_STAT,
 	QUERY_UPDATE_STAT,
 };
@@ -17,7 +17,7 @@ enum class DBEventCode
 enum class DBResultCode
 {
 	SUCCESS,
-	FAIL_INVALID_PLAYER_INFO,
+	FAIL_INVALID_USER_INFO,
 	FAIL_VALIDATION_TYPE_MISMATCH,
 	FAIL_CONNECTION_FAIL,
 	FAIL_UPDATE_STAT_NO_DATA_WITH_PLAYER_ID,
@@ -30,8 +30,9 @@ struct DBEvent
 	void* pEvent;
 };
 
-struct DBResultPlayerInfo
+struct DBResultUserValidation
 {
+	int userID = 0;
 	DBResultCode code;
 };
 
@@ -51,31 +52,34 @@ struct DBResultUpdateStat
 class DBQuery
 {
 public:
-	DBQuery(const WCHAR* ID);
-	const WCHAR* GetPlayerID() const;
+	DBQuery(int userID);
+	int GetID() const { return _userID; }
 	const WCHAR* GetQuery() const { return _query.GetWString(); }
-
 protected:
+	int _userID;
 	LiteWString _query;
-	LiteWString _playerID;
 };
 
-class DBQueryPlayerInfo: public DBQuery
+class DBQueryValidation: public DBQuery
 {
 public:
-	DBQueryPlayerInfo(const WCHAR* ID, const WCHAR* password);
-	~DBQueryPlayerInfo();
+	DBQueryValidation(const WCHAR* name, const WCHAR* password, UINT32 sessionID);
+	~DBQueryValidation();
 
-	void SetResult(DBResultCode code);
-	void GetResult(DBResultPlayerInfo* out) const;
+	const WCHAR* GetName() const { return _userName.GetWString(); }
+
+	void SetResult(DBResultCode code, int userID);
+	void GetResult(DBResultUserValidation* out) const;
 private:
-	DBResultPlayerInfo _result;
+	DBResultUserValidation _result;
+	UINT32 _sessionID;
+	LiteWString _userName;
 };
 
 class DBQueryLoadStat: public DBQuery
 {
 public:
-	DBQueryLoadStat(const WCHAR* ID);
+	DBQueryLoadStat(int userID);
 	~DBQueryLoadStat();
 
 	void SetResult(DBResultCode code, int hitCount, int killCount, int deathCount);
@@ -88,7 +92,7 @@ private:
 class DBQueryUpdateStat: public DBQuery
 {
 public:
-	DBQueryUpdateStat(const WCHAR* ID, int hitCount, int killCount, int deathCount);
+	DBQueryUpdateStat(int userID, int hitCount, int killCount, int deathCount);
 	~DBQueryUpdateStat();
 
 	void SetResult(DBResultCode code);

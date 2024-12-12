@@ -1,6 +1,7 @@
 #include <atlconv.h>
 
 #include "JunDB.h"
+#include "DBStruct.h"
 #include "stdafx.h"
 
 
@@ -92,24 +93,24 @@ DBErrorCode JunDB::End()
 	return DBErrorCode::NONE;
 }
 
-void JunDB::ValidatePlayerInfo(const WCHAR* ID, const WCHAR* pw)
+void JunDB::ValidateUserInfo(const WCHAR* ID, const WCHAR* pw, UINT32 sessionID)
 {
 	DBEvent ev;
-	ev.code = DBEventCode::QUERY_PLAYER_INFO;
+	ev.code = DBEventCode::QUERY_VALIDATION;
 
-	DBQueryPlayerInfo* query = new DBQueryPlayerInfo(ID, pw);
+	DBQueryValidation* query = new DBQueryValidation(ID, pw, sessionID);
 	ev.pEvent = (void*)query;
 
 	s_queryCQueue.Push(ev);
 	SetQueryEvents();
 }
 
-void JunDB::LoadStat(const WCHAR* ID)
+void JunDB::LoadStat(int userID)
 {
 	DBEvent ev;
 	ev.code = DBEventCode::QUERY_LOAD_STAT;
 
-	DBQueryLoadStat* query = new DBQueryLoadStat(ID);
+	DBQueryLoadStat* query = new DBQueryLoadStat(userID);
 
 	ev.pEvent = (void*)query;
 
@@ -117,12 +118,12 @@ void JunDB::LoadStat(const WCHAR* ID)
 	SetQueryEvents();
 }
 
-void JunDB::UpdateStat(const WCHAR* ID, int hitCount, int killCount, int deathCount)
+void JunDB::UpdateStat(int userID, int hitCount, int killCount, int deathCount)
 {
 	DBEvent ev;
 	ev.code = DBEventCode::QUERY_UPDATE_STAT;
 
-	DBQueryUpdateStat* query = new DBQueryUpdateStat(ID, hitCount, killCount, deathCount);
+	DBQueryUpdateStat* query = new DBQueryUpdateStat(userID, hitCount, killCount, deathCount);
 	ev.pEvent = (void*)query;
 
 	s_queryCQueue.Push(ev);
@@ -214,7 +215,7 @@ unsigned WINAPI ThreadDB(LPVOID pParam)
 			SQLAllocHandle(SQL_HANDLE_STMT, hDbc, &hStmt);
 			if (nonempty) {
 				switch (dbEvent.code) {
-				case DBEventCode::QUERY_PLAYER_INFO:
+				case DBEventCode::QUERY_VALIDATION:
 					HandleQueryPlayerInfo(hStmt, dbEvent);
 					break;
 				case DBEventCode::QUERY_LOAD_STAT:
@@ -244,30 +245,26 @@ void HandleQueryPlayerInfo(HANDLE hStmt, DBEvent dbEvent)
 {
 	SQLRETURN retCode;
 
-	DBQueryPlayerInfo* queryPlayerInfo = (DBQueryPlayerInfo*)dbEvent.pEvent;
+	DBQueryValidation* queryPlayerInfo = (DBQueryValidation*)dbEvent.pEvent;
 	retCode = SQLExecDirect(hStmt, (SQLWCHAR*)queryPlayerInfo->GetQuery(), SQL_NTS);
 
 	SQLLEN indicator;
-	int validPlayerInfo = 0;
+	int userID = 0;
 
 	if (SQL_SUCCEEDED(retCode)) {
 		SQLFetch(hStmt);
-		retCode = SQLGetData(hStmt, 1, SQL_INTEGER, &validPlayerInfo, sizeof(int), &indicator);
+		retCode = SQLGetData(hStmt, 1, SQL_INTEGER, &userID, sizeof(int), &indicator);
 		if (retCode == SQL_SUCCESS || retCode == SQL_SUCCESS_WITH_INFO) {
 			if (indicator == SQL_NULL_DATA) {
-				queryPlayerInfo->SetResult(DBResultCode::FAIL_VALIDATION_TYPE_MISMATCH);
+				queryPlayerInfo->SetResult(DBResultCode::FAIL_VALIDATION_TYPE_MISMATCH, -1);
 			}
 			else {
-				if (validPlayerInfo == 1) {
-					queryPlayerInfo->SetResult(DBResultCode::SUCCESS);
-				}
-				else {
-					queryPlayerInfo->SetResult(DBResultCode::FAIL_INVALID_PLAYER_INFO);
-				}
+				queryPlayerInfo->SetResult(DBResultCode::SUCCESS, userID);
+
 			}
 		}
 		else {
-			queryPlayerInfo->SetResult(DBResultCode::FAIL_VALIDATION_TYPE_MISMATCH);
+			queryPlayerInfo->SetResult(DBResultCode::FAIL_VALIDATION_TYPE_MISMATCH, -1);
 		}
 	}
 	else {
@@ -292,7 +289,7 @@ void HandleQueryLoadPlayerStat(HANDLE hStmt, DBEvent dbEvent)
 
 	if (SQL_SUCCEEDED(retCode)) {
 		SQLFetch(hStmt);
-		retCode = SQLGetData(hStmt, 2, SQL_INTEGER, &hitCount, sizeof(int), &indicator);
+		retCode = SQLGetData(hStmt, 1, SQL_INTEGER, &hitCount, sizeof(int), &indicator);
 		if (retCode == SQL_SUCCESS || retCode == SQL_SUCCESS_WITH_INFO) {
 			if (indicator == SQL_NULL_DATA) {
 				hitCount = -1;
@@ -304,7 +301,7 @@ void HandleQueryLoadPlayerStat(HANDLE hStmt, DBEvent dbEvent)
 			queryLoadStat->SetResult(DBResultCode::FAIL_VALIDATION_TYPE_MISMATCH, -1, -1, -1);
 		}
 
-		retCode = SQLGetData(hStmt, 3, SQL_INTEGER, &killCount, sizeof(int), &indicator);
+		retCode = SQLGetData(hStmt, 2, SQL_INTEGER, &killCount, sizeof(int), &indicator);
 		if (retCode == SQL_SUCCESS || retCode == SQL_SUCCESS_WITH_INFO) {
 			if (indicator == SQL_NULL_DATA) {
 				hitCount = -1;
@@ -316,7 +313,7 @@ void HandleQueryLoadPlayerStat(HANDLE hStmt, DBEvent dbEvent)
 			queryLoadStat->SetResult(DBResultCode::FAIL_VALIDATION_TYPE_MISMATCH, -1, -1, -1);
 		}
 
-		retCode = SQLGetData(hStmt, 4, SQL_INTEGER, &deathCount, sizeof(int), &indicator);
+		retCode = SQLGetData(hStmt, 3, SQL_INTEGER, &deathCount, sizeof(int), &indicator);
 		if (retCode == SQL_SUCCESS || retCode == SQL_SUCCESS_WITH_INFO) {
 			if (indicator == SQL_NULL_DATA) {
 				hitCount = -1;
@@ -382,6 +379,5 @@ void PushResult(DBEvent dbEvent)
 	s_pResultCQueueBack->Push(dbEvent);
 	ReleaseSRWLockExclusive(&s_resultQueueLock);
 }
-
 
 
