@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "Player.h"
 #include "PointerTable.h"
-
+#include "UserIdentifierManager.h"
 
 class PlayerManager
 {
@@ -12,25 +12,29 @@ public:
 	void Initiate(int maxNumPlayers);
 	void Terminate();
 
-	Player* TryCreatePlayer(UINT32 sessionID, UINT32 userID);
-	BOOL TryDeletePlayerBySessionID(UINT32 sessionID);
-	BOOL TryDeletePlayerByUserID(UINT32 userID);
+	Player* TryCreatePlayer(SessionID sessionID, UserDBIndex userIndex, int hitCount, int killCount, int deathCount);
+	BOOL TryDeletePlayerBySessionID(SessionID sessionID);
+	BOOL TryDeletePlayerByUserIndex(UserDBIndex userIndex);
 
 	int GetCapacity() const;
 
-	UINT16 GetAllUserIDs(UINT32* out);
-
-	Player* GetPlayer(UINT32 userID) const;
-
-	void IncreaseNumOtherTanksHit(UINT32 userID);
-	void IncreaseNumHitsTaken(UINT32 userID);
-
+	UINT16 GetAllUserIndexes(UserDBIndex* out);
+	UINT16 GetAllSessionIDs(SessionID* out);
 	
+
+	Player* GetPlayer(UserDBIndex userIndex) const;
+
+	void IncreaseHitCount(UserDBIndex userIndex);
+	void IncreaseKillCount(UserDBIndex userIndex);
+	void IncreaseDeathCount(UserDBIndex userIndex);
 
 
 private:
 	PointerTable _playerTable;
-	UINT32* _usedKeys = nullptr;
+
+	UserIdentifierManager* _pUserIdentifierManager;
+
+	UINT32* _usedDbIndexes = nullptr;
 	UINT16 _countPlayers = 0;
 };
 

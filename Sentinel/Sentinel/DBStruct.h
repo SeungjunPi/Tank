@@ -36,7 +36,7 @@ struct DBResultUserValidation
 	DBResultCode code;
 };
 
-struct DBResultLoadStat
+struct DBResultLoadScore
 {
 	int hitCount = 0;
 	int killCount = 0;
@@ -67,6 +67,7 @@ public:
 	~DBQueryValidation();
 
 	const WCHAR* GetName() const { return _userName.GetWString(); }
+	UINT32 GetSessionID() const { return _sessionID; }
 
 	void SetResult(DBResultCode code, int userID);
 	void GetResult(DBResultUserValidation* out) const;
@@ -79,14 +80,17 @@ private:
 class DBQueryLoadStat: public DBQuery
 {
 public:
-	DBQueryLoadStat(int userID);
+	DBQueryLoadStat(int userID, UINT32 sessionID);
 	~DBQueryLoadStat();
 
 	void SetResult(DBResultCode code, int hitCount, int killCount, int deathCount);
-	void GetResult(DBResultLoadStat* out) const;
+	void GetResult(DBResultLoadScore* out) const;
+
+	UINT32 GetSessionID() { return _sessionID; }
 
 private:
-	DBResultLoadStat _result;
+	UINT32 _sessionID;
+	DBResultLoadScore _result;
 };
 
 class DBQueryUpdateStat: public DBQuery

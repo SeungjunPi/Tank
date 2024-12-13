@@ -36,8 +36,9 @@ void DBQueryValidation::GetResult(DBResultUserValidation* out) const
 }
 
 
-DBQueryLoadStat::DBQueryLoadStat(int userID)
+DBQueryLoadStat::DBQueryLoadStat(int userID, UINT32 sessionID)
 	: DBQuery(userID)
+	, _sessionID(sessionID)
 {
 	WCHAR* strBuffer = _query.GetWStringBuffer();
 	size_t writeLength = swprintf_s(strBuffer, LiteWString::MAX_WSTR_LENGTH,
@@ -65,7 +66,7 @@ void DBQueryLoadStat::SetResult(DBResultCode code, int hitCount, int killCount, 
 	_result.killCount = killCount;
 }
 
-void DBQueryLoadStat::GetResult(DBResultLoadStat* out) const
+void DBQueryLoadStat::GetResult(DBResultLoadScore* out) const
 {
 	*out = _result;
 }

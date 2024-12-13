@@ -38,6 +38,7 @@
     <ClCompile Include="Projectile.cpp" />
     <ClCompile Include="SentinelMain.cpp" />
     <ClCompile Include="Tank.cpp" />
+    <ClCompile Include="UserIdentifierManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\NetCore\LinearQueue.h" />
@@ -59,7 +60,9 @@
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerManager.h" />
     <ClInclude Include="Projectile.h" />
+    <ClInclude Include="SentinelAliases.h" />
     <ClInclude Include="Tank.h" />
+    <ClInclude Include="UserIdentifierManager.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

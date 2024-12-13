@@ -1,31 +1,33 @@
 #pragma once
 
 #include "stdafx.h"
+#include "SentinelAliases.h"
+
+class PlayerManager;
 
 class Player
 {
+	friend PlayerManager;
 public:
-	Player(UINT32 sessionID, UINT32 userID);
-	UINT32 GetSessionID() const;
+	Player(SessionID sessionID, UserDBIndex userID);
+	SessionID GetSessionID() const;
 
-	UINT32 GetUserID() const { return _userID; }
+	UserDBIndex GetUserID() const { return _userID; }
 
 	UINT16 GetTankId() const;
 	void SetTankId(UINT16 tankId);
 
-	void IncreaseNumOtherTanksHit();
-	
-	void IncreaseNumHitsTaken();
+	void IncreaseHitCount();
+	void IncreaseKillCount();
+	void IncreaseDeathCount();
 
-	UINT16 GetScore() const;
-	
 private:
-	UINT32 _sessionId = 0;
+	SessionID _sessionId = 0;
 	UINT32 _userID = 0;
 	UINT16 _tankId = 0;
 
-	UINT16 _score = 0;
-	UINT16 _numOtherTanksHit = 0;
-	UINT16 _numHitsTaken = 0;
+	UINT16 _hitCount = 0;
+	UINT16 _killCount = 0;
+	UINT16 _deathCount = 0;
 };
 

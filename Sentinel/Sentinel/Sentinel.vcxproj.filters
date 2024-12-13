@@ -93,6 +93,9 @@
     <ClCompile Include="LiteWString.cpp">
       <Filter>DB</Filter>
     </ClCompile>
+    <ClCompile Include="UserIdentifierManager.cpp">
+      <Filter>Player</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameStruct.h">
@@ -154,6 +157,12 @@
     </ClInclude>
     <ClInclude Include="JunDB.h">
       <Filter>DB</Filter>
+    </ClInclude>
+    <ClInclude Include="SentinelAliases.h">
+      <Filter>pch</Filter>
+    </ClInclude>
+    <ClInclude Include="UserIdentifierManager.h">
+      <Filter>Player</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

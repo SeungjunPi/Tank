@@ -107,5 +107,8 @@
     <ClInclude Include="NetSessionEventQueue.h">
       <Filter>iocp</Filter>
     </ClInclude>
+    <ClInclude Include="NetCoreAliases.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

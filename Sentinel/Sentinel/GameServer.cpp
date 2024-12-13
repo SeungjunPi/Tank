@@ -23,6 +23,12 @@ static void s_CollideObjects(ULONGLONG curTick);
 static void s_CleanupDestroyedObjects(ULONGLONG curTick);
 static void s_OnSessionEvent(UINT32 sessionID, ESessionEvent sessionEvent);
 static void s_ProcessDBQueryResults();
+
+static void s_ProcessDBResultValidation(DBQueryValidation* pQueryValidation);
+static void s_ProcessDBResultLoadScore(DBQueryLoadStat* pQueryLoadStat); // 현재 이 함수는 Validation이 성공한 직후에만 불린다고 가정.
+static void s_ProcessDBResultUpdateScore(DBQueryUpdateStat* pQueryUpdateStat);
+
+
 void OnSessionCreate(UINT32 sessionID);
 void OnSessionDisconnect(UINT32 sessionID);
 
@@ -136,13 +142,13 @@ void GameServer::CleanUp()
 
 void GameServer::Broadcast(BYTE* msg, int len)
 {
-	UINT16 numPlayers = g_playerManager.GetAllUserIDs(g_sessionIds);
+	UINT16 numPlayers = g_playerManager.GetAllSessionIDs(g_sessionIds);
 	g_pNetCore->SendMessageTo(g_sessionIds, numPlayers, msg, len);
 }
 
 void GameServer::BroadcastExcept(BYTE* msg, int len, UINT32 sessionId)
 {
-	UINT16 numPlayers = g_playerManager.GetAllUserIDs(g_sessionIds);
+	UINT16 numPlayers = g_playerManager.GetAllSessionIDs(g_sessionIds);
 	for (UINT16 i = 0; i < numPlayers; ++i) {
 		if (g_sessionIds[i] != sessionId) {
 			g_pNetCore->SendMessageTo(g_sessionIds[i], msg, len);
@@ -242,21 +248,93 @@ void s_OnSessionEvent(UINT32 sessionID, ESessionEvent sessionEvent)
 
 void s_ProcessDBQueryResults()
 {
-	auto resultQueue = g_pJunDB->BeginHandleResult();
+	g_pJunDB->BeginHandleResult();
 	DBEvent dbEvent;
-	while (resultQueue->TryGetAndPop(&dbEvent)) {
+	while (g_pJunDB->TryGetEvent(&dbEvent)) {
 		switch (dbEvent.code) {
 		case DBEventCode::QUERY_VALIDATION:
-			// Create Player
-			// SUCCESS
+			s_ProcessDBResultValidation((DBQueryValidation*)dbEvent.pEvent);
 			break;
 		case DBEventCode::QUERY_LOAD_STAT:
+			s_ProcessDBResultLoadScore((DBQueryLoadStat*)dbEvent.pEvent);
 			break;
 		case DBEventCode::QUERY_UPDATE_STAT:
+			s_ProcessDBResultUpdateScore((DBQueryUpdateStat*)dbEvent.pEvent);
 			break;
 		}
 	}
 	g_pJunDB->EndHandleResult();
+}
+
+void s_ProcessDBResultValidation(DBQueryValidation* pQueryValidation)
+{
+	DBResultUserValidation validationResult;
+	pQueryValidation->GetResult(&validationResult);
+	if (validationResult.code != DBResultCode::SUCCESS) {
+		UINT32 sessionID = pQueryValidation->GetSessionID();
+		const WCHAR* name = pQueryValidation->GetName();
+		wprintf(L"Validation failed user=%u, name=%s\n", sessionID, name);
+		return;
+	}
+	// Load Score,
+	g_pJunDB->LoadStat(pQueryValidation->GetSessionID(), validationResult.userID);
+}
+
+void s_ProcessDBResultLoadScore(DBQueryLoadStat* pQueryLoadStat)
+{
+	// Handle Failure -> return
+	DBResultLoadScore loadScoreResult;
+	pQueryLoadStat->GetResult(&loadScoreResult);
+	UINT32 sessionID = pQueryLoadStat->GetSessionID();
+	UINT32 dbIndex = pQueryLoadStat->GetID();
+	if (loadScoreResult.code != DBResultCode::SUCCESS) {
+		// validation을 통과했으므로 일반적인 경우에선 실패해선 안됨. 
+		wprintf(L"Validation failed userIndex=%u\n", dbIndex);
+		__debugbreak();
+		return;
+	}
+	
+	Player* pPlayer = g_playerManager.TryCreatePlayer(sessionID, dbIndex, loadScoreResult.hitCount, loadScoreResult.killCount, loadScoreResult.deathCount);
+
+	// Send Success to Login Message
+	const size_t msgSize = sizeof(EGameEventCode) + sizeof(PACKET_SC_LOGIN);
+	BYTE pRawMsg[msgSize] = { 0, };
+	EGameEventCode* pEvCode = (EGameEventCode*)pRawMsg;
+	*pEvCode = GAME_EVENT_CODE_SC_LOGIN;
+	PACKET_SC_LOGIN* pScLogin = (PACKET_SC_LOGIN*)(pRawMsg + sizeof(EGameEventCode));
+	pScLogin->result = true;
+	pScLogin->userDBIndex = dbIndex;
+	pScLogin->hitCount = loadScoreResult.hitCount;
+	pScLogin->killCount = loadScoreResult.killCount;
+	pScLogin->deathCount = loadScoreResult.deathCount;
+	g_pNetCore->SendMessageTo(sessionID, pRawMsg, msgSize);
+	
+	// Send snapshot
+	GamePacket::SendSnapshot(sessionID);
+
+	
+	{
+		// Create players tank
+		Tank* pTank = g_objectManager.CreateTank(dbIndex);
+		const size_t PACKET_SIZE = sizeof(EGameEventCode) + sizeof(PACKET_SC_CREATE_TANK);
+		BYTE pRawPacket[PACKET_SIZE] = { 0, };
+
+		EGameEventCode* pEvCode = (EGameEventCode*)pRawPacket;
+		*pEvCode = GAME_EVENT_CODE_SC_CREATE_TANK;
+		PACKET_SC_CREATE_TANK* pSCCreateTank = (PACKET_SC_CREATE_TANK*)(pRawPacket + sizeof(EGameEventCode));
+		pSCCreateTank->objectId = pTank->GetID();
+		pSCCreateTank->ownerId = dbIndex;
+		// 
+		memcpy(&pSCCreateTank->transform, pTank->GetTransformPtr(), sizeof(Transform));
+
+		printf("CreateTank: owner=%u, tankId=%u\n", dbIndex, pSCCreateTank->objectId);
+
+		GameServer::Broadcast(pRawPacket, PACKET_SIZE);
+	}
+}
+
+void s_ProcessDBResultUpdateScore(DBQueryUpdateStat* pQueryUpdateStat)
+{
 }
 
 

@@ -15,6 +15,8 @@ static CQueue<DBEvent> s_queryCQueue;
 static CQueue<DBEvent>* s_pResultCQueueFront;
 static CQueue<DBEvent>* s_pResultCQueueBack;
 
+static CQueue<DBEvent>* s_pTmpCQueue;
+
 static SRWLOCK s_resultQueueLock;
 static BOOL s_isResultQueueProcessing;
 
@@ -56,6 +58,7 @@ DBErrorCode JunDB::Start(const DBConnectionInfo connectionInfo, SHORT numThreads
 
 	s_pResultCQueueFront = new CQueue<DBEvent>;
 	s_pResultCQueueBack = new CQueue<DBEvent>;
+	s_pTmpCQueue = new CQueue<DBEvent>;
 
 	s_hThreads = new HANDLE[numThreads];
 	s_hQueryEvents = new HANDLE[numThreads];
@@ -105,12 +108,12 @@ void JunDB::ValidateUserInfo(const WCHAR* ID, const WCHAR* pw, UINT32 sessionID)
 	SetQueryEvents();
 }
 
-void JunDB::LoadStat(int userID)
+void JunDB::LoadStat(UINT32 sessionID, int userID)
 {
 	DBEvent ev;
 	ev.code = DBEventCode::QUERY_LOAD_STAT;
 
-	DBQueryLoadStat* query = new DBQueryLoadStat(userID);
+	DBQueryLoadStat* query = new DBQueryLoadStat(userID, sessionID);
 
 	ev.pEvent = (void*)query;
 
@@ -130,7 +133,7 @@ void JunDB::UpdateStat(int userID, int hitCount, int killCount, int deathCount)
 	SetQueryEvents();
 }
 
-CQueue<DBEvent>* JunDB::BeginHandleResult()
+void JunDB::BeginHandleResult()
 {
 	AcquireSRWLockExclusive(&s_resultQueueLock);
 	if (s_isResultQueueProcessing) {
@@ -142,12 +145,31 @@ CQueue<DBEvent>* JunDB::BeginHandleResult()
 	s_pResultCQueueBack = s_pResultCQueueFront;
 	s_pResultCQueueFront = tmp;
 	ReleaseSRWLockExclusive(&s_resultQueueLock);
+}
 
-	return s_pResultCQueueFront;
+BOOL JunDB::TryGetEvent(DBEvent* out)
+{
+	if (!s_isResultQueueProcessing) {
+		__debugbreak();
+	}
+
+	DBEvent dbEvent;
+	BOOL nonempty = s_pResultCQueueFront->TryGetAndPop(&dbEvent);
+
+	s_pTmpCQueue->Push(dbEvent);
+	*out = dbEvent;
+
+	return nonempty;
 }
 
 void JunDB::EndHandleResult()
 {
+	assert(s_pResultCQueueFront->empty());
+	DBEvent dbEvent;
+	while (s_pTmpCQueue->TryGetAndPop(&dbEvent)) {
+		delete dbEvent.pEvent;
+	}
+
 	AcquireSRWLockExclusive(&s_resultQueueLock);
 	if (!s_isResultQueueProcessing) {
 		__debugbreak();

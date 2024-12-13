@@ -47,7 +47,7 @@ struct PACKET_CS_LOGIN
 struct PACKET_SC_LOGIN
 {
 	BOOL result;
-	UINT32 playerKey;
+	UINT32 userDBIndex;
 	int hitCount;
 	int killCount;
 	int deathCount;
@@ -55,7 +55,7 @@ struct PACKET_SC_LOGIN
 
 struct PACKET_CS_LOAD_PLAYER_STAT
 {
-	UINT32 playerKey;
+	UINT32 userDBIndex;
 };
 
 struct PACKET_SC_LOAD_PLAYER_STAT
