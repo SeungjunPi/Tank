@@ -155,8 +155,9 @@ BOOL JunDB::TryGetEvent(DBEvent* out)
 
 	DBEvent dbEvent;
 	BOOL nonempty = s_pResultCQueueFront->TryGetAndPop(&dbEvent);
-
-	s_pTmpCQueue->Push(dbEvent);
+	if (nonempty) {
+		s_pTmpCQueue->Push(dbEvent);
+	}
 	*out = dbEvent;
 
 	return nonempty;

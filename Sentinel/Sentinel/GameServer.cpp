@@ -270,12 +270,13 @@ void s_ProcessDBResultValidation(DBQueryValidation* pQueryValidation)
 {
 	DBResultUserValidation validationResult;
 	pQueryValidation->GetResult(&validationResult);
+	UINT32 sessionID = pQueryValidation->GetSessionID();
+	const WCHAR* name = pQueryValidation->GetName();
 	if (validationResult.code != DBResultCode::SUCCESS) {
-		UINT32 sessionID = pQueryValidation->GetSessionID();
-		const WCHAR* name = pQueryValidation->GetName();
 		wprintf(L"Validation failed user=%u, name=%s\n", sessionID, name);
 		return;
 	}
+	printf("Validation Successed to session=%u, user=%u\n", sessionID, validationResult.userID);
 	// Load Score,
 	g_pJunDB->LoadStat(pQueryValidation->GetSessionID(), validationResult.userID);
 }
@@ -293,6 +294,7 @@ void s_ProcessDBResultLoadScore(DBQueryLoadStat* pQueryLoadStat)
 		__debugbreak();
 		return;
 	}
+	printf("Load Score to user=%u complete.\n", dbIndex);
 	
 	Player* pPlayer = g_playerManager.TryCreatePlayer(sessionID, dbIndex, loadScoreResult.hitCount, loadScoreResult.killCount, loadScoreResult.deathCount);
 
