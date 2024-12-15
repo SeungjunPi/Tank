@@ -22,7 +22,9 @@ public:
 	UINT16 GetAllSessionIDs(SessionID* out);
 	
 
-	Player* GetPlayer(UserDBIndex userIndex) const;
+	Player* GetPlayerByUserIndex(UserDBIndex userIndex) const;
+	Player* GetPlayerBySessionID(SessionID sessionID) const;
+	
 
 	void IncreaseHitCount(UserDBIndex userIndex);
 	void IncreaseKillCount(UserDBIndex userIndex);
@@ -30,7 +32,7 @@ public:
 
 
 private:
-	PointerTable _playerTable;
+	PointerTable32 _playerTable;
 
 	UserIdentifierManager* _pUserIdentifierManager;
 

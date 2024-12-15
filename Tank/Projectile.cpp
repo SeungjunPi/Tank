@@ -4,7 +4,7 @@
 
 const float VELOCITY_WEIGHT = 1.5f;
 
-void Projectile::Initiate(UINT32 id, Transform* transform)
+void Projectile::Initiate(ObjectID id, Transform* transform)
 {
 	_id = id;
 	memcpy(&_transform, transform, sizeof(Transform));

@@ -35,7 +35,7 @@ public:
 private:
 	SHORT* _ids = nullptr;
 	SHORT _currentIdIndex = 0;
-	PointerTable _pointerTable;
+	PointerTable32 _pointerTable;
 
 	SRWLOCK _srwLock = SRWLOCK_INIT;
 };

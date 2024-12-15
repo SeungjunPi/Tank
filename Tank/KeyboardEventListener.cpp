@@ -30,8 +30,8 @@ void KeyboardEventListener::Terminate()
 
 void KeyboardEventListener::ProcessInputs()
 {
-
-	if (GetForegroundWindow() != s_gameWindowHandle) {
+	HWND currentWindowHandle = GetForegroundWindow();
+	if (currentWindowHandle != s_gameWindowHandle) {
 		// Todo: 윈도우 비활성화 시 모든 입력을 비활성화하게 변경, 필요시 OnKeyUp을 호출하게 변경 
 		return;
 	}

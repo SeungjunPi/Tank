@@ -5,7 +5,7 @@
 
 void ObjectManager::Initiate()
 {
-	_unusedObjectIdQueue.Initiate(sizeof(UINT16), NUM_OBJECTS_MAX);
+	_unusedObjectIdQueue.Initiate(sizeof(ObjectID), NUM_OBJECTS_MAX);
 	
 	_tankTable.Initiate(NUM_OBJECTS_MAX);
 	_tankTableByOwner.Initiate(NUM_OBJECTS_MAX);
@@ -13,14 +13,14 @@ void ObjectManager::Initiate()
 	_projectileTable.Initiate(NUM_OBJECTS_MAX);
 	_obstacleTable.Initiate(NUM_OBJECTS_MAX);
 
-	for (UINT16 i = 0; i < NUM_OBJECTS_MAX; ++i) {
+	for (ObjectID i = 0; i < NUM_OBJECTS_MAX; ++i) {
 		_unusedObjectIdQueue.Push(&i);
 	}
 }
 
 void ObjectManager::Terminate()
 {
-	int* keys = new int[NUM_OBJECTS_MAX];
+	ObjectID* keys = new ObjectID[NUM_OBJECTS_MAX];
 	int numCounts = 0;
 
 
@@ -54,23 +54,23 @@ void ObjectManager::Terminate()
 	_unusedObjectIdQueue.Terminate();
 }
 
-Tank* ObjectManager::CreateTank(UINT32 ownerId)
+Tank* ObjectManager::CreateTank(UserDBIndex ownerIndex)
 {
 	assert(_unusedObjectIdQueue.GetCount() != 0);
-	UINT16 objectId;
+	ObjectID objectId;
 	_unusedObjectIdQueue.TryPopTo(&objectId);
 	assert(objectId != UINT16_MAX);
 
-	Tank* pTank = new Tank(objectId, ownerId);
+	Tank* pTank = new Tank(objectId, ownerIndex);
 	bool res = _tankTable.Insert(objectId, pTank);
 	assert(res);
-	res = _tankTableByOwner.Insert(ownerId, pTank);
+	res = _tankTableByOwner.Insert(ownerIndex, pTank);
 	assert(res);
 
 	return pTank;
 }
 
-void ObjectManager::RemoveTank(UINT16 objectId, UINT32 ownerId)
+void ObjectManager::RemoveTank(ObjectID objectId, UserDBIndex ownerId)
 {
 	Tank* pTank = (Tank*)_tankTable.Pop(objectId);
 	assert(pTank != nullptr);
@@ -81,7 +81,7 @@ void ObjectManager::RemoveTank(UINT16 objectId, UINT32 ownerId)
 	delete pTank;
 }
 
-Projectile* ObjectManager::CreateProjectile(UINT32 ownerId, Transform* pTransform)
+Projectile* ObjectManager::CreateProjectile(UserDBIndex ownerId, Transform* pTransform)
 {
 	assert(_unusedObjectIdQueue.GetCount() != 0);
 	UINT16 objectId;
@@ -96,7 +96,7 @@ Projectile* ObjectManager::CreateProjectile(UINT32 ownerId, Transform* pTransfor
 	return pProjectile;
 }
 
-void ObjectManager::RemoveProjectile(UINT16 objectId)
+void ObjectManager::RemoveProjectile(ObjectID objectId)
 {
 	Projectile* pProjectile = (Projectile*)_projectileTable.Pop(objectId);
 	assert(pProjectile != nullptr);
@@ -105,20 +105,20 @@ void ObjectManager::RemoveProjectile(UINT16 objectId)
 	delete pProjectile;
 }
 
-Tank* ObjectManager::GetTankByObjectId(UINT16 objectId)
+Tank* ObjectManager::GetTankByObjectId(ObjectID objectId)
 {
 	Tank* pTank = (Tank*)_tankTable.Get(objectId);
 	assert(pTank != nullptr);
 	return pTank;
 }
 
-Tank* ObjectManager::GetTankByOwnerId(UINT32 ownerId)
+Tank* ObjectManager::GetTankByOwnerId(UserDBIndex ownerId)
 {
 	Tank* pTank = (Tank*)_tankTableByOwner.Get(ownerId);
 	return pTank;
 }
 
-void ObjectManager::StartTankMove(UINT32 ownerId, EMOVEMENT movement)
+void ObjectManager::StartTankMove(UserDBIndex ownerId, EMOVEMENT movement)
 {
 	Tank* pTank = (Tank*)_tankTableByOwner.Get(ownerId);
 	if (pTank == nullptr) {
@@ -128,7 +128,7 @@ void ObjectManager::StartTankMove(UINT32 ownerId, EMOVEMENT movement)
 	pTank->StartMove(movement);
 }
 
-void ObjectManager::EndTankMove(UINT32 ownerId, EMOVEMENT movement)
+void ObjectManager::EndTankMove(UserDBIndex ownerId, EMOVEMENT movement)
 {
 	Tank* pTank = (Tank*)_tankTableByOwner.Get(ownerId);
 	if (pTank == nullptr) {
@@ -138,7 +138,7 @@ void ObjectManager::EndTankMove(UINT32 ownerId, EMOVEMENT movement)
 	pTank->EndMove(movement);
 }
 
-void ObjectManager::StartTankRotate(UINT32 ownerId, EROTATION rotation)
+void ObjectManager::StartTankRotate(UserDBIndex ownerId, EROTATION rotation)
 {
 	Tank* pTank = (Tank*)_tankTableByOwner.Get(ownerId);
 	if (pTank == nullptr) {
@@ -148,7 +148,7 @@ void ObjectManager::StartTankRotate(UINT32 ownerId, EROTATION rotation)
 	pTank->StartRotate(rotation);
 }
 
-void ObjectManager::EndTankRotate(UINT32 ownerId, EROTATION rotation)
+void ObjectManager::EndTankRotate(UserDBIndex ownerId, EROTATION rotation)
 {
 	Tank* pTank = (Tank*)_tankTableByOwner.Get(ownerId);
 	if (pTank == nullptr) {
@@ -158,7 +158,7 @@ void ObjectManager::EndTankRotate(UINT32 ownerId, EROTATION rotation)
 	pTank->EndRotate(rotation);
 }
 
-void ObjectManager::UpdateTankTransform(UINT16 objectId, const Transform* pTransform)
+void ObjectManager::UpdateTankTransform(ObjectID objectId, const Transform* pTransform)
 {
 	Tank* pTank = (Tank*)_tankTable.Get(objectId);
 	assert(pTank != nullptr);
@@ -166,7 +166,7 @@ void ObjectManager::UpdateTankTransform(UINT16 objectId, const Transform* pTrans
 	pTank->UpdateTransform(pTransform);
 }
 
-void ObjectManager::UpdateTankTransform(UINT32 ownerId, const Transform* pTransform)
+void ObjectManager::UpdateTankTransform(UserDBIndex ownerId, const Transform* pTransform)
 {
 	Tank* pTank = (Tank*)_tankTableByOwner.Get(ownerId);
 	if (pTank == nullptr) {
@@ -185,7 +185,7 @@ UINT16 ObjectManager::GetCountObjects() const
 
 void ObjectManager::CopySnapshot(PACKET_OBJECT_INFO* dst)
 {
-	int* keys = new int[NUM_OBJECTS_MAX];
+	ObjectID* keys = new ObjectID[NUM_OBJECTS_MAX];
 	int numCounts = 0;
 	_tankTable.GetIdsTo(keys, &numCounts);
 
@@ -203,7 +203,7 @@ void ObjectManager::CopySnapshot(PACKET_OBJECT_INFO* dst)
 	}
 }
 
-void ObjectManager::RemoveObject(EGameObjectKind objectKind, UINT32 key)
+void ObjectManager::RemoveObject(EGameObjectKind objectKind, ObjectID key)
 {
 	void* ptr = nullptr;
 	switch (objectKind) {
@@ -229,14 +229,14 @@ void ObjectManager::RemoveObject(EGameObjectKind objectKind, UINT32 key)
 	_unusedObjectIdQueue.Push(&key);
 }
 
-void ObjectManager::GetKeys(EGameObjectKind objectKind, UINT* out_keys, int* out_numKeys) const
+void ObjectManager::GetKeys(EGameObjectKind objectKind, ObjectID* out_keys, int* out_numKeys) const
 {
 	if (out_keys == nullptr || out_numKeys == nullptr) {
 		__debugbreak();
 		return;
 	}
 
-	int* keys = (int*)out_keys;
+	ObjectID* keys = (ObjectID*)out_keys;
 
 	switch (objectKind) {
 		break;
@@ -255,7 +255,7 @@ void ObjectManager::GetKeys(EGameObjectKind objectKind, UINT* out_keys, int* out
 	}
 }
 
-GameObject* ObjectManager::GetObjectPtrOrNull(EGameObjectKind objectKind, UINT key)
+GameObject* ObjectManager::GetObjectPtrOrNull(EGameObjectKind objectKind, ObjectID key)
 {
 	GameObject* pGameObject = nullptr;
 

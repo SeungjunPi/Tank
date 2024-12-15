@@ -9,7 +9,7 @@ class DotObject : public GameObject
 {
 public:
 	DotObject();
-	DotObject(UINT32 id);
+	DotObject(ObjectID id);
 	~DotObject();
 
 	void MoveUp();

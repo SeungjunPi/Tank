@@ -8,11 +8,11 @@
 class Tank : public GameObject
 {
 public:
-	Tank(UINT16 id);
+	Tank(ObjectID id);
 	Tank() = default;
 	~Tank();
 
-	void Initiate(UINT16 id);
+	void Initiate(ObjectID id);
 	void Terminate();
 
 	void StartMove(EMOVEMENT movement);
@@ -37,7 +37,7 @@ public:
 
 private:
 	Vector3 _forwardDirection;
-	UINT32 _ownerId = 0;
+	UserIndex _ownerId = 0;
 
 	bool _isMovingFoward = false;
 	bool _isMovingBackward = false;

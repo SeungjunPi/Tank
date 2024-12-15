@@ -93,6 +93,9 @@
     <ClCompile Include="..\Sentinel\NetCore\PointerTable.cpp">
       <Filter>Data Structs</Filter>
     </ClCompile>
+    <ClCompile Include="TankAliases.h">
+      <Filter>pch</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">

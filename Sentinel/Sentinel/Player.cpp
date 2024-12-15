@@ -2,7 +2,7 @@
 
 Player::Player(SessionID sessionId, UserDBIndex userID)
 	: _sessionId(sessionId)
-	, _userID(userID)
+	, _userIndex(userID)
 {
 }
 

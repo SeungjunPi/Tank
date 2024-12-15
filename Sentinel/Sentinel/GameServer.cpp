@@ -198,20 +198,27 @@ void OnSessionDisconnect(UINT32 sessionID)
 {
 	printf("Session %u disconnected\n", sessionID);
 
-	Player* pPlayer = g_playerManager.GetPlayer(sessionID);
+	Player* pPlayer = g_playerManager.GetPlayerBySessionID(sessionID);
+	if (pPlayer == nullptr) {
+		// Validation 실패, 또는 Validation 이전에 종료된 session.
+		return;
+	}
+
+	UserDBIndex userDBIndex = pPlayer->GetUserIndex();
 	g_playerManager.TryDeletePlayerBySessionID(sessionID);
-	Tank* pTank = g_objectManager.GetTankByOwnerId(sessionID);
+	
+	Tank* pTank = g_objectManager.GetTankByOwnerId(userDBIndex);
 	if (pTank != nullptr) {
-		printf("RemoveTank: owner=%u, tankId=%u\n", sessionID, pTank->GetID());
+		printf("RemoveTank: owner=%u, tankId=%u\n", userDBIndex, pTank->GetID());
 		GamePacket::BroadcastDeleteTank(pTank->GetID());
-		g_objectManager.RemoveTank(pTank->GetID(), sessionID);
+		g_objectManager.RemoveTank(pTank->GetID(), userDBIndex);
 	}
 }
 
 
 void s_CleanupDestroyedObjects(ULONGLONG curTick)
 {
-	UINT keys[1024];
+	ObjectID keys[1024];
 	int numObj;
 
 	for (int i = 0; i <= (int)GAME_OBJECT_KIND_OBSTACLE; ++i) {
@@ -342,7 +349,7 @@ void s_ProcessDBResultUpdateScore(DBQueryUpdateStat* pQueryUpdateStat)
 
 void s_ApplyObjectLogic(ULONGLONG tickDiff)
 {
-	UINT keys[1024];
+	ObjectID keys[1024];
 	int countKeys;
 
 	int objectKindEnumMax = (int)GAME_OBJECT_KIND_OBSTACLE;
@@ -364,8 +371,8 @@ void s_ApplyObjectLogic(ULONGLONG tickDiff)
 void s_CollideObjects(ULONGLONG currentTick)
 {
 	// consider hit per projectile
-	UINT projectileKeys[1024];
-	UINT otherObjectKeys[1024];
+	ObjectID projectileKeys[1024];
+	ObjectID otherObjectKeys[1024];
 	int numProjectiles;
 	g_objectManager.GetKeys(GAME_OBJECT_KIND_PROJECTILE, projectileKeys, &numProjectiles);
 	for (int i = 0; i < numProjectiles; ++i) {

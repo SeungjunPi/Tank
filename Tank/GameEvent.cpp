@@ -3,6 +3,7 @@
 #include "NetCore.h"
 #include "Tank.h"
 #include "AllocObjectManager.h"
+#include "Game.h"
 
 BOOL GamePacket::Validate(BYTE* pGameEvent, UINT32 senderId)
 {
@@ -14,7 +15,7 @@ void GamePacket::HandlePacket(BYTE* pGameEvent, UINT32 senderId)
 	EGameEventCode* evCode = (EGameEventCode*)pGameEvent;
 	switch (*evCode) {
 	case GAME_EVENT_CODE_SC_LOGIN:
-		// TODO: Handle login packet
+		HandleLoginResult(pGameEvent, senderId);
 		break;
 	case GAME_EVENT_CODE_SC_PLAYER_ID:
 		HandlePlayerId(pGameEvent, senderId);
@@ -52,6 +53,20 @@ void GamePacket::HandlePacket(BYTE* pGameEvent, UINT32 senderId)
 	}
 }
 
+
+void GamePacket::HandleLoginResult(BYTE* pGameEvent, UINT32 senderId)
+{
+	PACKET_SC_LOGIN* pScLogin = (PACKET_SC_LOGIN*)(pGameEvent + sizeof(EGameEventCode));
+	if (pScLogin->result == FALSE) {
+		// End game.
+		Game::Shutdown();
+		return;
+	}
+	g_playerId = pScLogin->playerKey;
+	g_score.hit = pScLogin->hitCount;
+	g_score.kill = pScLogin->killCount;
+	g_score.death = pScLogin->deathCount;
+}
 
 void GamePacket::HandlePlayerId(BYTE* pGameEvent, UINT32 senderId)
 {

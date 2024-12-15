@@ -10,7 +10,7 @@ public:
 	Obstacle() = default;
 	~Obstacle() = default;
 
-	void Initiate(UINT id, Transform* pInitTransform);
+	void Initiate(ObjectID id, Transform* pInitTransform);
 	void Terminate();
 
 	void OnHit(ULONGLONG currentTick) override;

@@ -189,8 +189,10 @@ public:
 	static void SendShoot(const Transform* pTurretTransform);
 
 private:
-	static void HandlePlayerId(BYTE* pGameEvent, UINT32 senderId);
-	static BOOL ValidatePlayerId(BYTE* pGameEvent, UINT32 senderId);
+	static void HandleLoginResult(BYTE* pGameEvent, UINT32 senderId);
+
+	static void HandlePlayerId(BYTE* pGameEvent, UINT32 senderId); // Deprecated
+	static BOOL ValidatePlayerId(BYTE* pGameEvent, UINT32 senderId); // Deprecated
 
 	static void HandleCreateTank(BYTE* pGameEvent, UINT32 senderId);
 	static BOOL ValidateCreateTank(BYTE* pGameEvent, UINT32 senderId);

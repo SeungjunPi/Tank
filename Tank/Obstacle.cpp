@@ -2,7 +2,7 @@
 #include "Obstacle.h"
 #include "StaticData.h"
 
-void Obstacle::Initiate(UINT id, Transform* pInitTransform)
+void Obstacle::Initiate(ObjectID id, Transform* pInitTransform)
 {
 	memcpy(&_transform, pInitTransform, sizeof(Transform));
 	_id = id;

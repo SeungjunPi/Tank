@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GameStruct.h"
+#include "SentinelAliases.h"
 
 const Vector3 FORWARD_DIRECTION = { .0f, -1.0f, .0f };
 
@@ -23,11 +24,11 @@ class GameObject
 {
 public:
 	GameObject();
-	GameObject(UINT16 id, UINT32 ownerId);
-	GameObject(UINT16 id, UINT32 ownerId, BOOL activatable);
+	GameObject(ObjectID id, UserDBIndex ownerId);
+	GameObject(ObjectID id, UserDBIndex ownerId, BOOL activatable);
 	~GameObject();
 
-	UINT16 GetID() const;
+	ObjectID GetID() const;
 	Transform GetTransform() const;
 	const Transform* GetTransformPtr() const;
 	Vector3 GetPosition() const;
@@ -43,7 +44,7 @@ public:
 
 	BOOL IsDirty();
 
-	UINT32 GetOwnerId() const;
+	UserDBIndex GetOwnerId() const;
 
 
 
@@ -60,8 +61,8 @@ public:
 protected:
 	BOOL _isActivatable = false; // TODO: 탱크 외에도 이런게 없으면 탱크 처리 로직을 아예 분리하는 편이 나으므로, 고려해보기.
 	Transform _transform = { 0, };
-	UINT16 _id = 0;
-	UINT32 _ownerId = 0;
+	ObjectID _id = 0;
+	UserDBIndex _ownerIndex = 0;
 	float _colliderSize = 0;
 	BOOL _dirty = false;
 	BOOL _isAlive = true;

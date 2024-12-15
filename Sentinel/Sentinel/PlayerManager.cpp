@@ -117,26 +117,36 @@ UINT16 PlayerManager::GetAllSessionIDs(SessionID* out)
 	return _countPlayers;
 }
 
-Player* PlayerManager::GetPlayer(UserDBIndex index) const
+Player* PlayerManager::GetPlayerByUserIndex(UserDBIndex index) const
 {
 	return (Player*)_playerTable.Get(index);
 }
 
+Player* PlayerManager::GetPlayerBySessionID(SessionID sessionID) const
+{
+	UserDBIndex dbIndex = _pUserIdentifierManager->GetUserDBIndex(sessionID);
+	if (dbIndex == 0) {
+		return nullptr;
+	}
+	Player* pPlayer = GetPlayerByUserIndex(dbIndex);
+	return pPlayer;
+}
+
 void PlayerManager::IncreaseHitCount(UserDBIndex userIndex)
 {
-	Player* pPlayer = GetPlayer(userIndex);
+	Player* pPlayer = GetPlayerByUserIndex(userIndex);
 	pPlayer->IncreaseHitCount();
 }
 
 void PlayerManager::IncreaseKillCount(UserDBIndex userIndex)
 {
-	Player* pPlayer = GetPlayer(userIndex);
+	Player* pPlayer = GetPlayerByUserIndex(userIndex);
 	pPlayer->IncreaseKillCount();
 }
 
 void PlayerManager::IncreaseDeathCount(UserDBIndex userIndex)
 {
-	Player* pPlayer = GetPlayer(userIndex);
+	Player* pPlayer = GetPlayerByUserIndex(userIndex);
 	pPlayer->IncreaseDeathCount();
 }
 

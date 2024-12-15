@@ -23,11 +23,11 @@ class GameObject
 {
 public:
 	GameObject();
-	GameObject(UINT16 id);
-	GameObject(UINT16 id, BOOL activatable);
+	GameObject(ObjectID id);
+	GameObject(ObjectID id, BOOL activatable);
 	~GameObject();
 
-	UINT16 GetID() const;
+	ObjectID GetID() const;
 	Transform GetTransform() const;
 	const Transform* GetTransformPtr() const;
 	Vector3 GetPosition() const;
@@ -59,7 +59,7 @@ public:
 protected:
 	BOOL _isActivatable = false; // TODO: 탱크 외에도 이런게 없으면 탱크 처리 로직을 아예 분리하는 편이 나으므로, 고려해보기.
 	Transform _transform = { 0, };
-	UINT16 _id = 0;
+	ObjectID _id = 0;
 	Model _model;
 	float _colliderSize = 0;
 	BOOL _dirty = false;

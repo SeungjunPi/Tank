@@ -12,7 +12,7 @@ public:
 	Player(SessionID sessionID, UserDBIndex userID);
 	SessionID GetSessionID() const;
 
-	UserDBIndex GetUserID() const { return _userID; }
+	UserDBIndex GetUserIndex() const { return _userIndex; }
 
 	UINT16 GetTankId() const;
 	void SetTankId(UINT16 tankId);
@@ -23,7 +23,7 @@ public:
 
 private:
 	SessionID _sessionId = 0;
-	UINT32 _userID = 0;
+	UINT32 _userIndex = 0;
 	UINT16 _tankId = 0;
 
 	UINT16 _hitCount = 0;

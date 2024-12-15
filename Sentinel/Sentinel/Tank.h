@@ -7,11 +7,11 @@
 class Tank: public GameObject
 {
 public:
-	Tank(UINT16 id, UINT32 ownerId);
+	Tank(ObjectID id, UserDBIndex ownerId);
 	Tank() = default;
 	~Tank();
 
-	void Initiate(UINT16 id);
+	void Initiate(ObjectID id);
 	void Terminate();
 
 	void StartMove(EMOVEMENT movement);

@@ -97,6 +97,12 @@ void Game::Start()
 	}
 }
 
+void Game::Shutdown()
+{
+	s_isRunning = false;
+	// TODO: clean memory
+}
+
 void Game::End()
 {
 	
@@ -174,7 +180,7 @@ void s_ApplyKeyboardEvents(ULONGLONG tickDiff)
 
 void s_ApplyObjectLogic(ULONGLONG tickDiff)
 {
-	UINT keys[128];
+	ObjectID keys[128];
 	int countKeys;
 
 	int objectKindEnumMax = (int)GAME_OBJECT_KIND_OBSTACLE;
@@ -221,8 +227,8 @@ void s_HandleNetEvents()
 void s_CollideObjects(ULONGLONG currentTick)
 {
 	// consider hit per projectile
-	UINT projectileKeys[32];
-	UINT otherObjectKeys[32];
+	ObjectID projectileKeys[32];
+	ObjectID otherObjectKeys[32];
 	int numProjectiles;
 	g_objectManager.GetKeys(GAME_OBJECT_KIND_PROJECTILE, projectileKeys, &numProjectiles);
 	for (int i = 0; i < numProjectiles; ++i) {
@@ -291,7 +297,7 @@ BOOL s_IsShootable()
 
 void s_CleanupDestroyedObjects(ULONGLONG curTick)
 {
-	UINT keys[1024];
+	ObjectID keys[1024];
 	int numObj;
 
 	for (int i = 0; i <= (int)GAME_OBJECT_KIND_OBSTACLE; ++i) {

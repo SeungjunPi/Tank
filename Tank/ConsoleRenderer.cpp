@@ -188,7 +188,7 @@ void s_Draw(SHORT x, SHORT y, WCHAR c)
 void ConsoleRenderer::DrawObjects()
 {
 	int countObjects = 0;
-	UINT keys[128];
+	ObjectID keys[128];
 
 
 	int objectKindMax = (int)GAME_OBJECT_KIND_OBSTACLE;

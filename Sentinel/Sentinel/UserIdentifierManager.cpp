@@ -14,7 +14,7 @@ BOOL UserIdentifierManager::AddUserIdentifier(UserDBIndex userDBIndex, SessionID
 BOOL UserIdentifierManager::RemoveUserIdentifierByDBIndex(UserDBIndex userDBIndex)
 {
 	SessionID sessionID = _sessionIDs[userDBIndex];
-	if (sessionID == 0) {
+	if (sessionID == INVALID_SESSION_ID) {
 		__debugbreak();
 		return false;
 	}
@@ -40,7 +40,7 @@ BOOL UserIdentifierManager::RemoveUserIdentifierBySessionID(SessionID userSessio
 	}
 
 	SessionID sessionID = _sessionIDs[dbIndex];
-	if (sessionID == 0) {
+	if (sessionID == INVALID_SESSION_ID) {
 		__debugbreak();
 		return false;
 	}
@@ -54,16 +54,13 @@ BOOL UserIdentifierManager::RemoveUserIdentifierBySessionID(SessionID userSessio
 UserDBIndex UserIdentifierManager::GetUserDBIndex(SessionID sessionID)
 {
 	UserDBIndex dbIndex = _dbIndexes[sessionID];
-	if (dbIndex == 0) {
-		__debugbreak();
-	}
 	return dbIndex;
 }
 
 SessionID UserIdentifierManager::GetUserSessionID(UserDBIndex dbIndex)
 {
 	SessionID sessionID = _sessionIDs[dbIndex];
-	if (sessionID == 0) {
+	if (sessionID == INVALID_SESSION_ID) {
 		__debugbreak();
 	}
 	return sessionID;

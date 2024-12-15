@@ -53,10 +53,10 @@ class DBQuery
 {
 public:
 	DBQuery(int userID);
-	int GetID() const { return _userID; }
+	int GetID() const { return _userIndex; }
 	const WCHAR* GetQuery() const { return _query.GetWString(); }
 protected:
-	int _userID;
+	int _userIndex;
 	LiteWString _query;
 };
 

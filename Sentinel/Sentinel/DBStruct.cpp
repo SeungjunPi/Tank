@@ -1,7 +1,7 @@
 #include "DBStruct.h"
 
 DBQuery::DBQuery(int userID)
-	: _userID(userID)
+	: _userIndex(userID)
 {
 }
 
@@ -27,7 +27,7 @@ DBQueryValidation::~DBQueryValidation()
 void DBQueryValidation::SetResult(DBResultCode code, int userID)
 {
 	_result.code = code;
-	_userID = userID;
+	_result.userID = userID;
 }
 
 void DBQueryValidation::GetResult(DBResultUserValidation* out) const

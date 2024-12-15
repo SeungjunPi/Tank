@@ -3,6 +3,7 @@
 #include "GameObject.h"
 #include "PointerTable.h"
 #include "LinearQueue.h"
+#include "SentinelAliases.h"
 
 class Tank;
 class Projectile;
@@ -16,42 +17,42 @@ class ObjectManager
 public:
 	void Initiate();
 	void Terminate();
+	
+	Tank* CreateTank(UserDBIndex ownerId);
+	void RemoveTank(ObjectID objectId, UserDBIndex ownerId);
 
-	Tank* CreateTank(UINT32 ownerId);
-	void RemoveTank(UINT16 objectId, UINT32 ownerId);
+	Projectile* CreateProjectile(UserDBIndex ownerId, Transform* pTransform);
+	void RemoveProjectile(ObjectID objectId);
 
-	Projectile* CreateProjectile(UINT32 ownerId, Transform* pTransform);
-	void RemoveProjectile(UINT16 objectId);
+	Tank* GetTankByObjectId(ObjectID objectId);
+	Tank* GetTankByOwnerId(UserDBIndex ownerId);
 
-	Tank* GetTankByObjectId(UINT16 objectId);
-	Tank* GetTankByOwnerId(UINT32 ownerId);
+	void StartTankMove(UserDBIndex ownerId, EMOVEMENT movement);
+	void EndTankMove(UserDBIndex ownerId, EMOVEMENT movement);
 
-	void StartTankMove(UINT32 ownerId, EMOVEMENT movement);
-	void EndTankMove(UINT32 ownerId, EMOVEMENT movement);
-
-	void StartTankRotate(UINT32 ownerId, EROTATION rotation);
-	void EndTankRotate(UINT32 ownerId, EROTATION rotation);
+	void StartTankRotate(UserDBIndex ownerId, EROTATION rotation);
+	void EndTankRotate(UserDBIndex ownerId, EROTATION rotation);
 
 
 
-	void UpdateTankTransform(UINT16 objectId, const Transform* pTransform);
-	void UpdateTankTransform(UINT32 ownerId, const Transform* pTransform);
+	void UpdateTankTransform(ObjectID objectId, const Transform* pTransform);
+	void UpdateTankTransform(UserDBIndex ownerId, const Transform* pTransform);
 
 	UINT16 GetCountObjects() const;
 	void CopySnapshot(PACKET_OBJECT_INFO* dst);
 
-	void RemoveObject(EGameObjectKind objectKind, UINT32 key);
-	void GetKeys(EGameObjectKind objectKind, UINT* out_keys, int* out_numKeys) const;
-	GameObject* GetObjectPtrOrNull(EGameObjectKind objectKind, UINT key);
+	void RemoveObject(EGameObjectKind objectKind, ObjectID key);
+	void GetKeys(EGameObjectKind objectKind, ObjectID* out_keys, int* out_numKeys) const;
+	GameObject* GetObjectPtrOrNull(EGameObjectKind objectKind, ObjectID key);
 	
 
 private:
 	LinearQueue _unusedObjectIdQueue;
 	
-	PointerTable _tankTable;
-	PointerTable _tankTableByOwner;
+	PointerTable16 _tankTable;
+	PointerTable32 _tankTableByOwner;
 
-	PointerTable _projectileTable;
+	PointerTable16 _projectileTable;
 
-	PointerTable _obstacleTable;
+	PointerTable16 _obstacleTable;
 };

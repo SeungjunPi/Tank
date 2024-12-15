@@ -1,7 +1,7 @@
 #include "Projectile.h"
 #include "Global.h"
 
-void Projectile::Initiate(UINT32 id, Transform* transform, UINT32 ownerId)
+void Projectile::Initiate(ObjectID id, Transform* transform, UserDBIndex ownerId)
 {
 	_id = id;
 	memcpy(&_transform, transform, sizeof(Transform));
@@ -15,7 +15,7 @@ void Projectile::Initiate(UINT32 id, Transform* transform, UINT32 ownerId)
 	_dirty = true;
 	_genTick = g_previousGameTick;
 	
-	_ownerId = ownerId;
+	_ownerIndex = ownerId;
 }
 
 void Projectile::Terminate()
