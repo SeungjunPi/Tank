@@ -205,6 +205,10 @@ void OnSessionDisconnect(UINT32 sessionID)
 	}
 
 	UserDBIndex userDBIndex = pPlayer->GetUserIndex();
+	TankScore score = pPlayer->GetScore();
+
+	g_pJunDB->UpdateStat(userDBIndex, score.hitCount, score.killCount, score.deathCount);
+
 	g_playerManager.TryDeletePlayerBySessionID(sessionID);
 	
 	Tank* pTank = g_objectManager.GetTankByOwnerId(userDBIndex);

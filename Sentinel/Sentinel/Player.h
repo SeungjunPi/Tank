@@ -3,6 +3,13 @@
 #include "stdafx.h"
 #include "SentinelAliases.h"
 
+struct TankScore
+{
+	UINT16 hitCount = 0;
+	UINT16 killCount = 0;
+	UINT16 deathCount = 0;
+};
+
 class PlayerManager;
 
 class Player
@@ -16,6 +23,8 @@ public:
 
 	UINT16 GetTankId() const;
 	void SetTankId(UINT16 tankId);
+
+	TankScore GetScore() const;
 
 	void IncreaseHitCount();
 	void IncreaseKillCount();

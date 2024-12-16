@@ -21,6 +21,11 @@ void Player::SetTankId(UINT16 tankId)
 	_tankId = tankId;
 }
 
+TankScore Player::GetScore() const
+{
+	return TankScore{ _hitCount, _killCount, _deathCount };
+}
+
 void Player::IncreaseHitCount()
 {
 	++_hitCount;

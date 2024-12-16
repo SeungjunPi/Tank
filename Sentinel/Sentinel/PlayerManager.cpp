@@ -47,26 +47,8 @@ Player* PlayerManager::TryCreatePlayer(SessionID sessionID, UserDBIndex userDBIn
 BOOL PlayerManager::TryDeletePlayerBySessionID(SessionID sessionID)
 {
 	UserDBIndex dbIndex = _pUserIdentifierManager->GetUserDBIndex(sessionID);
-	BOOL success = _pUserIdentifierManager->RemoveUserIdentifierBySessionID(sessionID);
-	assert(success);
-	Player* pPlayer = (Player*)_playerTable.Pop(dbIndex);
-	if (pPlayer == nullptr) {
-		return false;
-	}
-	delete pPlayer;
-
-	for (UINT16 i = 0; i < _countPlayers; ++i) {
-		if (_usedDbIndexes[i] == dbIndex) {
-			_countPlayers--;
-			_usedDbIndexes[i] = _usedDbIndexes[_countPlayers];
-			_usedDbIndexes[_countPlayers] = 0;
-			break;
-		}
-
-		assert(i < _countPlayers - 1);
-	}
-
-	return true;
+	BOOL success = TryDeletePlayerByUserIndex(dbIndex);
+	return success;
 }
 
 BOOL PlayerManager::TryDeletePlayerByUserIndex(UserDBIndex userIndex)
@@ -78,6 +60,9 @@ BOOL PlayerManager::TryDeletePlayerByUserIndex(UserDBIndex userIndex)
 	if (pPlayer == nullptr) {
 		return false;
 	}
+
+	
+
 	delete pPlayer;
 
 	for (UINT16 i = 0; i < _countPlayers; ++i) {
