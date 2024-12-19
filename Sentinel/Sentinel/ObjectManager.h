@@ -17,6 +17,8 @@ class ObjectManager
 public:
 	void Initiate();
 	void Terminate();
+
+	EGameObjectKind FindObjectKindByID(ObjectID id);
 	
 	Tank* CreateTank(UserDBIndex ownerId);
 	void RemoveTank(ObjectID objectId, UserDBIndex ownerId);

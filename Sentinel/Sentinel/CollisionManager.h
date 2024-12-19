@@ -12,11 +12,12 @@ public:
 	CollisionManager();
 	~CollisionManager();
 
-	Collider* GetNewColliderPtr(int radius, ObjectID objectID);
+	Collider* GetNewColliderPtr(float radius, ObjectID objectID);
+	Collider* GetActiveColliderPtr(ColliderID id);
 	void ReturnCollider(Collider* pColloder);
 
+	// 이전 호출의 결과를 모두 초기화하고 현재 상태를 기준으로 검출함
 	UINT32 DetectCollision(ColliderID** out);
-	void ResetAllColliders();
 private:
 	Collider* _colliders = nullptr;
 	ColliderID* _usedIDs = nullptr;
@@ -25,5 +26,6 @@ private:
 
 	void PopUsedIDs(ColliderID id);
 	ColliderID GetUnusedID();
+	void ResetAllColliders();
 };
 

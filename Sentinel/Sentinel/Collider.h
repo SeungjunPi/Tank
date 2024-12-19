@@ -25,7 +25,9 @@ public:
 	void UpdateCenterPosition(const Vector3* position);
 
 	// 최소한 MAX_SIMULTANEOUS_COLLISIONS 개수 이상의 공간이 out에 확보할 것을 권장. 
-	UINT16 GetCollidingIDsAndReset(ColliderID* out);
+	UINT16 GetCollidingIDs(ColliderID* out);
+
+	void ClearCollisionInfo();
 	
 private:
 	Vector3 _center;
@@ -42,4 +44,6 @@ private:
 
 	// 반환하기 위해 내부를 모두 초기화하는 용도로 사용
 	void Deactivate();
+
+	BOOL IsActive() const { return _objectID != INVALID_OBJECT_ID; }
 };

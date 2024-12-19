@@ -17,7 +17,7 @@ CollisionManager::~CollisionManager()
 	delete[] _collidedColliderIDs;
 }
 
-Collider* CollisionManager::GetNewColliderPtr(int radius, ObjectID objectID)
+Collider* CollisionManager::GetNewColliderPtr(float radius, ObjectID objectID)
 {
 	ColliderID id = GetUnusedID();
 	Collider* pCollider = _colliders + id;
@@ -26,6 +26,16 @@ Collider* CollisionManager::GetNewColliderPtr(int radius, ObjectID objectID)
 	++_countActiveColliders;
 	
 	return pCollider;
+}
+
+Collider* CollisionManager::GetActiveColliderPtr(ColliderID id)
+{
+	Collider* pCol = _colliders + id;
+	if (pCol->IsActive()) {
+		return pCol;
+	}
+	
+	return nullptr;
 }
 
 void CollisionManager::ReturnCollider(Collider* pCollider)
@@ -37,6 +47,8 @@ void CollisionManager::ReturnCollider(Collider* pCollider)
 
 UINT32 CollisionManager::DetectCollision(ColliderID** out)
 {
+	ResetAllColliders();
+
 	UINT32 countCollidedColliders = 0;
 	*out = _collidedColliderIDs;
 	for (size_t i = 0; i < _countActiveColliders; ++i) {
@@ -74,7 +86,7 @@ void CollisionManager::ResetAllColliders()
 {
 	for (int i = 0; i < _countActiveColliders; ++i) {
 		ColliderID id = _usedIDs[i];
-		_colliders[id].Deactivate();
+		_colliders[id].ClearCollisionInfo();
 	}
 }
 

@@ -54,6 +54,34 @@ void ObjectManager::Terminate()
 	_unusedObjectIdQueue.Terminate();
 }
 
+EGameObjectKind ObjectManager::FindObjectKindByID(ObjectID id)
+{
+	ObjectID objectIDs[NUM_OBJECTS_MAX];
+	int numObjects = 0;
+	_tankTable.GetIdsTo(objectIDs, &numObjects);
+	for (int i = 0; i < numObjects; ++i) {
+		if (objectIDs[i] == id) {
+			return GAME_OBJECT_KIND_TANK;
+		}
+	}
+
+	_projectileTable.GetIdsTo(objectIDs, &numObjects);
+	for (int i = 0; i < numObjects; ++i) {
+		if (objectIDs[i] == id) {
+			return GAME_OBJECT_KIND_PROJECTILE;
+		}
+	}
+
+	_obstacleTable.GetIdsTo(objectIDs, &numObjects);
+	for (int i = 0; i < numObjects; ++i) {
+		if (objectIDs[i] == id) {
+			return GAME_OBJECT_KIND_OBSTACLE;
+		}
+	}
+	
+	return GAME_OBJECT_KIND_INVALID;
+}
+
 Tank* ObjectManager::CreateTank(UserDBIndex ownerIndex)
 {
 	assert(_unusedObjectIdQueue.GetCount() != 0);

@@ -16,14 +16,17 @@ void Collider::UpdateCenterPosition(const Vector3* position)
 	memcpy(&_center, position, sizeof(Vector3));
 }
 
-UINT16 Collider::GetCollidingIDsAndReset(ColliderID* out)
+UINT16 Collider::GetCollidingIDs(ColliderID* out)
 {
-	UINT16 count = _countColliding;
-	if (count > 0) {
-		memcpy(out, _collidingIDs, sizeof(ColliderID) * count);
-		_countColliding = 0;
+	if (_countColliding > 0) {
+		memcpy(out, _collidingIDs, sizeof(ColliderID) * _countColliding);
 	}
-	return count;
+	return _countColliding;
+}
+
+void Collider::ClearCollisionInfo()
+{
+	_countColliding = 0;
 }
 
 
