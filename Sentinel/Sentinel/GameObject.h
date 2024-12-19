@@ -2,6 +2,7 @@
 
 #include "GameStruct.h"
 #include "SentinelAliases.h"
+#include "Collider.h"
 
 const Vector3 FORWARD_DIRECTION = { .0f, -1.0f, .0f };
 

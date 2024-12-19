@@ -34,6 +34,9 @@
     <Filter Include="DB">
       <UniqueIdentifier>{27f74832-1696-452b-a59c-226416013eca}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Collision">
+      <UniqueIdentifier>{bf2e258c-5fcf-47d2-bb63-5930705ba2fb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SentinelMain.cpp">
@@ -95,6 +98,12 @@
     </ClCompile>
     <ClCompile Include="UserIdentifierManager.cpp">
       <Filter>Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Collider.cpp">
+      <Filter>Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="CollisionManager.cpp">
+      <Filter>Collision</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -163,6 +172,12 @@
     </ClInclude>
     <ClInclude Include="UserIdentifierManager.h">
       <Filter>Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Collider.h">
+      <Filter>Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionManager.h">
+      <Filter>Collision</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

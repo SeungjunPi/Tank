@@ -4,6 +4,7 @@
 #include "PointerTable.h"
 #include "LinearQueue.h"
 #include "SentinelAliases.h"
+#include "CollisionManager.h"
 
 class Tank;
 class Projectile;
@@ -11,7 +12,6 @@ struct PACKET_OBJECT_INFO;
 
 #define NUM_OBJECTS_MAX (4096)
 
-// 4096
 class ObjectManager
 {
 public:

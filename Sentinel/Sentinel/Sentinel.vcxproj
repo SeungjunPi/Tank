@@ -22,6 +22,8 @@
     <ClCompile Include="..\NetCore\LinearQueue.cpp" />
     <ClCompile Include="..\NetCore\PointerList.cpp" />
     <ClCompile Include="..\NetCore\PointerTable.cpp" />
+    <ClCompile Include="Collider.cpp" />
+    <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="DBStruct.cpp" />
     <ClCompile Include="DBStruct.h" />
     <ClCompile Include="DummyObject.cpp" />
@@ -46,6 +48,8 @@
     <ClInclude Include="..\NetCore\PointerTable.h" />
     <ClInclude Include="..\NetCore\stdafx.h" />
     <ClInclude Include="..\NetCore\targetver.h" />
+    <ClInclude Include="Collider.h" />
+    <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="CQueue.h" />
     <ClInclude Include="DummyObject.h" />
     <ClInclude Include="GameEvent.h" />
