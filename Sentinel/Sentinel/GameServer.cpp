@@ -413,6 +413,13 @@ void s_CollideObjects(ULONGLONG currentTick)
 					pProjectile->OnHit(currentTick);
 					pOtherObj->OnHit(currentTick);
 
+					UserDBIndex hitterIndex = pProjectile->GetOwnerId();
+					g_playerManager.IncreaseKillCount(hitterIndex);
+
+					UserDBIndex victimIndex = pOtherObj->GetOwnerId();
+					g_playerManager.IncreaseDeathCount(victimIndex);
+					
+
 					GamePacket::BroadcastTankHit(pOtherObj->GetID(), pProjectile->GetID(), pProjectile->GetOwnerId(), pOtherObj->GetOwnerId());
 					printf("Tank Hit: shooter=%u, target=%u, tankId=%u, projectileId=%d\n", pProjectile->GetOwnerId(), pOtherObj->GetOwnerId(), pOtherObj->GetID(), pProjectile->GetID());
 				}
