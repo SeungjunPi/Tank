@@ -6,6 +6,8 @@
 
 VCS: TFVC -> git
 
+저장소 주소: https://github.com/SeungjunPi/Tank
+
 실행: 프로젝트의 exe 폴더 내 Sentinel 실행 후 Tank 실행
 
 ## 서버
@@ -75,6 +77,64 @@ IOCP 기반 NetCore DLL
 
 ![투사체 4](pictures/투사체%204.png)
 
+## (추가 중) DB 쓰레드
+
+접속 시 유저 확인 단계를 예로 들어 설명함.
+
+### 시작
+
+![DB시작](pictures/DB%20Start.png)
+
+### DB 함수 호출
+
+![DB 함수 호출](/pictures/DB%20Call%20Function.png)
+
+- 쿼리문은 DB 라이브러리 내부에서 작성되며, 외부에선 함수만 호출함
+- 메인 쓰레드에서 Validation 함수를 호출하며 ID와 PW를 넘겨줌
+- 함수에서 쿼리를 생성, InQueue에 삽입
+- 워커를 깨우는 이벤트 발생
+
+### 워커 동작
+
+이 부분은 순차적으로 설명함. 
+
+1. 워커가 메인의 신호에 의해 깨어남
+
+![DB 워커 1](/pictures/DB%20Worker%201.png)
+
+2. 쿼리를 꺼냄
+
+![DB 워커 2](/pictures/DB%20Worker%202.png)
+
+3. 꺼낸 쿼리를 DB에 전달
+
+![DB 워커 3](/pictures/DB%20Worker%203.png)
+
+4. 받은 쿼리를 결과로 변환
+
+![DB 워커 4](/pictures/DB%20Worker%204.png)
+
+5. 변환한 결과를 Back Out Queue에 삽입
+
+![DB 워커 5](/pictures/DB%20Worker%205.png)
+
+6. In Queue가 비었다면 다시 Wait, 아니면 InQueue에서 꺼내는 동작부터 다시 수행
+
+### 메인의 쿼리 결과 처리
+
+1. 결과를 처리하기위해 BeginHandleResults() 호출
+   1. (동시에 처리하는 현상 방지용) 처리중 플래그를 on으로 변경
+   2. main에서 결과를 끊임없이 처리하기 위해 Front, Back Queue를 Swap
+
+![워커 결과 처리1](/pictures/DB%20handle%20result1.png)
+
+2. Front Out Queue에서 결과를 꺼내서 처리
+
+![워커 결과 처리2](/pictures/DB%20handle%20result2.png)
+
+3. 빌 때까지 처리 후, 처리 중 flag를 off로 변경. 
+
+![워커 결과 처리3](/pictures/DB%20handle%20result3.png)
 
 
 # 수정/변경/추가 예정인 것들
