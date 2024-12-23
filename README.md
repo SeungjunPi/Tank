@@ -74,17 +74,9 @@ Send 로직
 
 ![로그인과정](pictures/로그인과정.png)
 
-![로그인과정1](pictures/로그인1.png)
+![인증요청](pictures/인증요청.png)
 
-![로그인과정3](pictures/로그인3.png)
-
-![로그인과정5](pictures/로그인5.png)
-
-![로그인과정6](pictures/로그인6.png)
-
-![로그인과정7](pictures/로그인7.png)
-
-![로그인과정8](pictures/로그인8.png)
+![인증결과](pictures/인증결과.png)
 
 index를 유효하게 받았을 때 인증 성공.
 
@@ -92,15 +84,7 @@ index를 유효하게 받았을 때 인증 성공.
 
 로그인 과정에 이어 즉시 아래 과정이 실행됨. 
 
-![점수로드1](pictures/점수로드1.png)
-
-![점수로드2](pictures/점수로드2.png)
-
-![점수로드3](pictures/점수로드3.png)
-
-![점수로드4](pictures/점수로드4.png)
-
-![점수로드5](pictures/점수로드5.png)
+![점수로드](pictures/점수로드.png)
 
 ### 인증 실패 시
 
