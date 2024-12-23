@@ -1,10 +1,19 @@
 ﻿#pragma once
 
 #include "GameStruct.h"
+#include "StaticData.h"
+
+const int ID_LENGTH_MAX = 16;
+const int PW_LENGTH_MAX = 16;
+
 
 // [Kind3][Kind2][Kind1][SC, CS] 
 enum EGameEventCode
 {
+	GAME_EVENT_CODE_CS_LOGIN,
+	GAME_EVENT_CODE_SC_LOGIN,
+	GAME_EVENT_CODE_CS_LOAD_PLAYER_STAT,
+	GAME_EVENT_CODE_SC_LOAD_PLAYER_STAT,
 	GAME_EVENT_CODE_SC_PLAYER_ID = 0x00010102,
 	GAME_EVENT_CODE_SC_SNAPSHOT = 0x00010202,
 	GAME_EVENT_CODE_SC_CREATE_TANK = 0x01010102,
@@ -28,6 +37,34 @@ struct GameNetEvent
 	EGameEventCode evCode;
 };
 
+
+struct PACKET_CS_LOGIN
+{
+	WCHAR id[ID_LENGTH_MAX + 1];
+	WCHAR pw[PW_LENGTH_MAX + 1];
+};
+
+struct PACKET_SC_LOGIN
+{
+	BOOL result;
+	UINT32 playerKey;
+	int hitCount;
+	int killCount;
+	int deathCount;
+};
+
+struct PACKET_CS_LOAD_PLAYER_STAT
+{
+	UINT32 playerKey;
+};
+
+struct PACKET_SC_LOAD_PLAYER_STAT
+{
+	int hitCount;
+	int killCount;
+	int deathCount;
+};
+
 struct PACKET_SC_PLAYER_ID
 {
 	UINT32 id;
@@ -42,7 +79,7 @@ struct PACKET_SC_CREATE_TANK
 
 struct PACKET_SC_DELETE_TANK
 {
-	UINT16 objectId;
+	UINT32 objectId;
 };
 
 
@@ -145,14 +182,17 @@ public:
 	static BOOL Validate(BYTE* pGameEvent, UINT32 senderId);
 	static void HandlePacket(BYTE* pGameEvent, UINT32 senderId);
 
+	static void SendLogin(const std::wstring& wID, const std::wstring& wPw);
 	static void SendStartMove(const Transform* pTankTransform, char moveFlag);
 	static void SendEndMove(const Transform* pTankTransform, char moveFlag);
 	static void SendMoving(const Transform* pTankTransform);
 	static void SendShoot(const Transform* pTurretTransform);
 
 private:
-	static void HandlePlayerId(BYTE* pGameEvent, UINT32 senderId);
-	static BOOL ValidatePlayerId(BYTE* pGameEvent, UINT32 senderId);
+	static void HandleLoginResult(BYTE* pGameEvent, UINT32 senderId);
+
+	static void HandlePlayerId(BYTE* pGameEvent, UINT32 senderId); // Deprecated
+	static BOOL ValidatePlayerId(BYTE* pGameEvent, UINT32 senderId); // Deprecated
 
 	static void HandleCreateTank(BYTE* pGameEvent, UINT32 senderId);
 	static BOOL ValidateCreateTank(BYTE* pGameEvent, UINT32 senderId);

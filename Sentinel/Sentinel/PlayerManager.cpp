@@ -1,57 +1,75 @@
 #include "PlayerManager.h"
 
-
-Player* s_player = nullptr;
-
 void PlayerManager::Initiate(int maxNumPlayers)
 {
 	_playerTable.Initiate(maxNumPlayers);
-	_usedKeys = new UINT32[maxNumPlayers];
+	_usedDbIndexes = new UINT32[maxNumPlayers];
+	_pUserIdentifierManager = new UserIdentifierManager;
 }
 
 void PlayerManager::Terminate()
 {
 	for (UINT16 i = 0; i < _countPlayers; ++i) {
-		UINT32 key = _usedKeys[i];
+		UINT32 key = _usedDbIndexes[i];
 		void* ptr = _playerTable.Pop(key);
 		assert(ptr != nullptr);
 		delete ptr;
 	}
-	delete[] _usedKeys;
+	delete[] _usedDbIndexes;
+	delete _pUserIdentifierManager;
 
 	bool terminated = _playerTable.Terminate();
 	assert(terminated);
 }
 
-Player* PlayerManager::TryCreatePlayer(UINT32 id)
+Player* PlayerManager::TryCreatePlayer(SessionID sessionID, UserDBIndex userDBIndex, int hitCount, int killCount, int deathCount)
 {
-	Player* newPlayer = new Player(id);
-	s_player = newPlayer;
-	bool isInserted = _playerTable.Insert(id, newPlayer);
+	Player* newPlayer = new Player(sessionID, userDBIndex);
+	newPlayer->_hitCount = hitCount;
+	newPlayer->_killCount = killCount;
+	newPlayer->_deathCount = deathCount;
+	
+	_pUserIdentifierManager->AddUserIdentifier(userDBIndex, sessionID);
+
+
+	bool isInserted = _playerTable.Insert(userDBIndex, newPlayer);
 	if (!isInserted) {
 		delete newPlayer;
 		return nullptr;
 	}
 	
-	_usedKeys[_countPlayers] = id;
+	_usedDbIndexes[_countPlayers] = userDBIndex;
 	_countPlayers++;
 
 	return newPlayer;
 }
 
-BOOL PlayerManager::TryDeletePlayer(UINT32 id)
+BOOL PlayerManager::TryDeletePlayerBySessionID(SessionID sessionID)
 {
-	Player* pPlayer = (Player*)_playerTable.Pop(id);
+	UserDBIndex dbIndex = _pUserIdentifierManager->GetUserDBIndex(sessionID);
+	BOOL success = TryDeletePlayerByUserIndex(dbIndex);
+	return success;
+}
+
+BOOL PlayerManager::TryDeletePlayerByUserIndex(UserDBIndex userIndex)
+{
+	SessionID sessionID = _pUserIdentifierManager->GetUserSessionID(userIndex);
+	BOOL success = _pUserIdentifierManager->RemoveUserIdentifierBySessionID(sessionID);
+	assert(success);
+	Player* pPlayer = (Player*)_playerTable.Pop(userIndex);
 	if (pPlayer == nullptr) {
 		return false;
 	}
+
+	
+
 	delete pPlayer;
 
 	for (UINT16 i = 0; i < _countPlayers; ++i) {
-		if (_usedKeys[i] == id) {
+		if (_usedDbIndexes[i] == userIndex) {
 			_countPlayers--;
-			_usedKeys[i] = _usedKeys[_countPlayers];
-			_usedKeys[_countPlayers] = 0;
+			_usedDbIndexes[i] = _usedDbIndexes[_countPlayers];
+			_usedDbIndexes[_countPlayers] = 0;
 			break;
 		}
 
@@ -66,29 +84,54 @@ int PlayerManager::GetCapacity() const
 	return _playerTable.GetCapacity();
 }
 
-UINT16 PlayerManager::GetAllKeys(UINT32* out)
+UINT16 PlayerManager::GetAllUserIndexes(UserDBIndex* out)
 {
-	memcpy(out, _usedKeys, sizeof(UINT32) * _countPlayers);
+	memcpy(out, _usedDbIndexes, sizeof(UserDBIndex) * _countPlayers);
 	return _countPlayers;
 }
 
-Player* PlayerManager::GetPlayer(UINT32 id) const
+UINT16 PlayerManager::GetAllSessionIDs(SessionID* out)
 {
-	return (Player*)_playerTable.Get(id);
+	SessionID* dst = out;
+	for (int i = 0; i < _countPlayers; ++i) {
+		UserDBIndex index = _usedDbIndexes[i];
+		SessionID sessionID = _pUserIdentifierManager->GetUserSessionID(index);
+		*dst = sessionID;
+		++dst;
+	}
+	return _countPlayers;
 }
 
-void PlayerManager::IncreaseNumOtherTanksHit(UINT32 id)
+Player* PlayerManager::GetPlayerByUserIndex(UserDBIndex index) const
 {
-	Player* pPlayer = (Player*)_playerTable.Get(id);
-	assert(pPlayer != nullptr);
-
-	pPlayer->IncreaseNumOtherTanksHit();
+	return (Player*)_playerTable.Get(index);
 }
 
-void PlayerManager::IncreaseNumHitsTaken(UINT32 id)
+Player* PlayerManager::GetPlayerBySessionID(SessionID sessionID) const
 {
-	Player* pPlayer = (Player*)_playerTable.Get(id);
-	assert(pPlayer != nullptr);
-
-	pPlayer->IncreaseNumHitsTaken();
+	UserDBIndex dbIndex = _pUserIdentifierManager->GetUserDBIndex(sessionID);
+	if (dbIndex == 0) {
+		return nullptr;
+	}
+	Player* pPlayer = GetPlayerByUserIndex(dbIndex);
+	return pPlayer;
 }
+
+void PlayerManager::IncreaseHitCount(UserDBIndex userIndex)
+{
+	Player* pPlayer = GetPlayerByUserIndex(userIndex);
+	pPlayer->IncreaseHitCount();
+}
+
+void PlayerManager::IncreaseKillCount(UserDBIndex userIndex)
+{
+	Player* pPlayer = GetPlayerByUserIndex(userIndex);
+	pPlayer->IncreaseKillCount();
+}
+
+void PlayerManager::IncreaseDeathCount(UserDBIndex userIndex)
+{
+	Player* pPlayer = GetPlayerByUserIndex(userIndex);
+	pPlayer->IncreaseDeathCount();
+}
+

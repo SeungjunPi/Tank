@@ -19,34 +19,34 @@ public:
 	void Initiate();
 	void Terminate();
 
-	Tank* CreateTank(UINT16 serverKey);
-	Projectile* CreateProjectile(UINT serverKey, Transform* pInitTransform);
-	Obstacle* CreateObstacle(UINT key, Transform* pInitTransform);
+	Tank* CreateTank(ObjectID serverKey);
+	Projectile* CreateProjectile(ObjectID serverKey, Transform* pInitTransform);
+	Obstacle* CreateObstacle(ObjectID key, Transform* pInitTransform);
 
-	void RemoveObject(EGameObjectKind objectKind, UINT16 key);
+	void RemoveObject(EGameObjectKind objectKind, ObjectID key);
 
 	void UpdateObject(EGameObjectKind objectKind, GameObject* obj);
 
-	void UpdateObjectTransform(EGameObjectKind objectKind, UINT objId, const Transform* pTransform);
+	void UpdateObjectTransform(EGameObjectKind objectKind, ObjectID objId, const Transform* pTransform);
 
-	void GetTransformedModelOf(EGameObjectKind objectKind, UINT key, Vertex* out_vertices, UINT* out_numVectors);
+	void GetTransformedModelOf(EGameObjectKind objectKind, ObjectID key, Vertex* out_vertices, UINT* out_numVectors);
 
-	void GetKeys(EGameObjectKind objectKind, UINT* out_keys, int* out_numKeys) const;
-	void GetAllKeys(UINT* out_keys, int* out_numKeys) const;
+	void GetKeys(EGameObjectKind objectKind, ObjectID* out_keys, int* out_numKeys) const;
+	void GetAllKeys(ObjectID* out_keys, int* out_numKeys) const;
 
-	GameObject* GetObjectPtrOrNull(EGameObjectKind objectKind, UINT key);
+	GameObject* GetObjectPtrOrNull(EGameObjectKind objectKind, ObjectID key);
 
 	int GetCountObjects() const;
 
 
-	void StartTankMove(UINT16 objectId, EMOVEMENT movement);
-	void EndTankMove(UINT16 objectId, EMOVEMENT movement, const Transform* pTransform);
+	void StartTankMove(ObjectID objectId, EMOVEMENT movement);
+	void EndTankMove(ObjectID objectId, EMOVEMENT movement, const Transform* pTransform);
 
-	void StartTankRotate(UINT16 objectId, EROTATION rotation);
-	void EndTankRotate(UINT16 objectId, EROTATION rotation, const Transform* pTransform);
+	void StartTankRotate(ObjectID objectId, EROTATION rotation);
+	void EndTankRotate(ObjectID objectId, EROTATION rotation, const Transform* pTransform);
 
 private:
-	PointerTable _tankTable;
-	PointerTable _projectileTable;
-	PointerTable _obstacleTable;
+	PointerTable16 _tankTable;
+	PointerTable16 _projectileTable;
+	PointerTable16 _obstacleTable;
 };

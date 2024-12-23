@@ -14,3 +14,8 @@
 #include <tchar.h>
 #include <process.h>
 #include <cassert>
+#include <sqlext.h>
+#include <sqltypes.h>
+#include <sql.h>
+
+#include "NetCoreAliases.h"

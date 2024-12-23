@@ -5,17 +5,17 @@ GameObject::GameObject()
 {
 }
 
-GameObject::GameObject(UINT16 id, UINT32 ownerId)
+GameObject::GameObject(ObjectID id, UserDBIndex ownerId)
 	: _transform{ 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f }
 	, _id(id)
-	, _ownerId(ownerId)
+	, _ownerIndex(ownerId)
 {
 }
 
-GameObject::GameObject(UINT16 id, UINT32 ownerId, BOOL activatable)
+GameObject::GameObject(ObjectID id, UserDBIndex ownerId, BOOL activatable)
 	: _transform{ 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f }
 	, _id(id)
-	, _ownerId(ownerId)
+	, _ownerIndex(ownerId)
 	, _isActivatable(activatable)
 {
 }
@@ -24,7 +24,7 @@ GameObject::~GameObject()
 {
 }
 
-UINT16 GameObject::GetID() const
+ObjectID GameObject::GetID() const
 {
 	return _id;
 }
@@ -90,9 +90,9 @@ BOOL GameObject::IsDirty()
 	return _dirty;
 }
 
-UINT32 GameObject::GetOwnerId() const
+UserDBIndex GameObject::GetOwnerId() const
 {
-	return _ownerId;
+	return _ownerIndex;
 }
 
 void GameObject::Respawn()

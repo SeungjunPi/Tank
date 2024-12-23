@@ -148,6 +148,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LinearQueue.h" />
+    <ClInclude Include="NetCoreAliases.h" />
     <ClInclude Include="NetMessageQueue.h" />
     <ClInclude Include="NetCore.h" />
     <ClInclude Include="NetGlobal.h" />

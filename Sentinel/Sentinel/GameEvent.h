@@ -1,12 +1,19 @@
 #pragma once
 
 #include "stdafx.h"
-
+#include "SentinelAliases.h"
 #include "GameStruct.h"
+
+const int ID_LENGTH_MAX = 16;
+const int PW_LENGTH_MAX = 16;
 
 // [Kind3][Kind2][Kind1][SC, CS] 
 enum EGameEventCode
 {
+	GAME_EVENT_CODE_CS_LOGIN,
+	GAME_EVENT_CODE_SC_LOGIN,
+	GAME_EVENT_CODE_CS_LOAD_PLAYER_STAT,
+	GAME_EVENT_CODE_SC_LOAD_PLAYER_STAT,
 	GAME_EVENT_CODE_SC_PLAYER_ID = 0x00010102,
 	GAME_EVENT_CODE_SC_SNAPSHOT = 0x00010202,
 	GAME_EVENT_CODE_SC_CREATE_TANK = 0x01010102,
@@ -30,21 +37,50 @@ struct GameNetEvent
 	EGameEventCode evCode;
 };
 
+
+struct PACKET_CS_LOGIN
+{
+	WCHAR id[ID_LENGTH_MAX + 1];
+	WCHAR pw[PW_LENGTH_MAX + 1];
+};
+
+struct PACKET_SC_LOGIN
+{
+	BOOL result;
+	UserDBIndex userDBIndex;
+	int hitCount;
+	int killCount;
+	int deathCount;
+};
+
+struct PACKET_CS_LOAD_PLAYER_STAT
+{
+	UserDBIndex userDBIndex;
+};
+
+struct PACKET_SC_LOAD_PLAYER_STAT
+{
+	int hitCount;
+	int killCount;
+	int deathCount;
+};
+
+
 struct PACKET_SC_PLAYER_ID
 {
-	UINT32 id;
+	UserDBIndex id;
 };
 
 struct PACKET_SC_CREATE_TANK
 {
-	UINT32 ownerId;
-	UINT16 objectId;
+	UserDBIndex ownerId;
+	ObjectID objectId;
 	Transform transform;
 };
 
 struct PACKET_SC_DELETE_TANK
 {
-	UINT16 objectId;
+	ObjectID objectId;
 };
 
 
@@ -61,7 +97,7 @@ struct PACKET_CS_START_MOVE
 struct PACKET_SC_START_MOVE
 {
 	char movementFlag;
-	UINT16 objectId;
+	ObjectID objectId;
 	Transform transform; // 클라이언트가 확인하기 위한 용도
 };
 
@@ -74,7 +110,7 @@ struct PACKET_CS_END_MOVE
 struct PACKET_SC_END_MOVE
 {
 	char movementFlag;
-	UINT16 objectId;
+	ObjectID objectId;
 	Transform transform;
 };
 
@@ -85,15 +121,15 @@ struct PACKET_CS_MOVING
 
 struct PACKET_SC_MOVING
 {
-	UINT16 objectId;
+	ObjectID objectId;
 	Transform transform;
 };
 
 struct PACKET_OBJECT_INFO
 {
 	EGameObjectKind kind;
-	UINT16 objectId;
-	UINT32 ownerId;
+	ObjectID objectId;
+	UserDBIndex ownerId;
 	Transform transform;
 };
 
@@ -110,63 +146,67 @@ struct PACKET_CS_SHOOT
 
 struct PACKET_SC_SHOOT
 {
-	UINT16 objectId;
-	UINT32 ownerId;
+	ObjectID objectId;
+	UserDBIndex ownerId;
 	Transform transform;
 };
 
 struct PACKET_SC_TANK_HIT
 {
-	UINT16 tankId;
-	UINT16 projectileId;
-	UINT32 shooter;
-	UINT32 target;
+	ObjectID tankId;
+	ObjectID projectileId;
+	UserDBIndex shooter;
+	UserDBIndex target;
 };
 
 struct PACKET_SC_CREATE_OBSTACLE
 {
-	UINT16 obstacleId;
+	ObjectID obstacleId;
 	Transform transform;
 };
 
 struct PACKET_SC_DELETE_OBSTACLE
 {
-	UINT16 obstacleId;
-	UINT32 shooterId;
+	ObjectID obstacleId;
+	UserDBIndex shooterId;
 };
 
 struct PACKET_SC_RESPAWN_TANK
 {
-	UINT16 tankId;
+	ObjectID tankId;
 	Vector3 position;
 };
 
 class GamePacket
 {
 public:
-	static BOOL Validate(BYTE* pGameEvent, UINT32 senderId);
-	static void HandlePacket(BYTE* pGameEvent, UINT32 senderId);
+	static BOOL Validate(BYTE* pGameEvent, SessionID senderId);
+	static void HandlePacket(BYTE* pGameEvent, SessionID senderId);
 
-	static void SendSnapshot(UINT32 sessionId);
-	static void SendTankHit(UINT32 sessionId, UINT16 tankId, UINT16 projectileId);
-	static void BroadcastDeleteTank(UINT16 tankId);
-	static void BroadcastTankHit(UINT16 tankId, UINT16 projectileId, UINT32 shooterId, UINT32 targetId);
-	static void BroadcastCreateObstacle(UINT16 obstacleId, Transform* pTransform);
-	static void BroadcastDeleteObstacle(UINT16 obstacleId, UINT32 shooterId);
-	static void BroadcastRespawnTank(UINT16 tankId);
+	static void SendSnapshot(SessionID sessionId);
+	static void SendTankHit(SessionID sessionId, ObjectID tankId, ObjectID projectileId);
+	static void BroadcastDeleteTank(ObjectID tankId);
+	static void BroadcastTankHit(ObjectID tankId, ObjectID projectileId, UserDBIndex shooterId, UserDBIndex targetId);
+	static void BroadcastCreateObstacle(ObjectID obstacleId, Transform* pTransform);
+	static void BroadcastDeleteObstacle(ObjectID obstacleId, UserDBIndex shooterId);
+	static void BroadcastRespawnTank(ObjectID tankId);
 private:
+	static void HandleLogin(BYTE* pGameEvent, SessionID senderId);
+	static BOOL ValidateLogin(BYTE* pGameEvent, SessionID senderId);
+
+	static void HandleStartMove(BYTE* pGameEvent, SessionID senderId);
+	static BOOL ValidateStartMove(BYTE* pGameEvent, SessionID senderId);
+
+	static void HandleEndMove(BYTE* pGameEvent, SessionID senderId);
+	static BOOL ValidateEndMove(BYTE* pGameEvent, SessionID senderId);
+
+	static void HandleMoving(BYTE* pGameEvent, SessionID senderId);
+	static BOOL ValidateMoving(BYTE* pGameEvent, SessionID senderId);
+
+	static void HandleShoot(BYTE* pGameEvent, SessionID senderId);
+	static BOOL ValidateShoot(BYTE* pGameEvent, SessionID senderId);
+
 	
-	static void HandleStartMove(BYTE* pGameEvent, UINT32 senderId);
-	static BOOL ValidateStartMove(BYTE* pGameEvent, UINT32 senderId);
-
-	static void HandleEndMove(BYTE* pGameEvent, UINT32 senderId);
-	static BOOL ValidateEndMove(BYTE* pGameEvent, UINT32 senderId);
-
-	static void HandleMoving(BYTE* pGameEvent, UINT32 senderId);
-	static BOOL ValidateMoving(BYTE* pGameEvent, UINT32 senderId);
-
-	static void HandleShoot(BYTE* pGameEvent, UINT32 senderId);
-	static BOOL ValidateShoot(BYTE* pGameEvent, UINT32 senderId);
 };
 
 

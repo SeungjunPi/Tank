@@ -28,6 +28,9 @@ int main()
 
 	signal(SIGINT, SignalHandler);
 
+
+	
+
 	GameServer::Initialize();
 	GameServer::Start();
 

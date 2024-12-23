@@ -161,6 +161,7 @@
     <ClCompile Include="Projectile.cpp" />
     <ClCompile Include="StaticData.cpp" />
     <ClCompile Include="Tank.cpp" />
+    <ClCompile Include="TankAliases.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Sentinel\NetCore\LinearQueue.h" />

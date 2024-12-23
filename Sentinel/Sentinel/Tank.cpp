@@ -4,7 +4,7 @@
 
 const float VELOCITY_WEIGHT = 0.75f;
 
-Tank::Tank(UINT16 id, UINT32 ownerId)
+Tank::Tank(ObjectID id, UserDBIndex ownerId)
 	: GameObject(id, ownerId, true)
 {
 	_forwardDirection = { .0f, -1.0f, .0f };
@@ -15,7 +15,7 @@ Tank::~Tank()
 {
 }
 
-void Tank::Initiate(UINT16 id)
+void Tank::Initiate(ObjectID id)
 {
 	_id = id;
 	_isActivatable = true;

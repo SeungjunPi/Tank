@@ -3,6 +3,7 @@
 #include "NetCore.h"
 #include "Tank.h"
 #include "AllocObjectManager.h"
+#include "Game.h"
 
 BOOL GamePacket::Validate(BYTE* pGameEvent, UINT32 senderId)
 {
@@ -13,6 +14,9 @@ void GamePacket::HandlePacket(BYTE* pGameEvent, UINT32 senderId)
 {
 	EGameEventCode* evCode = (EGameEventCode*)pGameEvent;
 	switch (*evCode) {
+	case GAME_EVENT_CODE_SC_LOGIN:
+		HandleLoginResult(pGameEvent, senderId);
+		break;
 	case GAME_EVENT_CODE_SC_PLAYER_ID:
 		HandlePlayerId(pGameEvent, senderId);
 		break;
@@ -49,6 +53,20 @@ void GamePacket::HandlePacket(BYTE* pGameEvent, UINT32 senderId)
 	}
 }
 
+
+void GamePacket::HandleLoginResult(BYTE* pGameEvent, UINT32 senderId)
+{
+	PACKET_SC_LOGIN* pScLogin = (PACKET_SC_LOGIN*)(pGameEvent + sizeof(EGameEventCode));
+	if (pScLogin->result == FALSE) {
+		// End game.
+		Game::Shutdown();
+		return;
+	}
+	g_playerId = pScLogin->playerKey;
+	g_score.hit = pScLogin->hitCount;
+	g_score.kill = pScLogin->killCount;
+	g_score.death = pScLogin->deathCount;
+}
 
 void GamePacket::HandlePlayerId(BYTE* pGameEvent, UINT32 senderId)
 {
@@ -322,6 +340,23 @@ void GamePacket::HandleRespawnTank(BYTE* pGameEvent, UINT32 senderId)
 BOOL GamePacket::ValidateRespawnTank(BYTE* pGameEvent, UINT32 senderId)
 {
 	return true;
+}
+
+void GamePacket::SendLogin(const std::wstring& wID, const std::wstring& wPw)
+{
+	const UINT32 contentsMsgSize = sizeof(PACKET_CS_LOGIN) + sizeof(EGameEventCode);
+
+	BYTE pRawPacket[contentsMsgSize] = { 0, };
+
+	EGameEventCode* pEvCode = (EGameEventCode*)pRawPacket;
+	PACKET_CS_LOGIN* pLogin = (PACKET_CS_LOGIN*)(pRawPacket + sizeof(EGameEventCode));
+
+	const WCHAR* rawID = wID.c_str();
+	const WCHAR* rawPW = wPw.c_str();
+	memcpy(&pLogin->id, rawID, sizeof(WCHAR) * (wID.length() + 1));
+	memcpy(&pLogin->pw, rawPW, sizeof(WCHAR) * (wPw.length() + 1));
+
+	g_pNetCore->SendMessageTo(g_serverId, pRawPacket, contentsMsgSize);
 }
 
 void GamePacket::SendStartMove(const Transform* pTankTransform, char moveFlag)

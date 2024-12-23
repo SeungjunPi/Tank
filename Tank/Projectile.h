@@ -10,7 +10,7 @@ public:
 	Projectile() = default;
 	~Projectile() = default;
 
-	void Initiate(UINT32 id, Transform* transform);
+	void Initiate(ObjectID id, Transform* transform);
 	void Terminate();
 
 	void OnFrame(ULONGLONG tickDiff) override;

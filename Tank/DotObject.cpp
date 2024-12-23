@@ -8,7 +8,7 @@ DotObject::DotObject()
 	_model = MODEL_DOT;
 }
 
-DotObject::DotObject(UINT32 id)
+DotObject::DotObject(ObjectID id)
 	: GameObject(id)
 {
 	_model = MODEL_DOT;

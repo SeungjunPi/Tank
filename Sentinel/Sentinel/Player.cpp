@@ -1,11 +1,12 @@
 #include "Player.h"
 
-Player::Player(UINT32 sessionId)
+Player::Player(SessionID sessionId, UserDBIndex userID)
 	: _sessionId(sessionId)
+	, _userIndex(userID)
 {
 }
 
-UINT32 Player::GetSessionId() const
+SessionID Player::GetSessionID() const
 {
 	return _sessionId;
 }
@@ -20,21 +21,23 @@ void Player::SetTankId(UINT16 tankId)
 	_tankId = tankId;
 }
 
-void Player::IncreaseNumOtherTanksHit()
+TankScore Player::GetScore() const
 {
-	++_numOtherTanksHit;
+	return TankScore{ _hitCount, _killCount, _deathCount };
 }
 
-void Player::IncreaseNumHitsTaken()
+void Player::IncreaseHitCount()
 {
-	++_numHitsTaken;
+	++_hitCount;
 }
 
-UINT16 Player::GetScore() const
+void Player::IncreaseKillCount()
 {
-	
-	if (_numOtherTanksHit * 10 < _numHitsTaken) {
-		return 0;
-	}
-	return _numOtherTanksHit * 10 - _numHitsTaken;;
+	++_killCount;
 }
+
+void Player::IncreaseDeathCount()
+{
+	++_deathCount;
+}
+

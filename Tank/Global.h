@@ -36,6 +36,9 @@ extern UINT32 g_playerId;
 
 extern Score g_score;
 
+extern std::wstring g_userName;
+extern std::wstring g_password;
+
 class Global
 {
 public:
