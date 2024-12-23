@@ -8,7 +8,7 @@ VCS: TFVC -> git
 
 저장소 주소: https://github.com/SeungjunPi/Tank
 
-실행: 프로젝트의 exe 폴더 내 Sentinel 실행 후 Tank 실행
+~~실행: 프로젝트의 exe 폴더 내 Sentinel 실행 후 Tank 실행~~ (DB 추가로 인해 실행 불가)
 
 
 
