@@ -1,6 +1,9 @@
 #include "Projectile.h"
 #include "Global.h"
 #include "Collider.h"
+#include "CollisionManager.h"
+#include "ObjectManager.h"
+#include "PlayerManager.h"
 
 const float Projectile::COLLIDER_RADIUS = 1.f;
 
@@ -40,7 +43,31 @@ void Projectile::OnFrame(ULONGLONG tickDiff)
 
 void Projectile::OnHit(ULONGLONG currentTick)
 {
+	if (_hitTick != 0) {
+		__debugbreak();
+	}
 	printf("[JUNLOG]OnHit projectile\n");
+
+	ColliderID colliderIDs[MAX_SIMULTANEOUS_COLLISIONS];
+	UINT16 countColliders = _pCollider->GetCollidingIDs(colliderIDs);
+	for (UINT16 i = 0; i < countColliders; ++i) {
+		Collider* pOtherCollider = g_pCollisionManager->GetAttachedColliderPtr(colliderIDs[i]);
+		ObjectID otherObjID = pOtherCollider->GetObjectID();
+		EGameObjectKind objKind = g_objectManager.FindObjectKindByID(otherObjID);
+		switch (objKind) {
+		case GAME_OBJECT_KIND_PROJECTILE:
+			// hit
+			g_playerManager.IncreaseKillCount(_ownerIndex);
+			_hitTick = currentTick;
+			_pCollider->Deactivate();
+			printf("Projectile [%u(%u)] hit Tank [%u] \n", _id, _ownerIndex, otherObjID);
+			break;
+		case GAME_OBJECT_KIND_TANK:
+			// Fall Through
+		case GAME_OBJECT_KIND_OBSTACLE:
+			break;
+		}
+	}		
 }
 
 void Projectile::OnUpdateTransform()

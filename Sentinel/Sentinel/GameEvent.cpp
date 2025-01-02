@@ -5,6 +5,8 @@
 #include "Tank.h"
 #include "Projectile.h"
 #include "JunDB.h"
+#include "ObjectManager.h"
+#include "PlayerManager.h"
 
 
 

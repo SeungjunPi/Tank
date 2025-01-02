@@ -2,6 +2,9 @@
 #include "Global.h"
 #include "GameEvent.h"
 #include "Collider.h"
+#include "CollisionManager.h"
+#include "PlayerManager.h"
+#include "ObjectManager.h"
 
 const float VELOCITY_WEIGHT = 0.75f;
 const float Tank::COLLIDER_RADIUS = 1.0f;
@@ -183,16 +186,29 @@ void Tank::OnHit(ULONGLONG currentTick)
 	ColliderID colliderIDs[MAX_SIMULTANEOUS_COLLISIONS];
 	UINT16 countColliders = _pCollider->GetCollidingIDs(colliderIDs);
 	for (UINT16 i = 0; i < countColliders; ++i) {
-		
+		Collider* pOtherCollider = g_pCollisionManager->GetAttachedColliderPtr(colliderIDs[i]);
+		ObjectID otherObjID = pOtherCollider->GetObjectID();
+		EGameObjectKind objKind = g_objectManager.FindObjectKindByID(otherObjID);
+		GameObject* pOtherObj = g_objectManager.GetObjectPtrOrNull(otherObjID);
+		switch (objKind) {
+		case GAME_OBJECT_KIND_PROJECTILE:
+			// hit
+			_pCollider->Deactivate();
+			_hitTick = currentTick;
+			_isAlive = false;
+			_isMovingFoward = false;
+			_isMovingBackward = false;
+			_isRotatingLeft = false;
+			_isRotatingRight = false;
+			g_playerManager.IncreaseDeathCount(_ownerIndex);
+			GamePacket::BroadcastTankHit(_id, otherObjID, pOtherObj->GetOwnerId(), _ownerIndex);
+			break;
+		case GAME_OBJECT_KIND_TANK:
+			// Fall Through
+		case GAME_OBJECT_KIND_OBSTACLE:
+			break;
+		}
 	}
-
-	_pCollider->Deactivate();
-	_hitTick = currentTick;
-	_isAlive = false;
-	_isMovingFoward = false;
-	_isMovingBackward = false;
-	_isRotatingLeft = false;
-	_isRotatingRight = false;
 }
 
 void Tank::OnUpdateTransform()

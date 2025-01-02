@@ -106,6 +106,10 @@ void ObjectManager::RemoveTank(ObjectID objectId, UserDBIndex ownerId)
 	assert(pTank != nullptr);
 	pTank = (Tank*)_tankTableByOwner.Pop(ownerId);
 	assert(pTank != nullptr);
+
+	Collider* pCollider = pTank->GetCollider();
+	g_pCollisionManager->ReturnCollider(pCollider);
+
 	auto res = _unusedObjectIdQueue.Push(&objectId);
 	assert(res);
 	delete pTank;
@@ -132,6 +136,10 @@ void ObjectManager::RemoveProjectile(ObjectID objectId)
 {
 	Projectile* pProjectile = (Projectile*)_projectileTable.Pop(objectId);
 	assert(pProjectile != nullptr);
+
+	Collider* pCollider = pProjectile->GetCollider();
+	g_pCollisionManager->ReturnCollider(pCollider);
+
 	auto res = _unusedObjectIdQueue.Push(&objectId);
 	assert(res);
 	delete pProjectile;

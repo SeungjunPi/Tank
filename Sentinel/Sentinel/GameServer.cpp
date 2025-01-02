@@ -10,12 +10,7 @@
 #include "Tank.h"
 #include "JunDB.h"
 
-
-
 static BOOL s_isRunning = false;
-
-PlayerManager g_playerManager;
-ObjectManager g_objectManager;
 
 
 static void s_ApplyObjectLogic(ULONGLONG tickDiff);
@@ -57,8 +52,8 @@ void GameServer::Start()
 	dbConnectionInfo.ip = "127.0.0.1";
 	dbConnectionInfo.port = "1434";
 	dbConnectionInfo.dbName = "tankDB";
-	dbConnectionInfo.uid = "Pearson";
-	dbConnectionInfo.pwd = "Mathematics";
+	dbConnectionInfo.uid = "pearson";
+	dbConnectionInfo.pwd = "mathematics";
 	//////////////////
 
 	g_pJunDB->Start(dbConnectionInfo, 1);

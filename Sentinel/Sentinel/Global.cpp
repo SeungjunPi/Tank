@@ -2,6 +2,11 @@
 
 #include "NetCore.h"
 #include "JunDB.h"
+
+#include "PlayerManager.h"
+#include "ObjectManager.h"
+
+
 #include "CollisionManager.h"
 
 NetCore* g_pNetCore = nullptr;
@@ -11,3 +16,6 @@ ULONGLONG g_currentGameTick = 0;
 
 IJunDB* g_pJunDB = nullptr;
 CollisionManager* g_pCollisionManager = nullptr;
+
+PlayerManager g_playerManager;
+ObjectManager g_objectManager;

@@ -1,10 +1,6 @@
 #pragma once
 
-#include "PlayerManager.h"
-#include "ObjectManager.h"
-
-extern PlayerManager g_playerManager;
-extern ObjectManager g_objectManager;
+#include "stdafx.h"
 
 class GameServer
 {

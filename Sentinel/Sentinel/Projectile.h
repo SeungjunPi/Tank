@@ -16,6 +16,9 @@ public:
 	void Terminate();
 
 	void OnFrame(ULONGLONG tickDiff) override;
+
+	Collider* GetCollider() { return _pCollider; }
+
 	virtual void OnHit(ULONGLONG currentTick) override;
 	virtual void OnUpdateTransform() override;
 
