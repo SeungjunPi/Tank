@@ -46,6 +46,7 @@ public:
 	void RemoveObject(EGameObjectKind objectKind, ObjectID key);
 	void GetKeys(EGameObjectKind objectKind, ObjectID* out_keys, int* out_numKeys) const;
 	GameObject* GetObjectPtrOrNull(EGameObjectKind objectKind, ObjectID key);
+	GameObject* GetObjectPtrOrNull(ObjectID key);
 	
 
 private:

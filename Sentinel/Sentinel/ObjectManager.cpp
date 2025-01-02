@@ -2,6 +2,7 @@
 #include "Tank.h"
 #include "GameEvent.h"
 #include "Projectile.h"
+#include "Global.h"
 
 void ObjectManager::Initiate()
 {
@@ -89,7 +90,8 @@ Tank* ObjectManager::CreateTank(UserDBIndex ownerIndex)
 	_unusedObjectIdQueue.TryPopTo(&objectId);
 	assert(objectId != UINT16_MAX);
 
-	Tank* pTank = new Tank(objectId, ownerIndex);
+	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(Tank::COLLIDER_RADIUS, objectId);
+	Tank* pTank = new Tank(objectId, ownerIndex, pCollider);
 	bool res = _tankTable.Insert(objectId, pTank);
 	assert(res);
 	res = _tankTableByOwner.Insert(ownerIndex, pTank);
@@ -116,8 +118,10 @@ Projectile* ObjectManager::CreateProjectile(UserDBIndex ownerId, Transform* pTra
 	_unusedObjectIdQueue.TryPopTo(&objectId);
 	assert(objectId != UINT16_MAX);
 
+	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(Projectile::COLLIDER_RADIUS, objectId);
+
 	Projectile* pProjectile = new Projectile;
-	pProjectile->Initiate(objectId, pTransform, ownerId);
+	pProjectile->Initiate(objectId, pTransform, ownerId, pCollider);
 	
 	bool res = _projectileTable.Insert(objectId, pProjectile);
 	assert(res);
@@ -304,6 +308,34 @@ GameObject* ObjectManager::GetObjectPtrOrNull(EGameObjectKind objectKind, Object
 	}
 
 	return pGameObject;
+}
+
+GameObject* ObjectManager::GetObjectPtrOrNull(ObjectID id)
+{
+	ObjectID objectIDs[NUM_OBJECTS_MAX];
+	int numObjects = 0;
+	_tankTable.GetIdsTo(objectIDs, &numObjects);
+	for (int i = 0; i < numObjects; ++i) {
+		if (objectIDs[i] == id) {
+			return (GameObject*)_tankTable.Get(id);
+		}
+	}
+
+	_projectileTable.GetIdsTo(objectIDs, &numObjects);
+	for (int i = 0; i < numObjects; ++i) {
+		if (objectIDs[i] == id) {
+			return (GameObject*)_projectileTable.Get(id);;
+		}
+	}
+
+	_obstacleTable.GetIdsTo(objectIDs, &numObjects);
+	for (int i = 0; i < numObjects; ++i) {
+		if (objectIDs[i] == id) {
+			return (GameObject*)_obstacleTable.Get(id);;
+		}
+	}
+
+	return nullptr;
 }
 
 

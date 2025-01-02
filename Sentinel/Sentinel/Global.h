@@ -5,6 +5,7 @@
 
 class NetCore;
 class IJunDB;
+class CollisionManager;
 
 const ULONGLONG GAME_FPS = 60;
 const ULONGLONG TICK_PER_GAME_FRAME = 1000 / GAME_FPS;
@@ -17,5 +18,6 @@ extern ULONGLONG g_currentGameTick;
 extern ULONGLONG g_previousGameTick;
 
 extern IJunDB* g_pJunDB;
+extern CollisionManager* g_pCollisionManager;
 
 

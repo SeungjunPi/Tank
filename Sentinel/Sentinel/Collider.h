@@ -28,6 +28,9 @@ public:
 	UINT16 GetCollidingIDs(ColliderID* out);
 
 	void ClearCollisionInfo();
+
+	void Activate() { _isActive = TRUE; }
+	void Deactivate() { _isActive = FALSE; }
 	
 private:
 	Vector3 _center;
@@ -38,12 +41,14 @@ private:
 	ColliderID _collidingIDs[MAX_SIMULTANEOUS_COLLISIONS];
 	UINT16 _countColliding;
 
+	BOOL _isActive = FALSE;
+
 	void AddCollidingID(ColliderID otherColliderID);
 
-	void Activate(float radius, ObjectID objectID);
+	void Initiate(float radius, ObjectID objectID);
 
 	// 반환하기 위해 내부를 모두 초기화하는 용도로 사용
-	void Deactivate();
+	void Clear();
 
-	BOOL IsActive() const { return _objectID != INVALID_OBJECT_ID; }
+	BOOL IsAttatchedToGameObject() const { return _objectID != INVALID_OBJECT_ID; }
 };

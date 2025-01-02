@@ -1,7 +1,10 @@
 #include "Projectile.h"
 #include "Global.h"
+#include "Collider.h"
 
-void Projectile::Initiate(ObjectID id, Transform* transform, UserDBIndex ownerId)
+const float Projectile::COLLIDER_RADIUS = 1.f;
+
+void Projectile::Initiate(ObjectID id, Transform* transform, UserDBIndex ownerId, Collider* pCollider)
 {
 	_id = id;
 	memcpy(&_transform, transform, sizeof(Transform));
@@ -11,11 +14,13 @@ void Projectile::Initiate(ObjectID id, Transform* transform, UserDBIndex ownerId
 	_transform.Position.y += _forwardDirection.y * 1.2f;
 	_transform.Position.z += _forwardDirection.z * 1.2f;
 
-	_colliderSize = 1.0f;
 	_dirty = true;
 	_genTick = g_previousGameTick;
 	
 	_ownerIndex = ownerId;
+	_pCollider = pCollider;
+
+	OnUpdateTransform();
 }
 
 void Projectile::Terminate()
@@ -31,6 +36,16 @@ void Projectile::OnFrame(ULONGLONG tickDiff)
 	}
 
 	Move(tickDiff);
+}
+
+void Projectile::OnHit(ULONGLONG currentTick)
+{
+	printf("[JUNLOG]OnHit projectile\n");
+}
+
+void Projectile::OnUpdateTransform()
+{
+	_pCollider->UpdateCenterPosition(&_transform.Position);
 }
 
 BOOL Projectile::IsTimeout() const
@@ -51,4 +66,5 @@ void Projectile::Move(ULONGLONG tickDiff)
 	_transform.Position.y += _forwardDirection.y * SPEED_PER_MS * tickDiff;
 	_transform.Position.z += _forwardDirection.z * SPEED_PER_MS * tickDiff;
 	_dirty = true;
+	OnUpdateTransform();
 }

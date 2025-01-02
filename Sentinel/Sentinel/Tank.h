@@ -2,12 +2,14 @@
 
 #include "GameObject.h"
 
-
+class Collider;
 
 class Tank: public GameObject
 {
 public:
-	Tank(ObjectID id, UserDBIndex ownerId);
+	static const float COLLIDER_RADIUS;
+
+	Tank(ObjectID id, UserDBIndex ownerId, Collider* pCollider);
 	Tank() = default;
 	~Tank();
 
@@ -25,6 +27,9 @@ public:
 	void OnFrame(ULONGLONG tickDiff) override;
 
 	virtual void OnHit(ULONGLONG currentTick) override;
+	virtual void OnUpdateTransform() override;
+
+	virtual void Respawn() override;
 
 protected:
 	virtual BOOL IsTransformCloseEnough(const Transform* other) override;
@@ -36,6 +41,8 @@ private:
 	bool _isMovingBackward = false;
 	bool _isRotatingLeft = false;
 	bool _isRotatingRight = false;
+
+	Collider* _pCollider = nullptr;
 
 	void MoveForward(ULONGLONG tickDiff);
 	void MoveBackward(ULONGLONG tickDiff);

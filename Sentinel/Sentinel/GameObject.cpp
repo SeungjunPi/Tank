@@ -44,11 +44,6 @@ Vector3 GameObject::GetPosition() const
 	return _transform.Position;
 }
 
-UINT GameObject::GetColliderSize() const
-{
-	return _colliderSize;
-}
-
 BOOL GameObject::UpdateFrom(const GameObject* pOther)
 {
 	if (_id != pOther->_id) {
@@ -102,11 +97,13 @@ void GameObject::Respawn()
 	}
 	_isAlive = true;
 	_transform = { 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f };
+	OnUpdateTransform();
 	_hitTick = 0;
 }
 
 void GameObject::OnHit(ULONGLONG currentTick)
 {
+	printf("invalid hit\n");
 	if (_hitTick == 0) {
 		_hitTick = currentTick;
 	}

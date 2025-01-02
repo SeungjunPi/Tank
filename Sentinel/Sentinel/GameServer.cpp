@@ -57,11 +57,13 @@ void GameServer::Start()
 	dbConnectionInfo.ip = "127.0.0.1";
 	dbConnectionInfo.port = "1434";
 	dbConnectionInfo.dbName = "tankDB";
-	dbConnectionInfo.uid = "pearson";
-	dbConnectionInfo.pwd = "mathematics";
+	dbConnectionInfo.uid = "Pearson";
+	dbConnectionInfo.pwd = "Mathematics";
 	//////////////////
 
 	g_pJunDB->Start(dbConnectionInfo, 1);
+
+	g_pCollisionManager = new CollisionManager;
 	
 	UINT32 senderID = 0;
 
@@ -138,6 +140,7 @@ void GameServer::CleanUp()
 	g_objectManager.Terminate();
 	delete[] g_sessionIds;
 	DeleteNetCore(g_pNetCore);
+	delete g_pCollisionManager;
 }
 
 void GameServer::Broadcast(BYTE* msg, int len)
@@ -374,90 +377,103 @@ void s_ApplyObjectLogic(ULONGLONG tickDiff)
 
 void s_CollideObjects(ULONGLONG currentTick)
 {
-	// consider hit per projectile
-	ObjectID projectileKeys[1024];
-	ObjectID otherObjectKeys[1024];
-	int numProjectiles;
-	g_objectManager.GetKeys(GAME_OBJECT_KIND_PROJECTILE, projectileKeys, &numProjectiles);
-	for (int i = 0; i < numProjectiles; ++i) {
-		GameObject* pProjectile = g_objectManager.GetObjectPtrOrNull(GAME_OBJECT_KIND_PROJECTILE, projectileKeys[i]);
-		if (pProjectile == nullptr) {
-			__debugbreak();
+	ColliderID* pColliderIDs = nullptr;
+	UINT32 countCollidedObjects = g_pCollisionManager->DetectCollision(&pColliderIDs);
+	for (UINT32 i = 0; i < countCollidedObjects; ++i) {
+		Collider* pCollider = g_pCollisionManager->GetAttachedColliderPtr(pColliderIDs[i]);
+		if (pCollider == nullptr) {
+			continue;
 		}
+		ObjectID objectID = pCollider->GetObjectID();
+		GameObject* pGameObject = g_objectManager.GetObjectPtrOrNull(objectID);
 
-		{
-			// Tank 
-
-			int numObjects;
-			EGameObjectKind kind = EGameObjectKind::GAME_OBJECT_KIND_TANK;
-
-			g_objectManager.GetKeys(kind, otherObjectKeys, &numObjects);
-			for (int k = 0; k < numObjects; ++k) {
-
-				GameObject* pOtherObj = g_objectManager.GetObjectPtrOrNull(kind, otherObjectKeys[k]);
-				if (pOtherObj == nullptr) {
-					__debugbreak();
-				}
-
-				if (!pOtherObj->IsAlive()) {
-					continue;
-				}
-
-				Vector3 projectilePosition = pProjectile->GetPosition();
-				Vector3 otherObjPosition = pOtherObj->GetPosition();
-				float distanceSquared = Vector3::DistanceSquared(projectilePosition, otherObjPosition);
-
-				float collisionTolerance = pProjectile->GetColliderSize() + pOtherObj->GetColliderSize();
-
-				if (distanceSquared <= collisionTolerance * collisionTolerance) {
-					pProjectile->OnHit(currentTick);
-					pOtherObj->OnHit(currentTick);
-
-					UserDBIndex hitterIndex = pProjectile->GetOwnerId();
-					g_playerManager.IncreaseKillCount(hitterIndex);
-
-					UserDBIndex victimIndex = pOtherObj->GetOwnerId();
-					g_playerManager.IncreaseDeathCount(victimIndex);
-					
-
-					GamePacket::BroadcastTankHit(pOtherObj->GetID(), pProjectile->GetID(), pProjectile->GetOwnerId(), pOtherObj->GetOwnerId());
-					printf("Tank Hit: shooter=%u, target=%u, tankId=%u, projectileId=%d\n", pProjectile->GetOwnerId(), pOtherObj->GetOwnerId(), pOtherObj->GetID(), pProjectile->GetID());
-				}
-			}
-		}
-
-		{
-			// Obstacle
-
-			int numObjects;
-			EGameObjectKind kind = GAME_OBJECT_KIND_OBSTACLE;
-
-			g_objectManager.GetKeys(kind, otherObjectKeys, &numObjects);
-			for (int k = 0; k < numObjects; ++k) {
-
-				GameObject* pOtherObj = g_objectManager.GetObjectPtrOrNull(kind, otherObjectKeys[i]);
-				if (pOtherObj == nullptr) {
-					__debugbreak();
-				}
-
-				Vector3 projectilePosition = pProjectile->GetPosition();
-				Vector3 otherObjPosition = pOtherObj->GetPosition();
-				float distanceSquared = Vector3::DistanceSquared(projectilePosition, otherObjPosition);
-
-				float collisionTolerance = pProjectile->GetColliderSize() + pOtherObj->GetColliderSize();
-
-				if (distanceSquared <= collisionTolerance * collisionTolerance) {
-					pProjectile->OnHit(currentTick);
-					pOtherObj->OnHit(currentTick);
-					
-					//GamePacket::BroadcastTankHit(pOtherObj->GetID(), pProjectile->GetID());
-				}
-			}
-		}
-		
-
-
+		pGameObject->OnHit(currentTick);
 	}
+
+	//// consider hit per projectile
+	//ObjectID projectileKeys[1024];
+	//ObjectID otherObjectKeys[1024];
+	//int numProjectiles;
+	//g_objectManager.GetKeys(GAME_OBJECT_KIND_PROJECTILE, projectileKeys, &numProjectiles);
+	//for (int i = 0; i < numProjectiles; ++i) {
+	//	GameObject* pProjectile = g_objectManager.GetObjectPtrOrNull(GAME_OBJECT_KIND_PROJECTILE, projectileKeys[i]);
+	//	if (pProjectile == nullptr) {
+	//		__debugbreak();
+	//	}
+
+	//	{
+	//		// Tank 
+
+	//		int numObjects;
+	//		EGameObjectKind kind = EGameObjectKind::GAME_OBJECT_KIND_TANK;
+
+	//		g_objectManager.GetKeys(kind, otherObjectKeys, &numObjects);
+	//		for (int k = 0; k < numObjects; ++k) {
+
+	//			GameObject* pOtherObj = g_objectManager.GetObjectPtrOrNull(kind, otherObjectKeys[k]);
+	//			if (pOtherObj == nullptr) {
+	//				__debugbreak();
+	//			}
+
+	//			if (!pOtherObj->IsAlive()) {
+	//				continue;
+	//			}
+
+	//			Vector3 projectilePosition = pProjectile->GetPosition();
+	//			Vector3 otherObjPosition = pOtherObj->GetPosition();
+	//			float distanceSquared = Vector3::DistanceSquared(projectilePosition, otherObjPosition);
+
+	//			float collisionTolerance = pProjectile->GetColliderSize() + pOtherObj->GetColliderSize();
+
+	//			if (distanceSquared <= collisionTolerance * collisionTolerance) {
+	//				pProjectile->OnHit(currentTick);
+	//				pOtherObj->OnHit(currentTick);
+
+	//				UserDBIndex hitterIndex = pProjectile->GetOwnerId();
+	//				g_playerManager.IncreaseKillCount(hitterIndex);
+
+	//				UserDBIndex victimIndex = pOtherObj->GetOwnerId();
+	//				g_playerManager.IncreaseDeathCount(victimIndex);
+	//				
+
+	//				GamePacket::BroadcastTankHit(pOtherObj->GetID(), pProjectile->GetID(), pProjectile->GetOwnerId(), pOtherObj->GetOwnerId());
+	//				printf("Tank Hit: shooter=%u, target=%u, tankId=%u, projectileId=%d\n", pProjectile->GetOwnerId(), pOtherObj->GetOwnerId(), pOtherObj->GetID(), pProjectile->GetID());
+	//			}
+	//		}
+	//	}
+
+	//	{
+	//		// Obstacle
+
+	//		int numObjects;
+	//		EGameObjectKind kind = GAME_OBJECT_KIND_OBSTACLE;
+
+	//		g_objectManager.GetKeys(kind, otherObjectKeys, &numObjects);
+	//		for (int k = 0; k < numObjects; ++k) {
+
+	//			GameObject* pOtherObj = g_objectManager.GetObjectPtrOrNull(kind, otherObjectKeys[i]);
+	//			if (pOtherObj == nullptr) {
+	//				__debugbreak();
+	//			}
+
+	//			Vector3 projectilePosition = pProjectile->GetPosition();
+	//			Vector3 otherObjPosition = pOtherObj->GetPosition();
+	//			float distanceSquared = Vector3::DistanceSquared(projectilePosition, otherObjPosition);
+
+	//			float collisionTolerance = pProjectile->GetColliderSize() + pOtherObj->GetColliderSize();
+
+	//			if (distanceSquared <= collisionTolerance * collisionTolerance) {
+	//				pProjectile->OnHit(currentTick);
+	//				pOtherObj->OnHit(currentTick);
+	//				
+	//				//GamePacket::BroadcastTankHit(pOtherObj->GetID(), pProjectile->GetID());
+	//			}
+	//		}
+	//	}
+	//	
+
+
+	//}
 
 
 

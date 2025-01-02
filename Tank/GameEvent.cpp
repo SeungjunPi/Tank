@@ -291,7 +291,7 @@ void GamePacket::HandleTankHit(BYTE* pGameEvent, UINT32 senderId)
 	}
 
 	if (g_playerId == pScTankHit->shooter) {
-		g_score.hit++;
+		g_score.kill++;
 	}
 
 	pTank->OnHit(g_currentGameTick);

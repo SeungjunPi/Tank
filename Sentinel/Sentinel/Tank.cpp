@@ -1,14 +1,16 @@
 #include "Tank.h"
 #include "Global.h"
 #include "GameEvent.h"
+#include "Collider.h"
 
 const float VELOCITY_WEIGHT = 0.75f;
+const float Tank::COLLIDER_RADIUS = 1.0f;
 
-Tank::Tank(ObjectID id, UserDBIndex ownerId)
+Tank::Tank(ObjectID id, UserDBIndex ownerId, Collider* pCollider)
 	: GameObject(id, ownerId, true)
 {
 	_forwardDirection = { .0f, -1.0f, .0f };
-	_colliderSize = 1;
+	_pCollider = pCollider;
 }
 
 Tank::~Tank()
@@ -21,7 +23,6 @@ void Tank::Initiate(ObjectID id)
 	_isActivatable = true;
 	_forwardDirection = { .0f, -1.0f, .0f };
 	_transform = { 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f };
-	_colliderSize = 1;
 	_hitTick = 0;
 }
 
@@ -30,7 +31,6 @@ void Tank::Terminate()
 	_id = 0;
 	_forwardDirection = { 0, };
 	_transform = { 0, };
-	_colliderSize = 0;
 }
 
 void Tank::StartMove(EMOVEMENT movement)
@@ -96,6 +96,8 @@ void Tank::MoveForward(ULONGLONG tickDiff)
 	_transform.Position.y = _transform.Position.y + _forwardDirection.y * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
 	_transform.Position.z = _transform.Position.z + _forwardDirection.z * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
 	_dirty = true;
+
+	OnUpdateTransform();
 }
 
 void Tank::MoveBackward(ULONGLONG tickDiff)
@@ -105,6 +107,7 @@ void Tank::MoveBackward(ULONGLONG tickDiff)
 	_transform.Position.y = _transform.Position.y - _forwardDirection.y * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
 	_transform.Position.z = _transform.Position.z - _forwardDirection.z * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
 	_dirty = true;
+	OnUpdateTransform();
 }
 
 void Tank::RotateRight(ULONGLONG tickDiff)
@@ -115,6 +118,7 @@ void Tank::RotateRight(ULONGLONG tickDiff)
 	_transform.Rotation = Quaternion::RotateZP(radian, _transform.Rotation);
 
 	_dirty = true;
+	OnUpdateTransform();
 }
 
 void Tank::RotateLeft(ULONGLONG tickDiff)
@@ -125,6 +129,7 @@ void Tank::RotateLeft(ULONGLONG tickDiff)
 	_transform.Rotation = Quaternion::RotateZM(radian, _transform.Rotation);
 
 	_dirty = true;
+	OnUpdateTransform();
 }
 
 void Tank::GetTurretInfo(Vector3* out_position, Vector3* out_direction) const
@@ -173,12 +178,32 @@ void Tank::OnFrame(ULONGLONG tickDiff)
 
 void Tank::OnHit(ULONGLONG currentTick)
 {
+	printf("[JUNLOG]onhit tank\n");
+
+	ColliderID colliderIDs[MAX_SIMULTANEOUS_COLLISIONS];
+	UINT16 countColliders = _pCollider->GetCollidingIDs(colliderIDs);
+	for (UINT16 i = 0; i < countColliders; ++i) {
+		
+	}
+
+	_pCollider->Deactivate();
 	_hitTick = currentTick;
 	_isAlive = false;
 	_isMovingFoward = false;
 	_isMovingBackward = false;
 	_isRotatingLeft = false;
 	_isRotatingRight = false;
+}
+
+void Tank::OnUpdateTransform()
+{
+	_pCollider->UpdateCenterPosition(&_transform.Position);
+}
+
+void Tank::Respawn()
+{
+	GameObject::Respawn();
+	_pCollider->Activate();
 }
 
 BOOL Tank::IsTransformCloseEnough(const Transform* other)

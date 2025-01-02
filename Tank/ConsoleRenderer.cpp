@@ -258,7 +258,7 @@ void s_DrawScore(SHORT x, SHORT y)
 	WCHAR* dst = s_backBuffer + offset;
 
 	WCHAR txt[32];
-	DWORD len = swprintf_s(txt, L"Score: (%hd, %hd, %hd)", g_score.kill, g_score.death, g_score.hit);
+	DWORD len = swprintf_s(txt, L"Score: (%hd, %hd, %hd)", g_score.hit, g_score.kill, g_score.death);
 
 	memcpy(dst, txt, sizeof(WCHAR) * len);
 }

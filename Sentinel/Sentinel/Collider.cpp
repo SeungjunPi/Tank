@@ -39,16 +39,17 @@ void Collider::AddCollidingID(ColliderID otherColliderID)
 	++_countColliding;
 }
 
-void Collider::Activate(float radius, ObjectID objectID)
+void Collider::Initiate(float radius, ObjectID objectID)
 {
 	if (radius <= 0) {
 		__debugbreak();
 	}
 	_radius = radius;
 	_objectID = objectID;
+	Activate();
 }
 
-void Collider::Deactivate()
+void Collider::Clear()
 {
 	for (size_t i = 0; i < MAX_SIMULTANEOUS_COLLISIONS; ++i) {
 		_collidingIDs[i] = INVALID_COLLIDER_ID;
@@ -56,6 +57,7 @@ void Collider::Deactivate()
 	_radius = 0;
 	_countColliding = 0;
 	_objectID = INVALID_OBJECT_ID;
+	Deactivate();
 }
 
 

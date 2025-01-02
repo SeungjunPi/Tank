@@ -21,17 +21,17 @@ Collider* CollisionManager::GetNewColliderPtr(float radius, ObjectID objectID)
 {
 	ColliderID id = GetUnusedID();
 	Collider* pCollider = _colliders + id;
-	pCollider->Activate(radius, objectID);
+	pCollider->Initiate(radius, objectID);
 	_usedIDs[_countActiveColliders] = id;
 	++_countActiveColliders;
 	
 	return pCollider;
 }
 
-Collider* CollisionManager::GetActiveColliderPtr(ColliderID id)
+Collider* CollisionManager::GetAttachedColliderPtr(ColliderID id)
 {
 	Collider* pCol = _colliders + id;
-	if (pCol->IsActive()) {
+	if (pCol->IsAttatchedToGameObject()) {
 		return pCol;
 	}
 	
@@ -41,7 +41,7 @@ Collider* CollisionManager::GetActiveColliderPtr(ColliderID id)
 void CollisionManager::ReturnCollider(Collider* pCollider)
 {
 	size_t index = pCollider->GetID();
-	pCollider->Deactivate();
+	pCollider->Clear();
 	PopUsedIDs(index);
 }
 
@@ -54,14 +54,22 @@ UINT32 CollisionManager::DetectCollision(ColliderID** out)
 	for (size_t i = 0; i < _countActiveColliders; ++i) {
 		ColliderID firstID = _usedIDs[i];
 		bool isFirstColliderColide = false;
+		Collider* pCollider1 = _colliders + firstID;
+
+		if (!pCollider1->_isActive) {
+			continue;
+		}
+
 		for (size_t j = 0; j < _countActiveColliders; ++j) {
 			if (i == j) {
 				continue;
 			}
 			ColliderID secondID = _usedIDs[j];
 
-			Collider* pCollider1 = _colliders + firstID;
 			Collider* pCollider2 = _colliders + secondID;
+			if (!pCollider2->_isActive) {
+				continue;
+			}
 			
 			float firstColliderRadius = pCollider1->_radius;
 			float secondColliderRadius = pCollider2->_radius;
