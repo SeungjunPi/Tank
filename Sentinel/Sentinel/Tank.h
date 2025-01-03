@@ -48,9 +48,13 @@ private:
 
 	Collider* _pCollider = nullptr;
 
+	Transform _prevTransform = { 0, };
+
 	void MoveForward(ULONGLONG tickDiff);
 	void MoveBackward(ULONGLONG tickDiff);
 	void RotateRight(ULONGLONG tickDiff);
 	void RotateLeft(ULONGLONG tickDiff);
+
+	
 
 };

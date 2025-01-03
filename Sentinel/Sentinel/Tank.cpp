@@ -155,6 +155,8 @@ void Tank::GetTurretInfo(Vector3* out_position, Vector3* out_direction) const
 void Tank::OnFrame(ULONGLONG tickDiff)
 {
 	if (IsAlive()) {
+		memcpy(&_prevTransform, &_transform, sizeof(Transform));
+
 		if (_isMovingFoward) {
 			MoveForward(tickDiff);
 		}
@@ -204,7 +206,10 @@ void Tank::OnHit(ULONGLONG currentTick)
 			GamePacket::BroadcastTankHit(_id, otherObjID, pOtherObj->GetOwnerId(), _ownerIndex);
 			break;
 		case GAME_OBJECT_KIND_TANK:
-			// Fall Through
+			memcpy(&_transform, &_prevTransform, sizeof(Transform));
+			_pCollider->UpdateCenterPosition(&_transform.Position);
+			
+			break;
 		case GAME_OBJECT_KIND_OBSTACLE:
 			break;
 		}
@@ -224,8 +229,8 @@ void Tank::Respawn()
 
 BOOL Tank::IsTransformCloseEnough(const Transform* other)
 {
-	const float TOLERANCE_POSITION_SQUARE = 3.0; // x, y, z의 차이가 각 1.0 미만인 경우를 간단하게 판단
-	const float TOLERANCE_ROTATION = 0.26; // 30도 미만
+	const float TOLERANCE_POSITION_SQUARE = 0.5; // x, y, z의 차이가 각 1.0 미만인 경우를 간단하게 판단
+	const float TOLERANCE_ROTATION = 0.13; // 15도 미만
 
 	float posDistanceSq = Vector3::DistanceSquared(_transform.Position, other->Position);
 	float rotDisctance = Quaternion::AngularDistance(_transform.Rotation, other->Rotation);
