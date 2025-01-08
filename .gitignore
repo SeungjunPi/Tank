@@ -5,9 +5,7 @@
 
 # do not ignore exe directory\
 !exe/
-!exe/**
 !exe/*.pdb
-!exe/*.lib
 
 # User-specific files
 *.rsuser
