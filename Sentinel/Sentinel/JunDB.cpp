@@ -86,12 +86,15 @@ DBErrorCode JunDB::End()
 	CloseHandle(s_hEndEvent);
 	if (result == WAIT_OBJECT_0) {
 		delete[] s_hThreads;
+		delete[] s_hQueryEvents;
+
+		delete s_pResultCQueueFront;
+		delete s_pResultCQueueBack;
+		delete s_pTmpCQueue;
 		return DBErrorCode::NONE;
 	}
-
-	// TODO: Queue 비우기
-	delete s_pResultCQueueFront;
-	delete s_pResultCQueueBack;
+	
+	__debugbreak();
 
 	return DBErrorCode::NONE;
 }
