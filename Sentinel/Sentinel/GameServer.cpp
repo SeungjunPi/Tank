@@ -127,6 +127,7 @@ void GameServer::ActivateEndFlag()
 void GameServer::End()
 {
 	g_pNetCore->EndNetCore();
+	g_pJunDB->End();
 }
 
 void GameServer::CleanUp()
@@ -136,6 +137,7 @@ void GameServer::CleanUp()
 	delete[] g_sessionIds;
 	DeleteNetCore(g_pNetCore);
 	delete g_pCollisionManager;
+	TerminateJunDB(g_pJunDB);
 }
 
 void GameServer::Broadcast(BYTE* msg, int len)
