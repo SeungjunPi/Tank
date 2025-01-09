@@ -1,20 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.9.34622.214
+VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sentinel", "Sentinel\Sentinel.vcxproj", "{783D982C-DE14-4BAB-81D8-029B50CF455A}"
-	ProjectSection(ProjectDependencies) = postProject
-		{D820F88B-B98D-4AA2-B642-3F6360ACD310} = {D820F88B-B98D-4AA2-B642-3F6360ACD310}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Client", "Client\Client.vcxproj", "{52F45F27-9647-4DF0-A20B-B2252669E71F}"
-	ProjectSection(ProjectDependencies) = postProject
-		{783D982C-DE14-4BAB-81D8-029B50CF455A} = {783D982C-DE14-4BAB-81D8-029B50CF455A}
-		{D820F88B-B98D-4AA2-B642-3F6360ACD310} = {D820F88B-B98D-4AA2-B642-3F6360ACD310}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NetCore", "NetCore\NetCore.vcxproj", "{D820F88B-B98D-4AA2-B642-3F6360ACD310}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sentinel", "Sentinel.vcxproj", "{88701CA1-96C4-4D33-9D66-D96D532B6D6D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,35 +13,19 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{783D982C-DE14-4BAB-81D8-029B50CF455A}.Debug|x64.ActiveCfg = Debug|x64
-		{783D982C-DE14-4BAB-81D8-029B50CF455A}.Debug|x64.Build.0 = Debug|x64
-		{783D982C-DE14-4BAB-81D8-029B50CF455A}.Debug|x86.ActiveCfg = Debug|Win32
-		{783D982C-DE14-4BAB-81D8-029B50CF455A}.Debug|x86.Build.0 = Debug|Win32
-		{783D982C-DE14-4BAB-81D8-029B50CF455A}.Release|x64.ActiveCfg = Release|x64
-		{783D982C-DE14-4BAB-81D8-029B50CF455A}.Release|x64.Build.0 = Release|x64
-		{783D982C-DE14-4BAB-81D8-029B50CF455A}.Release|x86.ActiveCfg = Release|Win32
-		{783D982C-DE14-4BAB-81D8-029B50CF455A}.Release|x86.Build.0 = Release|Win32
-		{52F45F27-9647-4DF0-A20B-B2252669E71F}.Debug|x64.ActiveCfg = Debug|x64
-		{52F45F27-9647-4DF0-A20B-B2252669E71F}.Debug|x64.Build.0 = Debug|x64
-		{52F45F27-9647-4DF0-A20B-B2252669E71F}.Debug|x86.ActiveCfg = Debug|Win32
-		{52F45F27-9647-4DF0-A20B-B2252669E71F}.Debug|x86.Build.0 = Debug|Win32
-		{52F45F27-9647-4DF0-A20B-B2252669E71F}.Release|x64.ActiveCfg = Release|x64
-		{52F45F27-9647-4DF0-A20B-B2252669E71F}.Release|x64.Build.0 = Release|x64
-		{52F45F27-9647-4DF0-A20B-B2252669E71F}.Release|x86.ActiveCfg = Release|Win32
-		{52F45F27-9647-4DF0-A20B-B2252669E71F}.Release|x86.Build.0 = Release|Win32
-		{D820F88B-B98D-4AA2-B642-3F6360ACD310}.Debug|x64.ActiveCfg = Debug|x64
-		{D820F88B-B98D-4AA2-B642-3F6360ACD310}.Debug|x64.Build.0 = Debug|x64
-		{D820F88B-B98D-4AA2-B642-3F6360ACD310}.Debug|x86.ActiveCfg = Debug|Win32
-		{D820F88B-B98D-4AA2-B642-3F6360ACD310}.Debug|x86.Build.0 = Debug|Win32
-		{D820F88B-B98D-4AA2-B642-3F6360ACD310}.Release|x64.ActiveCfg = Release|x64
-		{D820F88B-B98D-4AA2-B642-3F6360ACD310}.Release|x64.Build.0 = Release|x64
-		{D820F88B-B98D-4AA2-B642-3F6360ACD310}.Release|x86.ActiveCfg = Release|Win32
-		{D820F88B-B98D-4AA2-B642-3F6360ACD310}.Release|x86.Build.0 = Release|Win32
+		{88701CA1-96C4-4D33-9D66-D96D532B6D6D}.Debug|x64.ActiveCfg = Debug|x64
+		{88701CA1-96C4-4D33-9D66-D96D532B6D6D}.Debug|x64.Build.0 = Debug|x64
+		{88701CA1-96C4-4D33-9D66-D96D532B6D6D}.Debug|x86.ActiveCfg = Debug|Win32
+		{88701CA1-96C4-4D33-9D66-D96D532B6D6D}.Debug|x86.Build.0 = Debug|Win32
+		{88701CA1-96C4-4D33-9D66-D96D532B6D6D}.Release|x64.ActiveCfg = Release|x64
+		{88701CA1-96C4-4D33-9D66-D96D532B6D6D}.Release|x64.Build.0 = Release|x64
+		{88701CA1-96C4-4D33-9D66-D96D532B6D6D}.Release|x86.ActiveCfg = Release|Win32
+		{88701CA1-96C4-4D33-9D66-D96D532B6D6D}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {DEB576A1-AA95-418C-9CDA-46120BC469EF}
+		SolutionGuid = {AA13E1CB-8E1F-4F73-96E5-16DC4024D329}
 	EndGlobalSection
 EndGlobal

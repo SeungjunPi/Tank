@@ -28,9 +28,6 @@
     <Filter Include="collision">
       <UniqueIdentifier>{6834202e-1f71-4e09-b2c8-511b43fbc73a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Data Structs">
-      <UniqueIdentifier>{dd65a473-3a3c-4298-89d4-205c612aed54}</UniqueIdentifier>
-    </Filter>
     <Filter Include="login">
       <UniqueIdentifier>{4ee3364b-5559-4184-9058-fc5f74219801}</UniqueIdentifier>
     </Filter>
@@ -78,21 +75,6 @@
     <ClCompile Include="GameEvent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Sentinel\NetCore\LinearQueue.cpp">
-      <Filter>Data Structs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Sentinel\NetCore\PointerList.cpp">
-      <Filter>Data Structs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Sentinel\NetCore\PointerMap.cpp">
-      <Filter>Data Structs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Sentinel\NetCore\PointerQueue.cpp">
-      <Filter>Data Structs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Sentinel\NetCore\PointerTable.cpp">
-      <Filter>Data Structs</Filter>
-    </ClCompile>
     <ClCompile Include="TankAliases.h">
       <Filter>pch</Filter>
     </ClCompile>
@@ -139,21 +121,6 @@
     </ClInclude>
     <ClInclude Include="GameEvent.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Sentinel\NetCore\LinearQueue.h">
-      <Filter>Data Structs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Sentinel\NetCore\PointerList.h">
-      <Filter>Data Structs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Sentinel\NetCore\PointerMap.h">
-      <Filter>Data Structs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Sentinel\NetCore\PointerQueue.h">
-      <Filter>Data Structs</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Sentinel\NetCore\PointerTable.h">
-      <Filter>Data Structs</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

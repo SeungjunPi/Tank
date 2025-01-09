@@ -3,6 +3,11 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+# do not ignore exe directory\
+!bin/Debug/
+!bin/Debug/*.pdb
+!bin/Debug/*.dll
+
 # User-specific files
 *.rsuser
 *.suo
@@ -397,5 +402,3 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
-# do not ignore exe directory\
-!exe/
