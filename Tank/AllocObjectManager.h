@@ -1,5 +1,5 @@
 #pragma once
-#include "stdafx.h"
+#include "TankPch.h"
 #include "GameObject.h"
 #include "Tank.h"
 #include "Projectile.h"

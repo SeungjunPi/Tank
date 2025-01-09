@@ -21,7 +21,7 @@ void ObjectManager::Initiate()
 
 void ObjectManager::Terminate()
 {
-	ObjectID* keys = new ObjectID[NUM_OBJECTS_MAX];
+	ObjectID* keys = DNew ObjectID[NUM_OBJECTS_MAX];
 	int numCounts = 0;
 
 
@@ -91,7 +91,7 @@ Tank* ObjectManager::CreateTank(UserDBIndex ownerIndex)
 	assert(objectId != UINT16_MAX);
 
 	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(Tank::COLLIDER_RADIUS, objectId);
-	Tank* pTank = new Tank(objectId, ownerIndex, pCollider);
+	Tank* pTank = DNew Tank(objectId, ownerIndex, pCollider);
 	bool res = _tankTable.Insert(objectId, pTank);
 	assert(res);
 	res = _tankTableByOwner.Insert(ownerIndex, pTank);
@@ -124,7 +124,7 @@ Projectile* ObjectManager::CreateProjectile(UserDBIndex ownerId, Transform* pTra
 
 	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(Projectile::COLLIDER_RADIUS, objectId);
 
-	Projectile* pProjectile = new Projectile;
+	Projectile* pProjectile = DNew Projectile;
 	pProjectile->Initiate(objectId, pTransform, ownerId, pCollider);
 	
 	bool res = _projectileTable.Insert(objectId, pProjectile);
@@ -225,7 +225,7 @@ UINT16 ObjectManager::GetCountObjects() const
 
 void ObjectManager::CopySnapshot(PACKET_OBJECT_INFO* dst)
 {
-	ObjectID* keys = new ObjectID[NUM_OBJECTS_MAX];
+	ObjectID* keys = DNew ObjectID[NUM_OBJECTS_MAX];
 	int numCounts = 0;
 	_tankTable.GetIdsTo(keys, &numCounts);
 

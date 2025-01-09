@@ -38,7 +38,7 @@ void GameServer::Initialize()
 	g_playerManager.Initiate(2048);
 	g_objectManager.Initiate();
 
-	g_sessionIds = new UINT32[2048];
+	g_sessionIds = DNew UINT32[2048];
 }
 
 void GameServer::Start()
@@ -58,7 +58,7 @@ void GameServer::Start()
 
 	g_pJunDB->Start(dbConnectionInfo, 1);
 
-	g_pCollisionManager = new CollisionManager;
+	g_pCollisionManager = DNew CollisionManager;
 	
 	UINT32 senderID = 0;
 

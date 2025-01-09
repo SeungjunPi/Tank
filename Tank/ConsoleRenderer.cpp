@@ -78,7 +78,7 @@ void ConsoleRenderer::Initiate(AllocObjectManager* pObjectManager)
 	DWORD dw;
 	FillConsoleOutputCharacter(s_hOut, L'.', s_consoleWidth * s_consoleHeight, coor, &dw);
 
-	s_backBuffer = new WCHAR[s_consoleWidth * s_consoleHeight];
+	s_backBuffer = DNew WCHAR[s_consoleWidth * s_consoleHeight];
 	s_ClearBackBuffer();
 	
 	s_gameMap.xCenter = s_consoleWidth / 2;
@@ -89,7 +89,7 @@ void ConsoleRenderer::Initiate(AllocObjectManager* pObjectManager)
 	s_gameMap.yMax = s_gameMap.yCenter - 1;
 	s_gameMap.yMin = -s_gameMap.yMax;
 		
-	s_vertices = new Vertex[10];
+	s_vertices = DNew Vertex[10];
 
 	_pAllocObjManager = pObjectManager;
 

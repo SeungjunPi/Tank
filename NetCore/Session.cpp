@@ -19,16 +19,16 @@ Session::~Session()
 
 void Session::Initiate()
 {
-	_receiveStream = new Stream;
+	_receiveStream = DNew Stream;
 
 	_receiveWsaBuf.buf = NULL;
 	_receiveWsaBuf.len = 0;
 	_receiveIoData.operation = IoOperationData::RECEIVE;
 
 
-	_sendFrontNetPage = new NetPage;
+	_sendFrontNetPage = DNew NetPage;
 	_sendFrontNetPage->length = 0;
-	_sendBackNetPage = new NetPage;
+	_sendBackNetPage = DNew NetPage;
 	_sendBackNetPage->length = 0;
 	_sendWsaBuf.buf = NULL;
 	_sendWsaBuf.len = 0;

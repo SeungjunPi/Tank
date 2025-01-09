@@ -1,6 +1,6 @@
 #pragma once
 
-#include "stdafx.h"
+#include "TankPch.h"
 #include "GameStruct.h"
 
 extern Model g_pTankModel;

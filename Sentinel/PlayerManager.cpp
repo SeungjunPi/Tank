@@ -3,8 +3,8 @@
 void PlayerManager::Initiate(int maxNumPlayers)
 {
 	_playerTable.Initiate(maxNumPlayers);
-	_usedDbIndexes = new UINT32[maxNumPlayers];
-	_pUserIdentifierManager = new UserIdentifierManager;
+	_usedDbIndexes = DNew UINT32[maxNumPlayers];
+	_pUserIdentifierManager = DNew UserIdentifierManager;
 }
 
 void PlayerManager::Terminate()
@@ -24,7 +24,7 @@ void PlayerManager::Terminate()
 
 Player* PlayerManager::TryCreatePlayer(SessionID sessionID, UserDBIndex userDBIndex, int hitCount, int killCount, int deathCount)
 {
-	Player* newPlayer = new Player(sessionID, userDBIndex);
+	Player* newPlayer = DNew Player(sessionID, userDBIndex);
 	newPlayer->_hitCount = hitCount;
 	newPlayer->_killCount = killCount;
 	newPlayer->_deathCount = deathCount;
