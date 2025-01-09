@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{0561ca64-59f6-43c4-b090-daf9eb31237e}</ProjectGuid>
-    <RootNamespace>Tank</RootNamespace>
+    <ProjectGuid>{5f7a2b31-8e92-4893-8124-67df97fe800e}</ProjectGuid>
+    <RootNamespace>DataStruct</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -40,7 +40,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -70,10 +70,6 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>$(SolutionDir)..\NetCore\x64\Debug;$(SolutionDir)..\DataStruct\x64\Debug;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)..\NetCore\;$(SolutionDir)..\DataStruct\;$(IncludePath)</IncludePath>
-  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -109,16 +105,10 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>
-      </AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Ws2_32.lib;Mswsock.lib;$(SolutionDir)..\NetCore\x64\Debug\NetCore.lib;$(SolutionDir)..\DataStruct\x64\Debug\DataStruct.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>
-      </AdditionalLibraryDirectories>
-      <PerUserRedirection>true</PerUserRedirection>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(OutDir)*.*" "$(SolutionDir)..\bin\Debug"</Command>
@@ -141,37 +131,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AllocObjectManager.cpp" />
-    <ClCompile Include="ConsoleRenderer.cpp" />
-    <ClCompile Include="DotObject.cpp" />
-    <ClCompile Include="Game.cpp" />
-    <ClCompile Include="GameEvent.cpp" />
-    <ClCompile Include="GameObject.cpp" />
-    <ClCompile Include="GameStruct.cpp" />
-    <ClCompile Include="Global.cpp" />
-    <ClCompile Include="KeyboardEventListener.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="Obstacle.cpp" />
-    <ClCompile Include="Projectile.cpp" />
-    <ClCompile Include="StaticData.cpp" />
-    <ClCompile Include="Tank.cpp" />
-    <ClCompile Include="TankAliases.h" />
+    <ClInclude Include="DataStructPch.h" />
+    <ClInclude Include="LinearQueue.h" />
+    <ClInclude Include="PointerList.h" />
+    <ClInclude Include="PointerMap.h" />
+    <ClInclude Include="PointerQueue.h" />
+    <ClInclude Include="PointerTable.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AllocObjectManager.h" />
-    <ClInclude Include="ConsoleRenderer.h" />
-    <ClInclude Include="DotObject.h" />
-    <ClInclude Include="Game.h" />
-    <ClInclude Include="GameEvent.h" />
-    <ClInclude Include="GameObject.h" />
-    <ClInclude Include="GameStruct.h" />
-    <ClInclude Include="Global.h" />
-    <ClInclude Include="KeyboardEventListener.h" />
-    <ClInclude Include="Obstacle.h" />
-    <ClInclude Include="Projectile.h" />
-    <ClInclude Include="StaticData.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="Tank.h" />
+    <ClCompile Include="LinearQueue.cpp" />
+    <ClCompile Include="PointerList.cpp" />
+    <ClCompile Include="PointerMap.cpp" />
+    <ClCompile Include="PointerQueue.cpp" />
+    <ClCompile Include="PointerTable.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

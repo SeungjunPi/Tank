@@ -1,0 +1,162 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="DB">
+      <UniqueIdentifier>{c54af082-8fa3-48c7-a55b-b92cefc2b3e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game Object">
+      <UniqueIdentifier>{723a83e4-d5af-4180-9a36-051d2f4bb722}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game Event">
+      <UniqueIdentifier>{f6586e0a-4e85-459d-90ce-16b8a7b26f13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pch">
+      <UniqueIdentifier>{4e8f6da0-0936-4d3c-847b-b11d49558930}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Player">
+      <UniqueIdentifier>{d449d39a-637c-47be-a83e-75763abe0c4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Static Data">
+      <UniqueIdentifier>{80d4aaa3-7e59-40db-9fb9-8ac49a183c9b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DataStruct">
+      <UniqueIdentifier>{3e02d09c-aa62-463b-b1fa-19b1acfbea37}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Collision">
+      <UniqueIdentifier>{a51888bb-d98a-4144-8a05-d0f441f9505f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="GameServer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SentinelMain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UserIdentifierManager.cpp">
+      <Filter>Player</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerManager.cpp">
+      <Filter>Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Collider.cpp">
+      <Filter>Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="CollisionManager.cpp">
+      <Filter>Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="DBStruct.cpp">
+      <Filter>DB</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>Game Object</Filter>
+    </ClCompile>
+    <ClCompile Include="DummyObject.cpp">
+      <Filter>Game Object</Filter>
+    </ClCompile>
+    <ClCompile Include="GameEvent.cpp">
+      <Filter>Game Event</Filter>
+    </ClCompile>
+    <ClCompile Include="GameStruct.cpp">
+      <Filter>Game Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Global.cpp">
+      <Filter>Static Data</Filter>
+    </ClCompile>
+    <ClCompile Include="JunDB.cpp">
+      <Filter>DB</Filter>
+    </ClCompile>
+    <ClCompile Include="LiteWString.cpp">
+      <Filter>DB</Filter>
+    </ClCompile>
+    <ClCompile Include="Projectile.cpp">
+      <Filter>Game Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Tank.cpp">
+      <Filter>Game Object</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectManager.cpp">
+      <Filter>Game Object</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GameServer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Collider.h">
+      <Filter>Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionManager.h">
+      <Filter>Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="DBStruct.h">
+      <Filter>DB</Filter>
+    </ClInclude>
+    <ClInclude Include="SentinelPch.h">
+      <Filter>pch</Filter>
+    </ClInclude>
+    <ClInclude Include="SentinelAliases.h">
+      <Filter>pch</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>Player</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerManager.h">
+      <Filter>Player</Filter>
+    </ClInclude>
+    <ClInclude Include="UserIdentifierManager.h">
+      <Filter>Player</Filter>
+    </ClInclude>
+    <ClInclude Include="DummyObject.h">
+      <Filter>Game Object</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject.h">
+      <Filter>Game Object</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStruct.h">
+      <Filter>Game Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Tank.h">
+      <Filter>Game Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Projectile.h">
+      <Filter>Game Object</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectManager.h">
+      <Filter>Game Object</Filter>
+    </ClInclude>
+    <ClInclude Include="JunDB.h">
+      <Filter>DB</Filter>
+    </ClInclude>
+    <ClInclude Include="IJunDB.h">
+      <Filter>DB</Filter>
+    </ClInclude>
+    <ClInclude Include="LiteWString.h">
+      <Filter>DB</Filter>
+    </ClInclude>
+    <ClInclude Include="CQueue.h">
+      <Filter>DB</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEvent.h">
+      <Filter>Game Event</Filter>
+    </ClInclude>
+    <ClInclude Include="Global.h">
+      <Filter>Static Data</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

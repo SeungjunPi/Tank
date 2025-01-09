@@ -4,8 +4,9 @@
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
 # do not ignore exe directory\
-!exe/
-!exe/*.pdb
+!bin/Debug/
+!bin/Debug/*.pdb
+!bin/Debug/*.dll
 
 # User-specific files
 *.rsuser
