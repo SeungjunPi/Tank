@@ -58,7 +58,7 @@ void GamePacket::SendSnapshot(SessionID sessionId)
 	}
 
 	const size_t packet_size = sizeof(EGameEventCode) + sizeof(PACKET_SC_SNAPSHOT) + sizeof(PACKET_OBJECT_INFO) * countObjects;
-	BYTE* pRawPacket = new BYTE[packet_size];
+	BYTE* pRawPacket = DNew BYTE[packet_size];
 	EGameEventCode* pEvCode = (EGameEventCode*)pRawPacket;
 	*pEvCode = GAME_EVENT_CODE_SC_SNAPSHOT;
 

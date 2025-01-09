@@ -38,7 +38,7 @@ Session* SessionManager::CreateSession(SOCKET hSocket)
         __debugbreak();
     }
     _ids[idIndex] = -1;
-    Session* pSession = new Session(hSocket, id);
+    Session* pSession = DNew Session(hSocket, id);
     bool res = _pointerTable.Insert(id, pSession);
     if (!res) {
         __debugbreak();
@@ -68,7 +68,7 @@ void SessionManager::DisconnectAllSessions()
 {
     AcquireSRWLockExclusive(&_srwLock);
     int countSessions = _pointerTable.GetCount();
-    int* usingKeys = new int[countSessions];
+    int* usingKeys = DNew int[countSessions];
     _pointerTable.GetIdsTo(usingKeys, &countSessions);
     for (SHORT i = 0; i < countSessions; ++i) {
         Session* pSession = (Session*)_pointerTable.Get(usingKeys[i]);

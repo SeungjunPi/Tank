@@ -2,7 +2,7 @@
 
 void PointerList::Initiate(int capacity)
 {
-	_begin = new PointerNode[capacity];
+	_begin = DNew PointerNode[capacity];
 	_end = _begin + capacity;
 	_head = _begin;
 	_tail = nullptr;

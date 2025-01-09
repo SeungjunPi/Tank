@@ -12,7 +12,7 @@ void AllocObjectManager::Initiate()
 
 void AllocObjectManager::Terminate()
 {
-	ObjectID* keys = new ObjectID[MAX_NUM_OBJECT];
+	ObjectID* keys = DNew ObjectID[MAX_NUM_OBJECT];
 	int numCounts = 0;
 
 	_tankTable.GetIdsTo(keys, &numCounts);
@@ -45,7 +45,7 @@ void AllocObjectManager::Terminate()
 
 Tank* AllocObjectManager::CreateTank(ObjectID serverKey)
 {
-	Tank* pTank = new Tank;
+	Tank* pTank = DNew Tank;
 	pTank->Initiate(serverKey);
 	_tankTable.Insert(serverKey, pTank);
 	return pTank;
@@ -53,7 +53,7 @@ Tank* AllocObjectManager::CreateTank(ObjectID serverKey)
 
 Projectile* AllocObjectManager::CreateProjectile(ObjectID serverKey, Transform* pInitTransform)
 {
-	Projectile* pProjectile = new Projectile();
+	Projectile* pProjectile = DNew Projectile();
 	pProjectile->Initiate(serverKey, pInitTransform);
 	_projectileTable.Insert(serverKey, pProjectile);
 	return pProjectile;
@@ -62,7 +62,7 @@ Projectile* AllocObjectManager::CreateProjectile(ObjectID serverKey, Transform* 
 Obstacle* AllocObjectManager::CreateObstacle(ObjectID key, Transform* pInitTransform)
 {
 	
-	Obstacle* pObstacle = new Obstacle();
+	Obstacle* pObstacle = DNew Obstacle();
 	pObstacle->Initiate(key, pInitTransform);
 	_obstacleTable.Insert(key, pObstacle);
 	return pObstacle;

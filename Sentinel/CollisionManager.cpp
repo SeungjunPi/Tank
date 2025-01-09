@@ -2,12 +2,12 @@
 
 CollisionManager::CollisionManager()
 {
-	_colliders = new Collider[MAX_NUM_COLLIDERS];
+	_colliders = DNew Collider[MAX_NUM_COLLIDERS];
 	for (UINT16 i = 0; i < MAX_NUM_COLLIDERS; ++i) {
 		_colliders[i]._id = (ColliderID)i;
 	}
-	_usedIDs = new ColliderID[MAX_NUM_COLLIDERS];
-	_collidedColliderIDs = new ColliderID[MAX_NUM_COLLIDERS];
+	_usedIDs = DNew ColliderID[MAX_NUM_COLLIDERS];
+	_collidedColliderIDs = DNew ColliderID[MAX_NUM_COLLIDERS];
 }
 
 CollisionManager::~CollisionManager()

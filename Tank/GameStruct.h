@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "stdafx.h"
+#include "TankPch.h"
 #include <cmath>
 
 enum EGameObjectKind : UINT16

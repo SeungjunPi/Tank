@@ -1,6 +1,6 @@
 #pragma once
 
-#include "stdafx.h"
+#include "TankPch.h"
 
 class NetCore;
 class Tank;

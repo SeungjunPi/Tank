@@ -32,7 +32,7 @@ void PushResult(DBEvent dbEvent);
 
 void CreateJunDB(IJunDB** out_pJunDB)
 {
-	*out_pJunDB = new JunDB;
+	*out_pJunDB = DNew JunDB;
 }
 
 void TerminateJunDB(IJunDB* pJunDB)
@@ -56,12 +56,12 @@ DBErrorCode JunDB::Start(const DBConnectionInfo connectionInfo, SHORT numThreads
 	USES_CONVERSION;
 	s_dbConnectionInfo.Append(A2W(buffer));
 
-	s_pResultCQueueFront = new CQueue<DBEvent>;
-	s_pResultCQueueBack = new CQueue<DBEvent>;
-	s_pTmpCQueue = new CQueue<DBEvent>;
+	s_pResultCQueueFront = DNew CQueue<DBEvent>;
+	s_pResultCQueueBack = DNew CQueue<DBEvent>;
+	s_pTmpCQueue = DNew CQueue<DBEvent>;
 
-	s_hThreads = new HANDLE[numThreads];
-	s_hQueryEvents = new HANDLE[numThreads];
+	s_hThreads = DNew HANDLE[numThreads];
+	s_hQueryEvents = DNew HANDLE[numThreads];
 
 	s_hEndEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
@@ -104,7 +104,7 @@ void JunDB::ValidateUserInfo(const WCHAR* ID, const WCHAR* pw, UINT32 sessionID)
 	DBEvent ev;
 	ev.code = DBEventCode::QUERY_VALIDATION;
 
-	DBQueryValidation* query = new DBQueryValidation(ID, pw, sessionID);
+	DBQueryValidation* query = DNew DBQueryValidation(ID, pw, sessionID);
 	ev.pEvent = (void*)query;
 
 	s_queryCQueue.Push(ev);
@@ -116,7 +116,7 @@ void JunDB::LoadStat(UINT32 sessionID, int userID)
 	DBEvent ev;
 	ev.code = DBEventCode::QUERY_LOAD_STAT;
 
-	DBQueryLoadStat* query = new DBQueryLoadStat(userID, sessionID);
+	DBQueryLoadStat* query = DNew DBQueryLoadStat(userID, sessionID);
 
 	ev.pEvent = (void*)query;
 
@@ -129,7 +129,7 @@ void JunDB::UpdateStat(int userID, int hitCount, int killCount, int deathCount)
 	DBEvent ev;
 	ev.code = DBEventCode::QUERY_UPDATE_STAT;
 
-	DBQueryUpdateStat* query = new DBQueryUpdateStat(userID, hitCount, killCount, deathCount);
+	DBQueryUpdateStat* query = DNew DBQueryUpdateStat(userID, hitCount, killCount, deathCount);
 	ev.pEvent = (void*)query;
 
 	s_queryCQueue.Push(ev);

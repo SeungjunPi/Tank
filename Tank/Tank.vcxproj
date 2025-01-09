@@ -111,6 +111,7 @@
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>
       </AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>TankPch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -170,7 +171,7 @@
     <ClInclude Include="Obstacle.h" />
     <ClInclude Include="Projectile.h" />
     <ClInclude Include="StaticData.h" />
-    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="TankPch.h" />
     <ClInclude Include="Tank.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

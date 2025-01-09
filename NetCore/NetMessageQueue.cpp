@@ -1,7 +1,7 @@
 #include "NetMessageQueue.h"
 
 NetMessageQueue::NetMessageQueue()
-	: _msgBuffer(new BYTE[NET_CONCURRENT_MESSAGE_QUEUE_MAX_SIZE])
+	: _msgBuffer(DNew BYTE[NET_CONCURRENT_MESSAGE_QUEUE_MAX_SIZE])
 	, _writeIndex(0)
 	, _readIndex(0)
 	, _count(0)

@@ -435,11 +435,11 @@ bool PostAccept()
 
 void InitiateAllocation()
 {
-	s_pReceiveMessagesFront = new NetMessageQueue();
-	s_pReceiveMessagesBack = new NetMessageQueue();
+	s_pReceiveMessagesFront = DNew NetMessageQueue();
+	s_pReceiveMessagesBack = DNew NetMessageQueue();
 
-	s_pSessionEventsFront = new NetSessionEventQueue();
-	s_pSessionEventsBack = new NetSessionEventQueue();
+	s_pSessionEventsFront = DNew NetSessionEventQueue();
+	s_pSessionEventsBack = DNew NetSessionEventQueue();
 }
 
 void TerminateAllocation()
@@ -464,7 +464,7 @@ NETCORE_API NetCore* GetNetCore()
 		return pNetCore;
 	}
 
-	pNetCore = new NetCore();
+	pNetCore = DNew NetCore();
 	return pNetCore;
 }
 
@@ -481,7 +481,7 @@ NETCORE_API void DeleteNetCore()
 
 NETCORE_API void CreateNetCore(NetCore** dst)
 {
-	*dst = new NetCore;
+	*dst = DNew NetCore;
 }
 
 NETCORE_API void DeleteNetCore(NetCore* src)

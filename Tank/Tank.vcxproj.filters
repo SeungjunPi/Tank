@@ -92,7 +92,7 @@
     <ClInclude Include="StaticData.h">
       <Filter>Static Data</Filter>
     </ClInclude>
-    <ClInclude Include="stdafx.h">
+    <ClInclude Include="TankPch.h">
       <Filter>pch</Filter>
     </ClInclude>
     <ClInclude Include="KeyboardEventListener.h">

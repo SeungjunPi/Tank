@@ -1,7 +1,7 @@
 #include "NetSessionEventQueue.h"
 
 NetSessionEventQueue::NetSessionEventQueue()
-	: _msgBuffer(new BYTE[NET_SESSION_EVENT_QUEUE_MAX_SIZE])
+	: _msgBuffer(DNew BYTE[NET_SESSION_EVENT_QUEUE_MAX_SIZE])
 	, _writeIndex(0)
 	, _readIndex(0)
 	, _count(0)
