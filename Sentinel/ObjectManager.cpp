@@ -245,28 +245,23 @@ void ObjectManager::CopySnapshot(PACKET_OBJECT_INFO* dst)
 
 void ObjectManager::RemoveObject(EGameObjectKind objectKind, ObjectID key)
 {
-	void* ptr = nullptr;
+	
 	switch (objectKind) {
 	case GAME_OBJECT_KIND_TANK:
 	{
-		ptr = _tankTable.Pop(key);
-		UINT32 ownerId = ((Tank*)ptr)->GetOwnerId();
-		_tankTableByOwner.Pop(ownerId);
+		Tank* pTank = (Tank*)_tankTable.Get(key);
+		UINT32 ownerId = pTank->GetOwnerId();
+		RemoveTank(key, ownerId);
 		break;
 	}
 	case GAME_OBJECT_KIND_PROJECTILE:
-		ptr = _projectileTable.Pop(key);
+		RemoveProjectile(key);
 		break;
 	case GAME_OBJECT_KIND_OBSTACLE:
-		ptr = _obstacleTable.Pop(key);
+		// TODO: remove Obstacle
 		break;
 	}
 
-	if (ptr != nullptr) {
-		delete ptr;
-	}
-
-	_unusedObjectIdQueue.Push(&key);
 }
 
 void ObjectManager::GetKeys(EGameObjectKind objectKind, ObjectID* out_keys, int* out_numKeys) const
