@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "GameObject.h"
 
 class Collider;
@@ -12,12 +11,12 @@ public:
 	Projectile() = default;
 	~Projectile() = default;
 
-	void Initiate(ObjectID id, Transform* transform, UserDBIndex ownerId, Collider* pCollider);
+	void Initiate(ObjectID id, Transform* transform, UserDBIndex ownerId);
 	void Terminate();
 
 	void OnFrame(ULONGLONG tickDiff) override;
 
-	Collider* GetCollider() { return _pCollider; }
+	BOOL IsDestroyed(ULONGLONG currentTick) const override;
 
 	virtual void OnHit(ULONGLONG currentTick) override;
 	virtual void OnUpdateTransform() override;
@@ -25,8 +24,6 @@ public:
 private:
 	Vector3 _forwardDirection = FORWARD_DIRECTION;
 	ULONGLONG _genTick = 0;
-
-	Collider* _pCollider = nullptr;
 
 	BOOL IsTimeout() const;
 	void Move(ULONGLONG tickDiff);

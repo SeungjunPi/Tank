@@ -1,10 +1,6 @@
 #include "Collider.h"
 
 Collider::Collider()
-	: _id(INVALID_COLLIDER_ID)
-	, _radius(0)
-	, _countColliding(0)
-	, _objectID(INVALID_OBJECT_ID)
 {
 	for (size_t i = 0; i < MAX_SIMULTANEOUS_COLLISIONS; ++i) {
 		_collidingIDs[i] = INVALID_COLLIDER_ID;
@@ -39,13 +35,13 @@ void Collider::AddCollidingID(ColliderID otherColliderID)
 	++_countColliding;
 }
 
-void Collider::Initiate(float radius, ObjectID objectID)
+void Collider::Initiate(float radius, GameObject* pObj)
 {
 	if (radius <= 0) {
 		__debugbreak();
 	}
 	_radius = radius;
-	_objectID = objectID;
+	_pObject = pObj;
 	Activate();
 }
 
@@ -56,7 +52,7 @@ void Collider::Clear()
 	}
 	_radius = 0;
 	_countColliding = 0;
-	_objectID = INVALID_OBJECT_ID;
+	_pObject = nullptr;
 	Deactivate();
 }
 

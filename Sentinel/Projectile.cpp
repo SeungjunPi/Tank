@@ -7,7 +7,7 @@
 
 const float Projectile::COLLIDER_RADIUS = 1.f;
 
-void Projectile::Initiate(ObjectID id, Transform* transform, UserDBIndex ownerId, Collider* pCollider)
+void Projectile::Initiate(ObjectID id, Transform* transform, UserDBIndex ownerId)
 {
 	_id = id;
 	memcpy(&_transform, transform, sizeof(Transform));
@@ -21,7 +21,6 @@ void Projectile::Initiate(ObjectID id, Transform* transform, UserDBIndex ownerId
 	_genTick = g_previousGameTick;
 	
 	_ownerIndex = ownerId;
-	_pCollider = pCollider;
 
 	OnUpdateTransform();
 }
@@ -41,6 +40,11 @@ void Projectile::OnFrame(ULONGLONG tickDiff)
 	Move(tickDiff);
 }
 
+BOOL Projectile::IsDestroyed(ULONGLONG currentTick) const
+{
+	return !_isActivatable && (!_isAlive || _hitTick != 0);
+}
+
 void Projectile::OnHit(ULONGLONG currentTick)
 {
 	if (_hitTick != 0) {
@@ -51,7 +55,7 @@ void Projectile::OnHit(ULONGLONG currentTick)
 	UINT16 countColliders = _pCollider->GetCollidingIDs(colliderIDs);
 	for (UINT16 i = 0; i < countColliders; ++i) {
 		Collider* pOtherCollider = g_pCollisionManager->GetAttachedColliderPtr(colliderIDs[i]);
-		ObjectID otherObjID = pOtherCollider->GetObjectID();
+		ObjectID otherObjID = pOtherCollider->GetAttachedObjectPtr()->GetID();
 		EGameObjectKind objKind = g_objectManager.FindObjectKindByID(otherObjID);
 		switch (objKind) {
 		case GAME_OBJECT_KIND_PROJECTILE:

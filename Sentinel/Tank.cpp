@@ -9,11 +9,10 @@
 const float VELOCITY_WEIGHT = 0.75f;
 const float Tank::COLLIDER_RADIUS = 1.0f;
 
-Tank::Tank(ObjectID id, UserDBIndex ownerId, Collider* pCollider)
+Tank::Tank(ObjectID id, UserDBIndex ownerId)
 	: GameObject(id, ownerId, true)
 {
 	_forwardDirection = { .0f, -1.0f, .0f };
-	_pCollider = pCollider;
 }
 
 Tank::~Tank()
@@ -174,11 +173,16 @@ void Tank::OnFrame(ULONGLONG tickDiff)
 	}
 
 	if (g_currentGameTick - _hitTick > TICK_TANK_RESPAWN_INTERVAL) {
-		Respawn();
+		OnRespawn();
 		GamePacket::BroadcastRespawnTank(_id);
 	}
 	
 	return;
+}
+
+BOOL Tank::IsDestroyed(ULONGLONG currentTick) const
+{
+	return !_isActivatable && (!_isAlive || _hitTick != 0);
 }
 
 void Tank::OnHit(ULONGLONG currentTick)
@@ -189,7 +193,7 @@ void Tank::OnHit(ULONGLONG currentTick)
 	UINT16 countColliders = _pCollider->GetCollidingIDs(colliderIDs);
 	for (UINT16 i = 0; i < countColliders; ++i) {
 		Collider* pOtherCollider = g_pCollisionManager->GetAttachedColliderPtr(colliderIDs[i]);
-		ObjectID otherObjID = pOtherCollider->GetObjectID();
+		ObjectID otherObjID = pOtherCollider->GetAttachedObjectPtr()->GetID();
 		EGameObjectKind objKind = g_objectManager.FindObjectKindByID(otherObjID);
 		GameObject* pOtherObj = g_objectManager.GetObjectPtrOrNull(otherObjID);
 		switch (objKind) {
@@ -221,9 +225,10 @@ void Tank::OnUpdateTransform()
 	_pCollider->UpdateCenterPosition(&_transform.Position);
 }
 
-void Tank::Respawn()
+void Tank::OnRespawn()
 {
-	GameObject::Respawn();
+	GameObject::OnRespawn();
+	_hitTick = 0;
 	_pCollider->Activate();
 }
 

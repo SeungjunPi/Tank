@@ -17,11 +17,11 @@ CollisionManager::~CollisionManager()
 	delete[] _collidedColliderIDs;
 }
 
-Collider* CollisionManager::GetNewColliderPtr(float radius, ObjectID objectID)
+Collider* CollisionManager::GetNewColliderPtr(float radius, GameObject* pObj)
 {
 	ColliderID id = GetUnusedID();
 	Collider* pCollider = _colliders + id;
-	pCollider->Initiate(radius, objectID);
+	pCollider->Initiate(radius, pObj);
 	_usedIDs[_countActiveColliders] = id;
 	++_countActiveColliders;
 	

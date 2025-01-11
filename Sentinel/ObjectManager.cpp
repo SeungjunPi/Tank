@@ -90,8 +90,10 @@ Tank* ObjectManager::CreateTank(UserDBIndex ownerIndex)
 	_unusedObjectIdQueue.TryPopTo(&objectId);
 	assert(objectId != UINT16_MAX);
 
-	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(Tank::COLLIDER_RADIUS, objectId);
-	Tank* pTank = DNew Tank(objectId, ownerIndex, pCollider);
+	
+	Tank* pTank = DNew Tank(objectId, ownerIndex);
+	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(Tank::COLLIDER_RADIUS, pTank);
+	pTank->AttachCollider(pCollider);
 	bool res = _tankTable.Insert(objectId, pTank);
 	assert(res);
 	res = _tankTableByOwner.Insert(ownerIndex, pTank);
@@ -107,7 +109,7 @@ void ObjectManager::RemoveTank(ObjectID objectId, UserDBIndex ownerId)
 	pTank = (Tank*)_tankTableByOwner.Pop(ownerId);
 	assert(pTank != nullptr);
 
-	Collider* pCollider = pTank->GetCollider();
+	Collider* pCollider = pTank->GetColliderPtr();
 	g_pCollisionManager->ReturnCollider(pCollider);
 
 	auto res = _unusedObjectIdQueue.Push(&objectId);
@@ -122,10 +124,13 @@ Projectile* ObjectManager::CreateProjectile(UserDBIndex ownerId, Transform* pTra
 	_unusedObjectIdQueue.TryPopTo(&objectId);
 	assert(objectId != UINT16_MAX);
 
-	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(Projectile::COLLIDER_RADIUS, objectId);
+	
 
 	Projectile* pProjectile = DNew Projectile;
-	pProjectile->Initiate(objectId, pTransform, ownerId, pCollider);
+	
+	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(Projectile::COLLIDER_RADIUS, pProjectile);
+	pProjectile->AttachCollider(pCollider);
+	pProjectile->Initiate(objectId, pTransform, ownerId);
 	
 	bool res = _projectileTable.Insert(objectId, pProjectile);
 	assert(res);
@@ -137,7 +142,7 @@ void ObjectManager::RemoveProjectile(ObjectID objectId)
 	Projectile* pProjectile = (Projectile*)_projectileTable.Pop(objectId);
 	assert(pProjectile != nullptr);
 
-	Collider* pCollider = pProjectile->GetCollider();
+	Collider* pCollider = pProjectile->GetColliderPtr();
 	g_pCollisionManager->ReturnCollider(pCollider);
 
 	auto res = _unusedObjectIdQueue.Push(&objectId);
@@ -241,6 +246,8 @@ void ObjectManager::CopySnapshot(PACKET_OBJECT_INFO* dst)
 
 		++pObjInfo;
 	}
+
+	delete[] keys;
 }
 
 void ObjectManager::RemoveObject(EGameObjectKind objectKind, ObjectID key)
@@ -338,6 +345,26 @@ GameObject* ObjectManager::GetObjectPtrOrNull(ObjectID id)
 		}
 	}
 
+	return nullptr;
+}
+
+AbstractCollidable* ObjectManager::GetAbstractCollidablePtrOrNull(ObjectID id)
+{
+	ObjectID objectIDs[NUM_OBJECTS_MAX];
+	int numObjects = 0;
+	_tankTable.GetIdsTo(objectIDs, &numObjects);
+	for (int i = 0; i < numObjects; ++i) {
+		if (objectIDs[i] == id) {
+			return (AbstractCollidable*)(Tank*)_tankTable.Get(id);
+		}
+	}
+
+	_projectileTable.GetIdsTo(objectIDs, &numObjects);
+	for (int i = 0; i < numObjects; ++i) {
+		if (objectIDs[i] == id) {
+			return (AbstractCollidable*)(Projectile*)_projectileTable.Get(id);;
+		}
+	}
 	return nullptr;
 }
 
