@@ -42,7 +42,7 @@ void GamePacket::HandlePacket(BYTE* pGameEvent, SessionID senderId)
 
 void GamePacket::SendSnapshot(SessionID sessionId)
 {
-	UINT16 countObjects = g_objectManager.GetCountObjects();
+	UINT32 countObjects = g_objectManager.GetCountObjects();
 	
 	if (countObjects == 0) {
 		const size_t PACKET_SIZE = sizeof(EGameEventCode) + sizeof(PACKET_SC_SNAPSHOT);
@@ -326,6 +326,9 @@ void GamePacket::HandleMoving(BYTE* pGameEvent, SessionID senderId)
 	PACKET_SC_MOVING* pScMoving = (PACKET_SC_MOVING*)(pRawPacket + sizeof(EGameEventCode));
 	pScMoving->objectId = pTank->GetID();
 	memcpy(&pScMoving->transform, &pCsMoving->transform, sizeof(Transform));
+	if (pScMoving->objectId.type != GAME_OBJECT_TYPE_TANK) {
+		__debugbreak();
+	}
 
 	if (isChanged) {
 		printf("Moving, accepted: owner=%u\n", userIndex);
@@ -369,7 +372,7 @@ void GamePacket::HandleShoot(BYTE* pGameEvent, SessionID senderId)
 	pScShoot->ownerId = userIndex;
 	
 	memcpy(&pScShoot->transform, pProjectile->GetTransformPtr(), sizeof(Transform));
-	printf("Shoot by: owner=%u, projectileId=%u\n", userIndex, pScShoot->objectId);
+	printf("Shoot by: owner=%u, projectileId=%u\n", userIndex, pScShoot->objectId.key);
 
 	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
 }

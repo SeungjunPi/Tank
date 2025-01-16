@@ -31,9 +31,6 @@
     <Filter Include="Static Data">
       <UniqueIdentifier>{80d4aaa3-7e59-40db-9fb9-8ac49a183c9b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="DataStruct">
-      <UniqueIdentifier>{3e02d09c-aa62-463b-b1fa-19b1acfbea37}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Collision">
       <UniqueIdentifier>{a51888bb-d98a-4144-8a05-d0f441f9505f}</UniqueIdentifier>
     </Filter>

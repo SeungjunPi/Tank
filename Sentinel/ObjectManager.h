@@ -10,15 +10,13 @@ class Tank;
 class Projectile;
 struct PACKET_OBJECT_INFO;
 
-#define NUM_OBJECTS_MAX (4096)
+#define NUM_OBJECTS_MAX (4096) // this number should be less than UINT16_MAX
 
 class ObjectManager
 {
 public:
 	void Initiate();
 	void Terminate();
-
-	EGameObjectKind FindObjectKindByID(ObjectID id);
 	
 	Tank* CreateTank(UserDBIndex ownerId);
 	void RemoveTank(ObjectID objectId, UserDBIndex ownerId);
@@ -37,25 +35,24 @@ public:
 
 
 
-	void UpdateTankTransform(ObjectID objectId, const Transform* pTransform);
-	void UpdateTankTransform(UserDBIndex ownerId, const Transform* pTransform);
+	void UpdateTankTransformByObjectID(ObjectID objectID, const Transform* pTransform);
+	void UpdateTankTransformByOwnerID(UserDBIndex ownerId, const Transform* pTransform);
 
-	UINT16 GetCountObjects() const;
+	UINT32 GetCountObjects() const;
 	void CopySnapshot(PACKET_OBJECT_INFO* dst);
 
-	void RemoveObject(EGameObjectKind objectKind, ObjectID key);
-	void GetKeys(EGameObjectKind objectKind, ObjectID* out_keys, int* out_numKeys) const;
-	GameObject* GetObjectPtrOrNull(EGameObjectKind objectKind, ObjectID key);
-	GameObject* GetObjectPtrOrNull(ObjectID key);
+	void RemoveObject(ObjectID objectID);
+	void GetKeys(EGameObjectType objectKind, UINT32* out_keys, UINT32* out_numKeys) const;
+	GameObject* GetObjectPtrOrNull(ObjectID objectID);
 	
 
 private:
 	LinearQueue _unusedObjectIdQueue;
 	
-	PointerTable16 _tankTable;
+	PointerTable32 _tankTable;
 	PointerTable32 _tankTableByOwner;
 
-	PointerTable16 _projectileTable;
+	PointerTable32 _projectileTable;
 
-	PointerTable16 _obstacleTable;
+	PointerTable32 _obstacleTable;
 };

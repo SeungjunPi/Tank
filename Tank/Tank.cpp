@@ -31,7 +31,7 @@ void Tank::Initiate(ObjectID id)
 
 void Tank::Terminate()
 {
-	_id = 0;
+	_id = INVALID_OBJECT_ID;
 	_forwardDirection = { 0, };
 	_transform = { 0, };
 	_model = { nullptr, 0 };

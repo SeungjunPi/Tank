@@ -62,7 +62,7 @@ void GamePacket::HandleLoginResult(BYTE* pGameEvent, UINT32 senderId)
 		Game::Shutdown();
 		return;
 	}
-	g_playerId = pScLogin->playerKey;
+	g_playerId = pScLogin->userDBIndex;
 	g_score.hit = pScLogin->hitCount;
 	g_score.kill = pScLogin->killCount;
 	g_score.death = pScLogin->deathCount;
@@ -113,10 +113,10 @@ void GamePacket::HandleDeleteTank(BYTE* pGameEvent, UINT32 senderId)
 	}
 
 	PACKET_SC_DELETE_TANK* pScDeleteTank = (PACKET_SC_DELETE_TANK*)(pGameEvent + sizeof(EGameEventCode));
-	if (pScDeleteTank->objectId == g_pPlayerTank->GetID()) {
+	if (pScDeleteTank->objectId.equals(g_pPlayerTank->GetID())) {
 		g_pPlayerTank = NULL;
 	}
-	g_objectManager.RemoveObject(GAME_OBJECT_KIND_TANK, pScDeleteTank->objectId);
+	g_objectManager.RemoveObject(pScDeleteTank->objectId);
 }
 
 BOOL GamePacket::ValidateDeleteTank(BYTE* pGameEvent, UINT32 senderId)
@@ -132,7 +132,7 @@ void GamePacket::HandleStartMove(BYTE* pGameEvent, UINT32 senderId)
 	}
 
 	PACKET_SC_START_MOVE* pScStartMove = (PACKET_SC_START_MOVE*)(pGameEvent + sizeof(EGameEventCode));
-	if (g_pPlayerTank != nullptr && pScStartMove->objectId == g_pPlayerTank->GetID()) {
+	if (g_pPlayerTank != nullptr && pScStartMove->objectId.equals(g_pPlayerTank->GetID())) {
 		g_lastOwnTankSyncTick = g_currentGameTick;
 	}
 	else {
@@ -165,7 +165,7 @@ void GamePacket::HandleEndMove(BYTE* pGameEvent, UINT32 senderId)
 
 	PACKET_SC_END_MOVE* pScEndMove = (PACKET_SC_END_MOVE*)(pGameEvent + sizeof(EGameEventCode));
 	
-	if (g_pPlayerTank != nullptr && pScEndMove->objectId == g_pPlayerTank->GetID()) {
+	if (g_pPlayerTank != nullptr && pScEndMove->objectId.equals(g_pPlayerTank->GetID())) {
 		// TODO: Log "Adjusted based on ther server's transform\n"
 		g_lastOwnTankSyncTick = g_currentGameTick;
 	}
@@ -198,11 +198,11 @@ void GamePacket::HandleMoving(BYTE* pGameEvent, UINT32 senderId)
 
 	PACKET_SC_MOVING* pScMoving = (PACKET_SC_MOVING*)(pGameEvent + sizeof(EGameEventCode));
 	
-	if (g_pPlayerTank != nullptr && pScMoving->objectId == g_pPlayerTank->GetID()) {
+	if (g_pPlayerTank != nullptr && pScMoving->objectId.equals(g_pPlayerTank->GetID())) {
 		// update if transforms are diffrent
 	}
 	else {
-		g_objectManager.UpdateObjectTransform(GAME_OBJECT_KIND_TANK, pScMoving->objectId, &pScMoving->transform);
+		g_objectManager.UpdateObjectTransform(pScMoving->objectId, &pScMoving->transform);
 	}
 }
 
@@ -227,19 +227,19 @@ void GamePacket::HandleSnapshot(BYTE* pGameEvent, UINT32 senderId)
 	PACKET_OBJECT_INFO* pObjInfo = (PACKET_OBJECT_INFO*)(pScSnapshot + 1);
 	for (UINT16 i = 0; i < pScSnapshot->countObjects; ++i) {
 		switch (pObjInfo->kind) {
-		case GAME_OBJECT_KIND_TANK:
+		case GAME_OBJECT_TYPE_TANK:
 		{
 			Tank* pTank = g_objectManager.CreateTank(pObjInfo->objectId);
 			pTank->UpdateTransform(&pObjInfo->transform);
 			break;
 		}
-		case GAME_OBJECT_KIND_PROJECTILE:
+		case GAME_OBJECT_TYPE_PROJECTILE:
 		{
 			Projectile* pProjectile = g_objectManager.CreateProjectile(pObjInfo->objectId, &pObjInfo->transform);
 			pProjectile->UpdateTransform(&pObjInfo->transform);
 			break;
 		}
-		case GAME_OBJECT_KIND_OBSTACLE:
+		case GAME_OBJECT_TYPE_OBSTACLE:
 			//g_objectManager.CreateObstacle(pObjInfo->objectId);
 			break;
 		default:
@@ -284,7 +284,7 @@ void GamePacket::HandleTankHit(BYTE* pGameEvent, UINT32 senderId)
 	}
 
 	PACKET_SC_TANK_HIT* pScTankHit = (PACKET_SC_TANK_HIT*)(pGameEvent + sizeof(EGameEventCode));
-	GameObject* pTank = g_objectManager.GetObjectPtrOrNull(GAME_OBJECT_KIND_TANK, pScTankHit->tankId);
+	GameObject* pTank = g_objectManager.GetObjectPtrOrNull(pScTankHit->tankId);
 	
 	if (g_playerId == pScTankHit->target) {
 		g_score.death++;
@@ -296,7 +296,7 @@ void GamePacket::HandleTankHit(BYTE* pGameEvent, UINT32 senderId)
 
 	pTank->OnHit(g_currentGameTick);
 
-	GameObject* pProjectile = g_objectManager.GetObjectPtrOrNull(GAME_OBJECT_KIND_PROJECTILE, pScTankHit->projectileId);
+	GameObject* pProjectile = g_objectManager.GetObjectPtrOrNull(pScTankHit->projectileId);
 	pProjectile->OnHit(g_currentGameTick);
 }
 
@@ -333,7 +333,7 @@ void GamePacket::HandleRespawnTank(BYTE* pGameEvent, UINT32 senderId)
 	}
 
 	PACKET_SC_RESPAWN_TANK* pScTankHit = (PACKET_SC_RESPAWN_TANK*)(pGameEvent + sizeof(EGameEventCode));
-	GameObject* pTank = g_objectManager.GetObjectPtrOrNull(GAME_OBJECT_KIND_TANK, pScTankHit->tankId);
+	GameObject* pTank = g_objectManager.GetObjectPtrOrNull(pScTankHit->tankId);
 	pTank->Respawn();
 }
 

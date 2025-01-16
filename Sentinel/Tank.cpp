@@ -9,11 +9,10 @@
 const float VELOCITY_WEIGHT = 0.75f;
 const float Tank::COLLIDER_RADIUS = 1.0f;
 
-Tank::Tank(ObjectID id, UserDBIndex ownerId, Collider* pCollider)
+Tank::Tank(ObjectID id, UserDBIndex ownerId)
 	: GameObject(id, ownerId, true)
 {
 	_forwardDirection = { .0f, -1.0f, .0f };
-	_pCollider = pCollider;
 }
 
 Tank::~Tank()
@@ -31,7 +30,7 @@ void Tank::Initiate(ObjectID id)
 
 void Tank::Terminate()
 {
-	_id = 0;
+	_id = INVALID_OBJECT_ID;
 	_forwardDirection = { 0, };
 	_transform = { 0, };
 }
@@ -174,11 +173,16 @@ void Tank::OnFrame(ULONGLONG tickDiff)
 	}
 
 	if (g_currentGameTick - _hitTick > TICK_TANK_RESPAWN_INTERVAL) {
-		Respawn();
+		OnRespawn();
 		GamePacket::BroadcastRespawnTank(_id);
 	}
 	
 	return;
+}
+
+BOOL Tank::IsDestroyed(ULONGLONG currentTick) const
+{
+	return !_isActivatable && (!_isAlive || _hitTick != 0);
 }
 
 void Tank::OnHit(ULONGLONG currentTick)
@@ -189,11 +193,10 @@ void Tank::OnHit(ULONGLONG currentTick)
 	UINT16 countColliders = _pCollider->GetCollidingIDs(colliderIDs);
 	for (UINT16 i = 0; i < countColliders; ++i) {
 		Collider* pOtherCollider = g_pCollisionManager->GetAttachedColliderPtr(colliderIDs[i]);
-		ObjectID otherObjID = pOtherCollider->GetObjectID();
-		EGameObjectKind objKind = g_objectManager.FindObjectKindByID(otherObjID);
+		ObjectID otherObjID = pOtherCollider->GetAttachedObjectPtr()->GetID();
 		GameObject* pOtherObj = g_objectManager.GetObjectPtrOrNull(otherObjID);
-		switch (objKind) {
-		case GAME_OBJECT_KIND_PROJECTILE:
+		switch (otherObjID.type) {
+		case GAME_OBJECT_TYPE_PROJECTILE:
 			// hit
 			_pCollider->Deactivate();
 			_hitTick = currentTick;
@@ -205,12 +208,12 @@ void Tank::OnHit(ULONGLONG currentTick)
 			g_playerManager.IncreaseDeathCount(_ownerIndex);
 			GamePacket::BroadcastTankHit(_id, otherObjID, pOtherObj->GetOwnerId(), _ownerIndex);
 			break;
-		case GAME_OBJECT_KIND_TANK:
+		case GAME_OBJECT_TYPE_TANK:
 			memcpy(&_transform, &_prevTransform, sizeof(Transform));
 			_pCollider->UpdateCenterPosition(&_transform.Position);
 			
 			break;
-		case GAME_OBJECT_KIND_OBSTACLE:
+		case GAME_OBJECT_TYPE_OBSTACLE:
 			break;
 		}
 	}
@@ -221,16 +224,17 @@ void Tank::OnUpdateTransform()
 	_pCollider->UpdateCenterPosition(&_transform.Position);
 }
 
-void Tank::Respawn()
+void Tank::OnRespawn()
 {
-	GameObject::Respawn();
+	GameObject::OnRespawn();
+	_hitTick = 0;
 	_pCollider->Activate();
 }
 
 BOOL Tank::IsTransformCloseEnough(const Transform* other)
 {
-	const float TOLERANCE_POSITION_SQUARE = 0.5; // x, y, z의 차이가 각 1.0 미만인 경우를 간단하게 판단
-	const float TOLERANCE_ROTATION = 0.13; // 15도 미만
+	const float TOLERANCE_POSITION_SQUARE = 0.5f; // x, y, z의 차이가 각 1.0 미만인 경우를 간단하게 판단
+	const float TOLERANCE_ROTATION = 0.13f; // 15도 미만
 
 	float posDistanceSq = Vector3::DistanceSquared(_transform.Position, other->Position);
 	float rotDisctance = Quaternion::AngularDistance(_transform.Rotation, other->Rotation);

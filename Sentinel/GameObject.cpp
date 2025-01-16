@@ -46,7 +46,7 @@ Vector3 GameObject::GetPosition() const
 
 BOOL GameObject::UpdateFrom(const GameObject* pOther)
 {
-	if (_id != pOther->_id) {
+	if (_id.equals(pOther->_id)) {
 		__debugbreak();
 		return false;
 	}
@@ -90,7 +90,7 @@ UserDBIndex GameObject::GetOwnerId() const
 	return _ownerIndex;
 }
 
-void GameObject::Respawn()
+void GameObject::OnRespawn()
 {
 	if (!_isActivatable) {
 		__debugbreak();
@@ -98,20 +98,18 @@ void GameObject::Respawn()
 	_isAlive = true;
 	_transform = { 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f };
 	OnUpdateTransform();
-	_hitTick = 0;
-}
-
-void GameObject::OnHit(ULONGLONG currentTick)
-{
-	printf("invalid hit\n");
-	if (_hitTick == 0) {
-		_hitTick = currentTick;
-	}
 }
 
 BOOL GameObject::IsDestroyed(ULONGLONG currentTick) const
 {
-	return !_isActivatable && (!_isAlive || _hitTick != 0);
+	return !_isActivatable && (!_isAlive);
+}
+
+void GameObject::AttachCollider(Collider* pCollider)
+{
+	assert(_pCollider == nullptr);
+
+	_pCollider = pCollider;
 }
 
 BOOL GameObject::IsTransformCloseEnough(const Transform* other)

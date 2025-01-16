@@ -1,7 +1,7 @@
 #include "PointerTable.h"
 #include "LinearQueue.h"
 
-bool PointerTable32::Initiate(int capacity)
+bool PointerTable32::Initiate(UINT32 capacity)
 {
 	_capacity = capacity;
 	_count = 0;
@@ -31,7 +31,7 @@ bool PointerTable32::Terminate()
 	return true;
 }
 
-bool PointerTable32::Insert(int key, void* ptr)
+bool PointerTable32::Insert(UINT32 key, void* ptr)
 {
 	if (_entries[key] != nullptr) {
 		__debugbreak();
@@ -45,7 +45,7 @@ bool PointerTable32::Insert(int key, void* ptr)
 	return true;
 }
 
-bool PointerTable32::Remove(int key)
+bool PointerTable32::Remove(UINT32 key)
 {
 	if (_entries[key] == nullptr) {
 		__debugbreak();
@@ -59,12 +59,12 @@ bool PointerTable32::Remove(int key)
 	return true;
 }
 
-void* PointerTable32::Get(int key) const
+void* PointerTable32::Get(UINT32 key) const
 {
 	return _entries[key];
 }
 
-void* PointerTable32::Pop(int key)
+void* PointerTable32::Pop(UINT32 key)
 {
 	void* tmp = _entries[key];
 
@@ -76,19 +76,19 @@ void* PointerTable32::Pop(int key)
 	return tmp;
 }
 
-int PointerTable32::GetCount() const
+UINT32 PointerTable32::GetCount() const
 {
 	return _count;
 }
 
-void PointerTable32::GetIdsTo(int* out_keys, int* out_numKeys) const
+void PointerTable32::GetIdsTo(UINT32* out_keys, UINT32* out_numKeys) const
 {
 	*out_numKeys = _usingKeyQueue.GetCount();
-	int* keys = (int*)_usingKeyQueue.GetHead();
-	memcpy(out_keys, keys, sizeof(int) * (*out_numKeys));
+	UINT32* keys = (UINT32*)_usingKeyQueue.GetHead();
+	memcpy(out_keys, keys, sizeof(UINT32) * (*out_numKeys));
 }
 
-int PointerTable32::GetCapacity() const
+UINT32 PointerTable32::GetCapacity() const
 {
 	return _capacity;
 }
@@ -96,7 +96,7 @@ int PointerTable32::GetCapacity() const
 
 
 
-bool PointerTable16::Initiate(int capacity)
+bool PointerTable16::Initiate(UINT16 capacity)
 {
 	_capacity = capacity;
 	_count = 0;
@@ -126,7 +126,7 @@ bool PointerTable16::Terminate()
 	return true;
 }
 
-bool PointerTable16::Insert(unsigned short key, void* ptr)
+bool PointerTable16::Insert(UINT16 key, void* ptr)
 {
 	if (_entries[key] != nullptr) {
 		__debugbreak();
@@ -140,7 +140,7 @@ bool PointerTable16::Insert(unsigned short key, void* ptr)
 	return true;
 }
 
-bool PointerTable16::Remove(unsigned short key)
+bool PointerTable16::Remove(UINT16 key)
 {
 	if (_entries[key] == nullptr) {
 		__debugbreak();
@@ -154,12 +154,12 @@ bool PointerTable16::Remove(unsigned short key)
 	return true;
 }
 
-void* PointerTable16::Get(unsigned short key) const
+void* PointerTable16::Get(UINT16 key) const
 {
 	return _entries[key];
 }
 
-void* PointerTable16::Pop(unsigned short key)
+void* PointerTable16::Pop(UINT16 key)
 {
 	void* tmp = _entries[key];
 
@@ -171,19 +171,19 @@ void* PointerTable16::Pop(unsigned short key)
 	return tmp;
 }
 
-int PointerTable16::GetCount() const
+UINT16 PointerTable16::GetCount() const
 {
 	return _count;
 }
 
-void PointerTable16::GetIdsTo(unsigned short* out_keys, int* out_numKeys) const
+void PointerTable16::GetIdsTo(UINT16* out_keys, UINT16* out_numKeys) const
 {
 	*out_numKeys = _usingKeyQueue.GetCount();
-	int* keys = (int*)_usingKeyQueue.GetHead();
-	memcpy(out_keys, keys, sizeof(int) * (*out_numKeys));
+	UINT16* keys = (UINT16*)_usingKeyQueue.GetHead();
+	memcpy(out_keys, keys, sizeof(UINT16) * (*out_numKeys));
 }
 
-int PointerTable16::GetCapacity() const
+UINT16 PointerTable16::GetCapacity() const
 {
 	return _capacity;
 }

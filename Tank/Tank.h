@@ -37,7 +37,7 @@ public:
 
 private:
 	Vector3 _forwardDirection;
-	UserIndex _ownerId = 0;
+	UserDBIndex _ownerId = 0;
 
 	bool _isMovingFoward = false;
 	bool _isMovingBackward = false;

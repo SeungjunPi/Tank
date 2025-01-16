@@ -10,7 +10,7 @@
 #include "LinearQueue.h"
 #include "PointerTable.h"
 
-enum EGameObjectKind: UINT16;
+enum EGameObjectType: UINT16;
 
 class AllocObjectManager
 {
@@ -19,22 +19,25 @@ public:
 	void Initiate();
 	void Terminate();
 
-	Tank* CreateTank(ObjectID serverKey);
-	Projectile* CreateProjectile(ObjectID serverKey, Transform* pInitTransform);
-	Obstacle* CreateObstacle(ObjectID key, Transform* pInitTransform);
+	Tank* CreateTank(ObjectID objectID);
+	Projectile* CreateProjectile(ObjectID objectID, Transform* pInitTransform);
+	Obstacle* CreateObstacle(ObjectID objectID, Transform* pInitTransform);
 
-	void RemoveObject(EGameObjectKind objectKind, ObjectID key);
+	void RemoveObject(EGameObjectType objectKind, ObjectKey objectKey);
+	void RemoveObject(ObjectID objectID);
 
-	void UpdateObject(EGameObjectKind objectKind, GameObject* obj);
+	void UpdateObject(GameObject* obj);
 
-	void UpdateObjectTransform(EGameObjectKind objectKind, ObjectID objId, const Transform* pTransform);
+	void UpdateObjectTransform(ObjectID objId, const Transform* pTransform);
 
-	void GetTransformedModelOf(EGameObjectKind objectKind, ObjectID key, Vertex* out_vertices, UINT* out_numVectors);
+	void GetTransformedModelOf(EGameObjectType objectKind, ObjectKey objectID, Vertex* out_vertices, UINT* out_numVectors);
+	void GetTransformedModelOf(ObjectID objectID, Vertex* out_vertices, UINT* out_numVectors);
 
-	void GetKeys(EGameObjectKind objectKind, ObjectID* out_keys, int* out_numKeys) const;
-	void GetAllKeys(ObjectID* out_keys, int* out_numKeys) const;
+	void GetKeys(EGameObjectType objectKind, UINT32* out_keys, UINT32* out_numKeys) const;
+	void GetAllKeys(UINT32* out_keys, UINT32* out_numKeys) const;
 
-	GameObject* GetObjectPtrOrNull(EGameObjectKind objectKind, ObjectID key);
+	GameObject* GetObjectPtrOrNull(EGameObjectType objectKind, ObjectKey objectKey);
+	GameObject* GetObjectPtrOrNull(ObjectID objectID);
 
 	int GetCountObjects() const;
 
@@ -46,7 +49,7 @@ public:
 	void EndTankRotate(ObjectID objectId, EROTATION rotation, const Transform* pTransform);
 
 private:
-	PointerTable16 _tankTable;
-	PointerTable16 _projectileTable;
-	PointerTable16 _obstacleTable;
+	PointerTable32 _tankTable;
+	PointerTable32 _projectileTable;
+	PointerTable32 _obstacleTable;
 };

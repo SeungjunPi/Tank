@@ -3,6 +3,8 @@
 
 #include "Collider.h"
 
+class GameObject;
+
 const int MAX_NUM_COLLIDERS = 2048;
 
 // 자체 메모리풀 사용
@@ -13,7 +15,7 @@ public:
 	CollisionManager();
 	~CollisionManager();
 
-	Collider* GetNewColliderPtr(float radius, ObjectID objectID);
+	Collider* GetNewColliderPtr(float radius, GameObject* pObj);
 	Collider* GetAttachedColliderPtr(ColliderID id);
 	void ReturnCollider(Collider* pColloder);
 

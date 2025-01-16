@@ -71,7 +71,7 @@ UINT GameObject::GetColliderSize() const
 
 BOOL GameObject::UpdateFrom(const GameObject* pOther)
 {
-	if (_id != pOther->_id) {
+	if (_id.equals(pOther->_id)) {
 		__debugbreak();
 		return false;
 	}

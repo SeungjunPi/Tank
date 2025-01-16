@@ -9,7 +9,7 @@ class Tank: public GameObject
 public:
 	static const float COLLIDER_RADIUS;
 
-	Tank(ObjectID id, UserDBIndex ownerId, Collider* pCollider);
+	Tank(ObjectID id, UserDBIndex ownerId);
 	Tank() = default;
 	~Tank();
 
@@ -26,12 +26,12 @@ public:
 
 	void OnFrame(ULONGLONG tickDiff) override;
 
-	Collider* GetCollider() { return _pCollider; }
+	virtual BOOL IsDestroyed(ULONGLONG currentTick) const;
 
 	virtual void OnHit(ULONGLONG currentTick) override;
 	virtual void OnUpdateTransform() override;
 
-	virtual void Respawn() override;
+	virtual void OnRespawn() override;
 
 	
 
@@ -45,8 +45,6 @@ private:
 	bool _isMovingBackward = false;
 	bool _isRotatingLeft = false;
 	bool _isRotatingRight = false;
-
-	Collider* _pCollider = nullptr;
 
 	Transform _prevTransform = { 0, };
 

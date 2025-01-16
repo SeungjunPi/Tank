@@ -132,6 +132,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="DataStructPch.h" />
+    <ClInclude Include="JStack.h" />
     <ClInclude Include="LinearQueue.h" />
     <ClInclude Include="PointerList.h" />
     <ClInclude Include="PointerMap.h" />
