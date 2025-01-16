@@ -6,7 +6,7 @@
 
 void ObjectManager::Initiate()
 {
-	_unusedObjectIdQueue.Initiate(sizeof(ObjectID), NUM_OBJECTS_MAX);
+	_unusedObjectIdQueue.Initiate(sizeof(ObjectID::key), NUM_OBJECTS_MAX);
 	
 	_tankTable.Initiate(NUM_OBJECTS_MAX);
 	_tankTableByOwner.Initiate(NUM_OBJECTS_MAX);
@@ -14,39 +14,39 @@ void ObjectManager::Initiate()
 	_projectileTable.Initiate(NUM_OBJECTS_MAX);
 	_obstacleTable.Initiate(NUM_OBJECTS_MAX);
 
-	for (ObjectID i = 0; i < NUM_OBJECTS_MAX; ++i) {
+	for (ObjectKey i = 0; i < NUM_OBJECTS_MAX; ++i) {
 		_unusedObjectIdQueue.Push(&i);
 	}
 }
 
 void ObjectManager::Terminate()
 {
-	ObjectID* keys = DNew ObjectID[NUM_OBJECTS_MAX];
+	UINT32* indexes = DNew UINT32[NUM_OBJECTS_MAX];
 	UINT32 numCounts = 0;
 
 
-	_tankTable.GetIdsTo(keys, &numCounts);
-	for (int i = 0; i < numCounts; ++i) {
-		UINT32 key = keys[i];
+	_tankTable.GetIdsTo(indexes, &numCounts);
+	for (UINT32 i = 0; i < numCounts; ++i) {
+		UINT32 key = indexes[i];
 		void* ptr = _tankTable.Pop(key);
 		delete ptr;
 	}
 
-	_projectileTable.GetIdsTo(keys, &numCounts);
-	for (int i = 0; i < numCounts; ++i) {
-		UINT32 key = keys[i];
+	_projectileTable.GetIdsTo(indexes, &numCounts);
+	for (UINT32 i = 0; i < numCounts; ++i) {
+		UINT32 key = indexes[i];
 		void* ptr = _projectileTable.Pop(key);
 		delete ptr;
 	}
 
-	_obstacleTable.GetIdsTo(keys, &numCounts);
-	for (int i = 0; i < numCounts; ++i) {
-		UINT32 key = keys[i];
+	_obstacleTable.GetIdsTo(indexes, &numCounts);
+	for (UINT32 i = 0; i < numCounts; ++i) {
+		UINT32 key = indexes[i];
 		void* ptr = _obstacleTable.Pop(key);
 		delete ptr;
 	}
 	
-	delete[] keys;
+	delete[] indexes;
 
 	_obstacleTable.Terminate();
 	_projectileTable.Terminate();
@@ -55,46 +55,18 @@ void ObjectManager::Terminate()
 	_unusedObjectIdQueue.Terminate();
 }
 
-EGameObjectKind ObjectManager::FindObjectKindByID(ObjectID id)
-{
-	ObjectID objectIDs[NUM_OBJECTS_MAX];
-	UINT32 numObjects = 0;
-	_tankTable.GetIdsTo(objectIDs, &numObjects);
-	for (int i = 0; i < numObjects; ++i) {
-		if (objectIDs[i] == id) {
-			return GAME_OBJECT_KIND_TANK;
-		}
-	}
-
-	_projectileTable.GetIdsTo(objectIDs, &numObjects);
-	for (int i = 0; i < numObjects; ++i) {
-		if (objectIDs[i] == id) {
-			return GAME_OBJECT_KIND_PROJECTILE;
-		}
-	}
-
-	_obstacleTable.GetIdsTo(objectIDs, &numObjects);
-	for (int i = 0; i < numObjects; ++i) {
-		if (objectIDs[i] == id) {
-			return GAME_OBJECT_KIND_OBSTACLE;
-		}
-	}
-	
-	return GAME_OBJECT_KIND_INVALID;
-}
-
 Tank* ObjectManager::CreateTank(UserDBIndex ownerIndex)
 {
 	assert(_unusedObjectIdQueue.GetCount() != 0);
 	ObjectID objectId;
-	_unusedObjectIdQueue.TryPopTo(&objectId);
-	assert(objectId != INVALID_OBJECT_ID);
+	objectId.type = GAME_OBJECT_TYPE_TANK;
+	_unusedObjectIdQueue.TryPopTo(&objectId.key);
+	assert(objectId.key != INVALID_OBJECT_KEY);
 
-	
 	Tank* pTank = DNew Tank(objectId, ownerIndex);
 	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(Tank::COLLIDER_RADIUS, pTank);
 	pTank->AttachCollider(pCollider);
-	bool res = _tankTable.Insert(objectId, pTank);
+	bool res = _tankTable.Insert(objectId.key, pTank);
 	assert(res);
 	res = _tankTableByOwner.Insert(ownerIndex, pTank);
 	assert(res);
@@ -104,7 +76,7 @@ Tank* ObjectManager::CreateTank(UserDBIndex ownerIndex)
 
 void ObjectManager::RemoveTank(ObjectID objectId, UserDBIndex ownerId)
 {
-	Tank* pTank = (Tank*)_tankTable.Pop(objectId);
+	Tank* pTank = (Tank*)_tankTable.Pop(objectId.key);
 	assert(pTank != nullptr);
 	pTank = (Tank*)_tankTableByOwner.Pop(ownerId);
 	assert(pTank != nullptr);
@@ -112,7 +84,7 @@ void ObjectManager::RemoveTank(ObjectID objectId, UserDBIndex ownerId)
 	Collider* pCollider = pTank->GetColliderPtr();
 	g_pCollisionManager->ReturnCollider(pCollider);
 
-	auto res = _unusedObjectIdQueue.Push(&objectId);
+	auto res = _unusedObjectIdQueue.Push(&objectId.key);
 	assert(res);
 	delete pTank;
 }
@@ -121,10 +93,9 @@ Projectile* ObjectManager::CreateProjectile(UserDBIndex ownerId, Transform* pTra
 {
 	assert(_unusedObjectIdQueue.GetCount() != 0);
 	ObjectID objectId;
-	_unusedObjectIdQueue.TryPopTo(&objectId);
-	assert(objectId != INVALID_OBJECT_ID);
-
-	
+	_unusedObjectIdQueue.TryPopTo(&objectId.key);
+	objectId.type = GAME_OBJECT_TYPE_PROJECTILE;
+	assert(objectId.key != INVALID_OBJECT_KEY);
 
 	Projectile* pProjectile = DNew Projectile;
 	
@@ -132,27 +103,27 @@ Projectile* ObjectManager::CreateProjectile(UserDBIndex ownerId, Transform* pTra
 	pProjectile->AttachCollider(pCollider);
 	pProjectile->Initiate(objectId, pTransform, ownerId);
 	
-	bool res = _projectileTable.Insert(objectId, pProjectile);
+	bool res = _projectileTable.Insert(objectId.key, pProjectile);
 	assert(res);
 	return pProjectile;
 }
 
 void ObjectManager::RemoveProjectile(ObjectID objectId)
 {
-	Projectile* pProjectile = (Projectile*)_projectileTable.Pop(objectId);
+	Projectile* pProjectile = (Projectile*)_projectileTable.Pop(objectId.key);
 	assert(pProjectile != nullptr);
 
 	Collider* pCollider = pProjectile->GetColliderPtr();
 	g_pCollisionManager->ReturnCollider(pCollider);
 
-	auto res = _unusedObjectIdQueue.Push(&objectId);
+	auto res = _unusedObjectIdQueue.Push(&objectId.key);
 	assert(res);
 	delete pProjectile;
 }
 
 Tank* ObjectManager::GetTankByObjectId(ObjectID objectId)
 {
-	Tank* pTank = (Tank*)_tankTable.Get(objectId);
+	Tank* pTank = (Tank*)_tankTable.Get(objectId.key);
 	assert(pTank != nullptr);
 	return pTank;
 }
@@ -205,7 +176,7 @@ void ObjectManager::EndTankRotate(UserDBIndex ownerId, EROTATION rotation)
 
 void ObjectManager::UpdateTankTransformByObjectID(ObjectID objectId, const Transform* pTransform)
 {
-	Tank* pTank = (Tank*)_tankTable.Get(objectId);
+	Tank* pTank = (Tank*)_tankTable.Get(objectId.key);
 	assert(pTank != nullptr);
 
 	pTank->UpdateTransform(pTransform);
@@ -230,16 +201,16 @@ UINT32 ObjectManager::GetCountObjects() const
 
 void ObjectManager::CopySnapshot(PACKET_OBJECT_INFO* dst)
 {
-	ObjectID* keys = DNew ObjectID[NUM_OBJECTS_MAX];
+	UINT32* keys = DNew UINT32[NUM_OBJECTS_MAX];
 	UINT32 numCounts = 0;
 	_tankTable.GetIdsTo(keys, &numCounts);
 
 	PACKET_OBJECT_INFO* pObjInfo = dst;
-	for (int i = 0; i < numCounts; ++i) {
+	for (UINT32 i = 0; i < numCounts; ++i) {
 		int key = keys[i];
 		Tank* pTank = (Tank*)_tankTable.Get(key);
 
-		pObjInfo->kind = GAME_OBJECT_KIND_TANK;
+		pObjInfo->type = GAME_OBJECT_TYPE_TANK;
 		pObjInfo->objectId = pTank->GetID();
 		pObjInfo->ownerId = pTank->GetOwnerId();
 		memcpy(&pObjInfo->transform, pTank->GetTransformPtr(), sizeof(Transform));
@@ -250,46 +221,44 @@ void ObjectManager::CopySnapshot(PACKET_OBJECT_INFO* dst)
 	delete[] keys;
 }
 
-void ObjectManager::RemoveObject(EGameObjectKind objectKind, ObjectID key)
+void ObjectManager::RemoveObject(ObjectID objectID)
 {
 	
-	switch (objectKind) {
-	case GAME_OBJECT_KIND_TANK:
+	switch (objectID.type) {
+	case GAME_OBJECT_TYPE_TANK:
 	{
-		Tank* pTank = (Tank*)_tankTable.Get(key);
+		Tank* pTank = (Tank*)_tankTable.Get(objectID.key);
 		UINT32 ownerId = pTank->GetOwnerId();
-		RemoveTank(key, ownerId);
+		RemoveTank(objectID, ownerId);
 		break;
 	}
-	case GAME_OBJECT_KIND_PROJECTILE:
-		RemoveProjectile(key);
+	case GAME_OBJECT_TYPE_PROJECTILE:
+		RemoveProjectile(objectID);
 		break;
-	case GAME_OBJECT_KIND_OBSTACLE:
+	case GAME_OBJECT_TYPE_OBSTACLE:
 		// TODO: remove Obstacle
 		break;
 	}
 
 }
 
-void ObjectManager::GetKeys(EGameObjectKind objectKind, ObjectID* out_keys, UINT32* out_numKeys) const
+void ObjectManager::GetKeys(EGameObjectType objectKind, UINT32* out_keys, UINT32* out_numKeys) const
 {
 	if (out_keys == nullptr || out_numKeys == nullptr) {
 		__debugbreak();
 		return;
 	}
 
-	ObjectID* keys = (ObjectID*)out_keys;
-
 	switch (objectKind) {
 		break;
-	case GAME_OBJECT_KIND_TANK:
-		_tankTable.GetIdsTo(keys, out_numKeys);
+	case GAME_OBJECT_TYPE_TANK:
+		_tankTable.GetIdsTo(out_keys, out_numKeys);
 		break;
-	case GAME_OBJECT_KIND_PROJECTILE:
-		_projectileTable.GetIdsTo(keys, out_numKeys);
+	case GAME_OBJECT_TYPE_PROJECTILE:
+		_projectileTable.GetIdsTo(out_keys, out_numKeys);
 		break;
-	case GAME_OBJECT_KIND_OBSTACLE:
-		_obstacleTable.GetIdsTo(keys, out_numKeys);
+	case GAME_OBJECT_TYPE_OBSTACLE:
+		_obstacleTable.GetIdsTo(out_keys, out_numKeys);
 		break;
 	default:
 		__debugbreak();
@@ -297,19 +266,19 @@ void ObjectManager::GetKeys(EGameObjectKind objectKind, ObjectID* out_keys, UINT
 	}
 }
 
-GameObject* ObjectManager::GetObjectPtrOrNull(EGameObjectKind objectKind, ObjectID key)
+GameObject* ObjectManager::GetObjectPtrOrNull(ObjectID objectID)
 {
 	GameObject* pGameObject = nullptr;
 
-	switch (objectKind) {
-	case GAME_OBJECT_KIND_TANK:
-		pGameObject = (GameObject*)_tankTable.Get(key);
+	switch (objectID.type) {
+	case GAME_OBJECT_TYPE_TANK:
+		pGameObject = (GameObject*)_tankTable.Get(objectID.key);
 		break;
-	case GAME_OBJECT_KIND_PROJECTILE:
-		pGameObject = (GameObject*)_projectileTable.Get(key);
+	case GAME_OBJECT_TYPE_PROJECTILE:
+		pGameObject = (GameObject*)_projectileTable.Get(objectID.key);
 		break;
-	case GAME_OBJECT_KIND_OBSTACLE:
-		pGameObject = (GameObject*)_obstacleTable.Get(key);
+	case GAME_OBJECT_TYPE_OBSTACLE:
+		pGameObject = (GameObject*)_obstacleTable.Get(objectID.key);
 		break;
 	default:
 		pGameObject = nullptr;
@@ -318,32 +287,4 @@ GameObject* ObjectManager::GetObjectPtrOrNull(EGameObjectKind objectKind, Object
 	}
 
 	return pGameObject;
-}
-
-GameObject* ObjectManager::GetObjectPtrOrNull(ObjectID id)
-{
-	ObjectID objectIDs[NUM_OBJECTS_MAX];
-	UINT32 numObjects = 0;
-	_tankTable.GetIdsTo(objectIDs, &numObjects);
-	for (int i = 0; i < numObjects; ++i) {
-		if (objectIDs[i] == id) {
-			return (GameObject*)_tankTable.Get(id);
-		}
-	}
-
-	_projectileTable.GetIdsTo(objectIDs, &numObjects);
-	for (int i = 0; i < numObjects; ++i) {
-		if (objectIDs[i] == id) {
-			return (GameObject*)_projectileTable.Get(id);;
-		}
-	}
-
-	_obstacleTable.GetIdsTo(objectIDs, &numObjects);
-	for (int i = 0; i < numObjects; ++i) {
-		if (objectIDs[i] == id) {
-			return (GameObject*)_obstacleTable.Get(id);;
-		}
-	}
-
-	return nullptr;
 }

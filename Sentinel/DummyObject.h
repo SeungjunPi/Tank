@@ -7,7 +7,7 @@
 class DummyObject : public GameObject
 {
 public:
-	DummyObject(UINT16 id): GameObject(id, 0) {}
+	DummyObject(UINT16 id): GameObject(INVALID_OBJECT_ID, 0) {}
 
 
 private:

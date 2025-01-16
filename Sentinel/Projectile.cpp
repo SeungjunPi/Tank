@@ -56,20 +56,19 @@ void Projectile::OnHit(ULONGLONG currentTick)
 	for (UINT16 i = 0; i < countColliders; ++i) {
 		Collider* pOtherCollider = g_pCollisionManager->GetAttachedColliderPtr(colliderIDs[i]);
 		ObjectID otherObjID = pOtherCollider->GetAttachedObjectPtr()->GetID();
-		EGameObjectKind objKind = g_objectManager.FindObjectKindByID(otherObjID);
-		switch (objKind) {
-		case GAME_OBJECT_KIND_PROJECTILE:
+		switch (otherObjID.type) {
+		case GAME_OBJECT_TYPE_PROJECTILE:
 			// hit
 			printf("[JUNLOG]Projectile Hit Other Projectile\n");
 			break;
-		case GAME_OBJECT_KIND_TANK:
+		case GAME_OBJECT_TYPE_TANK:
 			g_playerManager.IncreaseKillCount(_ownerIndex);
 			_hitTick = currentTick;
 			_pCollider->Deactivate();
-			printf("Projectile [%u(%u)] hit Tank [%u] \n", _id, _ownerIndex, otherObjID);
+			printf("Projectile [%u(%u)] hit Tank [%u] \n", _id.key, _ownerIndex, otherObjID.key);
 			break;
 			// Fall Through
-		case GAME_OBJECT_KIND_OBSTACLE:
+		case GAME_OBJECT_TYPE_OBSTACLE:
 			break;
 		}
 	}		

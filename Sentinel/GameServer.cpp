@@ -182,7 +182,7 @@ void OnSessionDisconnect(UINT32 sessionID)
 	
 	Tank* pTank = g_objectManager.GetTankByOwnerId(userDBIndex);
 	if (pTank != nullptr) {
-		printf("RemoveTank: owner=%u, tankId=%u\n", userDBIndex, pTank->GetID());
+		printf("RemoveTank: owner=%u, tankId=%u\n", userDBIndex, pTank->GetID().key);
 		GamePacket::BroadcastDeleteTank(pTank->GetID());
 		g_objectManager.RemoveTank(pTank->GetID(), userDBIndex);
 	}
@@ -191,21 +191,21 @@ void OnSessionDisconnect(UINT32 sessionID)
 
 void s_CleanupDestroyedObjects(ULONGLONG curTick)
 {
-	ObjectID keys[1024];
+	UINT32 keys[1024];
 	UINT32 numObj;
 
-	for (int i = 0; i <= (int)GAME_OBJECT_KIND_OBSTACLE; ++i) {
-		EGameObjectKind kind = (EGameObjectKind)i;
-		g_objectManager.GetKeys(kind, keys, &numObj);
+	for (int i = 0; i < (int)GAME_OBJECT_TYPE_MAX; ++i) {
+		EGameObjectType type = (EGameObjectType)i;
+		g_objectManager.GetKeys(type, keys, &numObj);
 
-		for (int i = 0; i < numObj; ++i) {
-			GameObject* pObj = g_objectManager.GetObjectPtrOrNull(kind, keys[i]);
+		for (UINT32 i = 0; i < numObj; ++i) {
+			GameObject* pObj = g_objectManager.GetObjectPtrOrNull(ObjectID{ type, (ObjectKey)keys[i] });
 			if (pObj == nullptr) {
 				__debugbreak();
 			}
 
 			if (pObj->IsDestroyed(curTick)) {
-				g_objectManager.RemoveObject(kind, keys[i]);
+				g_objectManager.RemoveObject(ObjectID{ type, (ObjectKey)keys[i] });
 			}
 		}
 
@@ -309,7 +309,7 @@ void s_ProcessDBResultLoadScore(DBQueryLoadStat* pQueryLoadStat)
 		// 
 		memcpy(&pSCCreateTank->transform, pTank->GetTransformPtr(), sizeof(Transform));
 
-		printf("CreateTank: owner=%u, tankId=%u\n", dbIndex, pSCCreateTank->objectId);
+		printf("CreateTank: owner=%u, tankId=%u\n", dbIndex, pSCCreateTank->objectId.key);
 
 		GameServer::Broadcast(pRawPacket, PACKET_SIZE);
 	}
@@ -322,15 +322,15 @@ void s_ProcessDBResultUpdateScore(DBQueryUpdateStat* pQueryUpdateStat)
 
 void s_ApplyObjectLogic(ULONGLONG tickDiff)
 {
-	ObjectID keys[1024];
+	UINT32 keys[1024];
 	UINT32 countKeys;
 
-	int objectKindEnumMax = (int)GAME_OBJECT_KIND_OBSTACLE;
+	int objectKindEnumMax = (int)GAME_OBJECT_TYPE_OBSTACLE;
 	for (int i = 0; i <= objectKindEnumMax; ++i) {
-		EGameObjectKind kind = (EGameObjectKind)i;
-		g_objectManager.GetKeys(kind, keys, &countKeys);
-		for (int i = 0; i < countKeys; ++i) {
-			GameObject* pObject = g_objectManager.GetObjectPtrOrNull(kind, keys[i]);
+		EGameObjectType type = (EGameObjectType)i;
+		g_objectManager.GetKeys(type, keys, &countKeys);
+		for (UINT32 i = 0; i < countKeys; ++i) {
+			GameObject* pObject = g_objectManager.GetObjectPtrOrNull(ObjectID{ type, (ObjectKey)keys[i] });
 			if (pObject == NULL) {
 				__debugbreak();
 			}

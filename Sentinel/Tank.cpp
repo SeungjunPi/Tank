@@ -30,7 +30,7 @@ void Tank::Initiate(ObjectID id)
 
 void Tank::Terminate()
 {
-	_id = 0;
+	_id = INVALID_OBJECT_ID;
 	_forwardDirection = { 0, };
 	_transform = { 0, };
 }
@@ -194,10 +194,9 @@ void Tank::OnHit(ULONGLONG currentTick)
 	for (UINT16 i = 0; i < countColliders; ++i) {
 		Collider* pOtherCollider = g_pCollisionManager->GetAttachedColliderPtr(colliderIDs[i]);
 		ObjectID otherObjID = pOtherCollider->GetAttachedObjectPtr()->GetID();
-		EGameObjectKind objKind = g_objectManager.FindObjectKindByID(otherObjID);
 		GameObject* pOtherObj = g_objectManager.GetObjectPtrOrNull(otherObjID);
-		switch (objKind) {
-		case GAME_OBJECT_KIND_PROJECTILE:
+		switch (otherObjID.type) {
+		case GAME_OBJECT_TYPE_PROJECTILE:
 			// hit
 			_pCollider->Deactivate();
 			_hitTick = currentTick;
@@ -209,12 +208,12 @@ void Tank::OnHit(ULONGLONG currentTick)
 			g_playerManager.IncreaseDeathCount(_ownerIndex);
 			GamePacket::BroadcastTankHit(_id, otherObjID, pOtherObj->GetOwnerId(), _ownerIndex);
 			break;
-		case GAME_OBJECT_KIND_TANK:
+		case GAME_OBJECT_TYPE_TANK:
 			memcpy(&_transform, &_prevTransform, sizeof(Transform));
 			_pCollider->UpdateCenterPosition(&_transform.Position);
 			
 			break;
-		case GAME_OBJECT_KIND_OBSTACLE:
+		case GAME_OBJECT_TYPE_OBSTACLE:
 			break;
 		}
 	}

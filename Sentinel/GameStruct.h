@@ -2,6 +2,7 @@
 
 
 #include "SentinelPch.h"
+#include "SentinelAliases.h"
 #include <cmath>
 
 struct Chat
@@ -11,13 +12,26 @@ struct Chat
 	BYTE contents[128];
 };
 
-enum EGameObjectKind: UINT16
+enum EGameObjectType: UINT16
 {
-	GAME_OBJECT_KIND_TANK = 0x00,
-	GAME_OBJECT_KIND_PROJECTILE = 0x01,
-	GAME_OBJECT_KIND_OBSTACLE = 0x02,
-	GAME_OBJECT_KIND_INVALID
+	GAME_OBJECT_TYPE_TANK = 0x00,
+	GAME_OBJECT_TYPE_PROJECTILE = 0x01,
+	GAME_OBJECT_TYPE_OBSTACLE = 0x02,
+	GAME_OBJECT_TYPE_MAX // invalid type number
 };
+
+struct ObjectID
+{
+	EGameObjectType type;
+	ObjectKey key;
+
+	bool equals(const ObjectID& other) const {
+		return type == other.type && key == other.key;
+	}
+};
+
+const UINT16 INVALID_OBJECT_KEY = 0xFFFF;
+const ObjectID INVALID_OBJECT_ID = { GAME_OBJECT_TYPE_MAX, INVALID_OBJECT_KEY };
 
 
 struct Vector3;

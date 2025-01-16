@@ -188,12 +188,12 @@ void s_Draw(SHORT x, SHORT y, WCHAR c)
 void ConsoleRenderer::DrawObjects()
 {
 	UINT32 countObjects = 0;
-	ObjectID keys[128];
+	UINT32 keys[128];
 
 
-	int objectKindMax = (int)GAME_OBJECT_KIND_OBSTACLE;
+	int objectKindMax = (int)GAME_OBJECT_TYPE_OBSTACLE;
 	for (int i = 0; i < objectKindMax; ++i) {
-		EGameObjectKind kind = (EGameObjectKind)i;
+		EGameObjectType kind = (EGameObjectType)i;
 
 		_pAllocObjManager->GetKeys(kind, keys, &countObjects);
 

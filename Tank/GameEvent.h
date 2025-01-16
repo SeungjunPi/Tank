@@ -126,7 +126,7 @@ struct PACKET_SC_MOVING
 
 struct PACKET_OBJECT_INFO
 {
-	EGameObjectKind kind;
+	EGameObjectType kind;
 	ObjectID objectId;
 	UserDBIndex ownerId;
 	Transform transform;

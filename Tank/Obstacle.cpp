@@ -13,7 +13,7 @@ void Obstacle::Initiate(ObjectID id, Transform* pInitTransform)
 
 void Obstacle::Terminate()
 {
-	_id = 0;
+	_id = INVALID_OBJECT_ID;
 }
 
 void Obstacle::OnHit(ULONGLONG currentTick)

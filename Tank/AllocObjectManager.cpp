@@ -12,26 +12,26 @@ void AllocObjectManager::Initiate()
 
 void AllocObjectManager::Terminate()
 {
-	ObjectID* keys = DNew ObjectID[MAX_NUM_OBJECT];
+	UINT32* keys = DNew UINT32[MAX_NUM_OBJECT];
 	UINT32 numCounts = 0;
 
 	_tankTable.GetIdsTo(keys, &numCounts);
 	for (int i = 0; i < numCounts; ++i) {
-		ObjectID key = keys[i];
+		UINT32 key = keys[i];
 		void* ptr = _tankTable.Pop(key);
 		delete ptr;
 	}
 
 	_projectileTable.GetIdsTo(keys, &numCounts);
 	for (int i = 0; i < numCounts; ++i) {
-		ObjectID key = keys[i];
+		UINT32 key = keys[i];
 		void* ptr = _projectileTable.Pop(key);
 		delete ptr;
 	}
 
 	_obstacleTable.GetIdsTo(keys, &numCounts);
 	for (int i = 0; i < numCounts; ++i) {
-		ObjectID key = keys[i];
+		UINT32 key = keys[i];
 		void* ptr = _obstacleTable.Pop(key);
 		delete ptr;
 	}
@@ -43,43 +43,43 @@ void AllocObjectManager::Terminate()
 	_tankTable.Terminate();
 }
 
-Tank* AllocObjectManager::CreateTank(ObjectID serverKey)
+Tank* AllocObjectManager::CreateTank(ObjectID objectID)
 {
 	Tank* pTank = DNew Tank;
-	pTank->Initiate(serverKey);
-	_tankTable.Insert(serverKey, pTank);
+	pTank->Initiate(objectID);
+	_tankTable.Insert(objectID.key, pTank);
 	return pTank;
 }
 
-Projectile* AllocObjectManager::CreateProjectile(ObjectID serverKey, Transform* pInitTransform)
+Projectile* AllocObjectManager::CreateProjectile(ObjectID objectID, Transform* pInitTransform)
 {
 	Projectile* pProjectile = DNew Projectile();
-	pProjectile->Initiate(serverKey, pInitTransform);
-	_projectileTable.Insert(serverKey, pProjectile);
+	pProjectile->Initiate(objectID, pInitTransform);
+	_projectileTable.Insert(objectID.key, pProjectile);
 	return pProjectile;
 }
 
-Obstacle* AllocObjectManager::CreateObstacle(ObjectID key, Transform* pInitTransform)
+Obstacle* AllocObjectManager::CreateObstacle(ObjectID objectID, Transform* pInitTransform)
 {
 	
 	Obstacle* pObstacle = DNew Obstacle();
-	pObstacle->Initiate(key, pInitTransform);
-	_obstacleTable.Insert(key, pObstacle);
+	pObstacle->Initiate(objectID, pInitTransform);
+	_obstacleTable.Insert(objectID.key, pObstacle);
 	return pObstacle;
 }
 
-void AllocObjectManager::RemoveObject(EGameObjectKind objectKind, ObjectID key)
+void AllocObjectManager::RemoveObject(EGameObjectType objectKind, ObjectKey objectKey)
 {
 	void* ptr = nullptr;
 	switch (objectKind) {
-	case GAME_OBJECT_KIND_TANK:
-		ptr = _tankTable.Pop(key);
+	case GAME_OBJECT_TYPE_TANK:
+		ptr = _tankTable.Pop(objectKey);
 		break;
-	case GAME_OBJECT_KIND_PROJECTILE:
-		ptr = _projectileTable.Pop(key);
+	case GAME_OBJECT_TYPE_PROJECTILE:
+		ptr = _projectileTable.Pop(objectKey);
 		break;
-	case GAME_OBJECT_KIND_OBSTACLE:
-		ptr = _obstacleTable.Pop(key);
+	case GAME_OBJECT_TYPE_OBSTACLE:
+		ptr = _obstacleTable.Pop(objectKey);
 		break;
 	}
 
@@ -88,54 +88,63 @@ void AllocObjectManager::RemoveObject(EGameObjectKind objectKind, ObjectID key)
 	}
 }
 
-void AllocObjectManager::UpdateObject(EGameObjectKind objectKind, GameObject* obj)
+void AllocObjectManager::RemoveObject(ObjectID objectID)
+{
+	RemoveObject(objectID.type, objectID.key);
+}
+
+void AllocObjectManager::UpdateObject(GameObject* obj)
 {
 	if (obj == nullptr) {
 		__debugbreak();
 		return;
 	}
 
-	ObjectID key = obj->GetID();
-	GameObject* pGameObject = GetObjectPtrOrNull(objectKind, key);
+	ObjectID objectID = obj->GetID();
+	GameObject* pGameObject = GetObjectPtrOrNull(objectID);
 
 	BOOL res = pGameObject->UpdateFrom(obj);
 	assert(res);
 }
 
-void AllocObjectManager::UpdateObjectTransform(EGameObjectKind objectKind, ObjectID objId, const Transform* pTransform)
+void AllocObjectManager::UpdateObjectTransform(ObjectID objId, const Transform* pTransform)
 {
-	GameObject* pGameObject = GetObjectPtrOrNull(objectKind, objId);
+	GameObject* pGameObject = GetObjectPtrOrNull(objId);
 	if (pGameObject == nullptr) {
 		return;
 	}
 	pGameObject->UpdateTransform(pTransform);
 }
 
-void AllocObjectManager::GetTransformedModelOf(EGameObjectKind objectKind, ObjectID key, Vertex* out_vertices, UINT* out_numVectors)
+void AllocObjectManager::GetTransformedModelOf(EGameObjectType objectKind, ObjectKey key, Vertex* out_vertices, UINT* out_numVectors)
 {
 	GameObject* pGameObject = GetObjectPtrOrNull(objectKind, key);
-
 	*out_numVectors = pGameObject->GetTransformedModel(out_vertices);
 }
 
-void AllocObjectManager::GetKeys(EGameObjectKind objectKind, ObjectID* out_keys, UINT32* out_numKeys) const
+void AllocObjectManager::GetTransformedModelOf(ObjectID objectID, Vertex* out_vertices, UINT* out_numVectors)
+{
+	GetTransformedModelOf(objectID.type, objectID.key, out_vertices, out_numVectors);
+}
+
+void AllocObjectManager::GetKeys(EGameObjectType objectKind, UINT32* out_keys, UINT32* out_numKeys) const
 {
 	if (out_keys == nullptr || out_numKeys == nullptr) {
 		__debugbreak();
 		return;
 	}
 
-	ObjectID* keys = out_keys;
+	UINT32* keys = out_keys;
 
 	switch (objectKind) {
 		break;
-	case GAME_OBJECT_KIND_TANK:
+	case GAME_OBJECT_TYPE_TANK:
 		_tankTable.GetIdsTo(keys, out_numKeys);
 		break;
-	case GAME_OBJECT_KIND_PROJECTILE:
+	case GAME_OBJECT_TYPE_PROJECTILE:
 		_projectileTable.GetIdsTo(keys, out_numKeys);
 		break;
-	case GAME_OBJECT_KIND_OBSTACLE:
+	case GAME_OBJECT_TYPE_OBSTACLE:
 		_obstacleTable.GetIdsTo(keys, out_numKeys);
 		break;
 	default:
@@ -144,14 +153,14 @@ void AllocObjectManager::GetKeys(EGameObjectKind objectKind, ObjectID* out_keys,
 	}
 }
 
-void AllocObjectManager::GetAllKeys(ObjectID* out_keys, UINT32* out_numKeys) const
+void AllocObjectManager::GetAllKeys(UINT32* out_keys, UINT32* out_numKeys) const
 {
 	if (out_keys == nullptr || out_numKeys == nullptr) {
 		__debugbreak();
 		return;
 	}
 
-	ObjectID* keys = out_keys;
+	UINT32* keys = out_keys;
 	UINT32 countKeys = 0;
 
 	_tankTable.GetIdsTo(keys, &countKeys);
@@ -167,19 +176,19 @@ void AllocObjectManager::GetAllKeys(ObjectID* out_keys, UINT32* out_numKeys) con
 
 }
 
-GameObject* AllocObjectManager::GetObjectPtrOrNull(EGameObjectKind objectKind, ObjectID key)
+GameObject* AllocObjectManager::GetObjectPtrOrNull(EGameObjectType objectKind, ObjectKey objectKey)
 {
 	GameObject* pGameObject = nullptr;
 
 	switch (objectKind) {
-	case GAME_OBJECT_KIND_TANK:
-		pGameObject = (GameObject*)_tankTable.Get(key);
+	case GAME_OBJECT_TYPE_TANK:
+		pGameObject = (GameObject*)_tankTable.Get(objectKey);
 		break;
-	case GAME_OBJECT_KIND_PROJECTILE:
-		pGameObject = (GameObject*)_projectileTable.Get(key);
+	case GAME_OBJECT_TYPE_PROJECTILE:
+		pGameObject = (GameObject*)_projectileTable.Get(objectKey);
 		break;
-	case GAME_OBJECT_KIND_OBSTACLE:
-		pGameObject = (GameObject*)_obstacleTable.Get(key);
+	case GAME_OBJECT_TYPE_OBSTACLE:
+		pGameObject = (GameObject*)_obstacleTable.Get(objectKey);
 		break;
 	default:
 		pGameObject = nullptr;
@@ -188,6 +197,11 @@ GameObject* AllocObjectManager::GetObjectPtrOrNull(EGameObjectKind objectKind, O
 	}
 
 	return pGameObject;
+}
+
+GameObject* AllocObjectManager::GetObjectPtrOrNull(ObjectID objectID)
+{
+	return GetObjectPtrOrNull(objectID.type, objectID.key);
 }
 
 int AllocObjectManager::GetCountObjects() const
@@ -201,7 +215,7 @@ int AllocObjectManager::GetCountObjects() const
 
 void AllocObjectManager::StartTankMove(ObjectID objectId, EMOVEMENT movement)
 {
-	Tank* pTank = (Tank*)_tankTable.Get(objectId);
+	Tank* pTank = (Tank*)_tankTable.Get(objectId.key);
 	if (pTank == nullptr) {
 		return;
 	}
@@ -211,7 +225,7 @@ void AllocObjectManager::StartTankMove(ObjectID objectId, EMOVEMENT movement)
 
 void AllocObjectManager::EndTankMove(ObjectID objectId, EMOVEMENT movement, const Transform* pTransform)
 {
-	Tank* pTank = (Tank*)_tankTable.Get(objectId);
+	Tank* pTank = (Tank*)_tankTable.Get(objectId.key);
 	if (pTank == nullptr) {
 		return;
 	}
@@ -221,7 +235,7 @@ void AllocObjectManager::EndTankMove(ObjectID objectId, EMOVEMENT movement, cons
 
 void AllocObjectManager::StartTankRotate(ObjectID objectId, EROTATION rotation)
 {
-	Tank* pTank = (Tank*)_tankTable.Get(objectId);
+	Tank* pTank = (Tank*)_tankTable.Get(objectId.key);
 	if (pTank == nullptr) {
 		return;
 	}
@@ -231,7 +245,7 @@ void AllocObjectManager::StartTankRotate(ObjectID objectId, EROTATION rotation)
 
 void AllocObjectManager::EndTankRotate(ObjectID objectId, EROTATION rotation, const Transform* pTransform)
 {
-	Tank* pTank = (Tank*)_tankTable.Get(objectId);
+	Tank* pTank = (Tank*)_tankTable.Get(objectId.key);
 	if (pTank == nullptr) {
 		return;
 	}

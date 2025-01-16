@@ -40,9 +40,9 @@ Collider* CollisionManager::GetAttachedColliderPtr(ColliderID id)
 
 void CollisionManager::ReturnCollider(Collider* pCollider)
 {
-	size_t index = pCollider->GetID();
+	ColliderID key = pCollider->GetID();
 	pCollider->Clear();
-	PopUsedIDs(index);
+	PopUsedIDs(key);
 }
 
 UINT32 CollisionManager::DetectCollision(ColliderID** out)
@@ -92,7 +92,7 @@ UINT32 CollisionManager::DetectCollision(ColliderID** out)
 
 void CollisionManager::ResetAllColliders()
 {
-	for (int i = 0; i < _countActiveColliders; ++i) {
+	for (UINT32 i = 0; i < _countActiveColliders; ++i) {
 		ColliderID id = _usedIDs[i];
 		_colliders[id].ClearCollisionInfo();
 	}
