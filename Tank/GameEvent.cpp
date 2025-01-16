@@ -62,7 +62,7 @@ void GamePacket::HandleLoginResult(BYTE* pGameEvent, UINT32 senderId)
 		Game::Shutdown();
 		return;
 	}
-	g_playerId = pScLogin->playerKey;
+	g_playerId = pScLogin->userDBIndex;
 	g_score.hit = pScLogin->hitCount;
 	g_score.kill = pScLogin->killCount;
 	g_score.death = pScLogin->deathCount;

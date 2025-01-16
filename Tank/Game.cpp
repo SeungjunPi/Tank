@@ -181,7 +181,7 @@ void s_ApplyKeyboardEvents(ULONGLONG tickDiff)
 void s_ApplyObjectLogic(ULONGLONG tickDiff)
 {
 	ObjectID keys[128];
-	int countKeys;
+	UINT32 countKeys;
 
 	int objectKindEnumMax = (int)GAME_OBJECT_KIND_OBSTACLE;
 	for (int i = 0; i <= objectKindEnumMax; ++i) {
@@ -229,7 +229,7 @@ void s_CollideObjects(ULONGLONG currentTick)
 	// consider hit per projectile
 	ObjectID projectileKeys[32];
 	ObjectID otherObjectKeys[32];
-	int numProjectiles;
+	UINT32 numProjectiles;
 	g_objectManager.GetKeys(GAME_OBJECT_KIND_PROJECTILE, projectileKeys, &numProjectiles);
 	for (int i = 0; i < numProjectiles; ++i) {
 		GameObject* pProjectile = g_objectManager.GetObjectPtrOrNull(GAME_OBJECT_KIND_PROJECTILE, projectileKeys[i]);
@@ -238,7 +238,7 @@ void s_CollideObjects(ULONGLONG currentTick)
 		}
 
 		for (int j = 0; j <= (int)GAME_OBJECT_KIND_OBSTACLE; ++j) {
-			int numObjects;
+			UINT32 numObjects;
 			EGameObjectKind kind = (EGameObjectKind)j;
 			if (kind == GAME_OBJECT_KIND_PROJECTILE) {
 				continue;
@@ -298,7 +298,7 @@ BOOL s_IsShootable()
 void s_CleanupDestroyedObjects(ULONGLONG curTick)
 {
 	ObjectID keys[1024];
-	int numObj;
+	UINT32 numObj;
 
 	for (int i = 0; i <= (int)GAME_OBJECT_KIND_OBSTACLE; ++i) {
 		EGameObjectKind kind = (EGameObjectKind)i;

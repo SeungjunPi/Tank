@@ -37,14 +37,14 @@ public:
 
 
 
-	void UpdateTankTransform(ObjectID objectId, const Transform* pTransform);
-	void UpdateTankTransform(UserDBIndex ownerId, const Transform* pTransform);
+	void UpdateTankTransformByObjectID(ObjectID objectId, const Transform* pTransform);
+	void UpdateTankTransformByOwnerID(UserDBIndex ownerId, const Transform* pTransform);
 
-	UINT16 GetCountObjects() const;
+	UINT32 GetCountObjects() const;
 	void CopySnapshot(PACKET_OBJECT_INFO* dst);
 
 	void RemoveObject(EGameObjectKind objectKind, ObjectID key);
-	void GetKeys(EGameObjectKind objectKind, ObjectID* out_keys, int* out_numKeys) const;
+	void GetKeys(EGameObjectKind objectKind, ObjectID* out_keys, UINT32* out_numKeys) const;
 	GameObject* GetObjectPtrOrNull(EGameObjectKind objectKind, ObjectID key);
 	GameObject* GetObjectPtrOrNull(ObjectID key);
 	
@@ -52,10 +52,10 @@ public:
 private:
 	LinearQueue _unusedObjectIdQueue;
 	
-	PointerTable16 _tankTable;
+	PointerTable32 _tankTable;
 	PointerTable32 _tankTableByOwner;
 
-	PointerTable16 _projectileTable;
+	PointerTable32 _projectileTable;
 
-	PointerTable16 _obstacleTable;
+	PointerTable32 _obstacleTable;
 };

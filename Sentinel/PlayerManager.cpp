@@ -9,7 +9,7 @@ void PlayerManager::Initiate(int maxNumPlayers)
 
 void PlayerManager::Terminate()
 {
-	for (UINT16 i = 0; i < _countPlayers; ++i) {
+	for (UINT32 i = 0; i < _countPlayers; ++i) {
 		UINT32 key = _usedDbIndexes[i];
 		void* ptr = _playerTable.Pop(key);
 		assert(ptr != nullptr);
@@ -65,7 +65,7 @@ BOOL PlayerManager::TryDeletePlayerByUserIndex(UserDBIndex userIndex)
 
 	delete pPlayer;
 
-	for (UINT16 i = 0; i < _countPlayers; ++i) {
+	for (UINT32 i = 0; i < _countPlayers; ++i) {
 		if (_usedDbIndexes[i] == userIndex) {
 			_countPlayers--;
 			_usedDbIndexes[i] = _usedDbIndexes[_countPlayers];

@@ -21,8 +21,8 @@ public:
 
 	UserDBIndex GetUserIndex() const { return _userIndex; }
 
-	UINT16 GetTankId() const;
-	void SetTankId(UINT16 tankId);
+	UINT32 GetTankId() const;
+	void SetTankId(UINT32 tankId);
 
 	TankScore GetScore() const;
 

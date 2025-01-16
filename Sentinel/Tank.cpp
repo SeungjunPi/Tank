@@ -234,8 +234,8 @@ void Tank::OnRespawn()
 
 BOOL Tank::IsTransformCloseEnough(const Transform* other)
 {
-	const float TOLERANCE_POSITION_SQUARE = 0.5; // x, y, z의 차이가 각 1.0 미만인 경우를 간단하게 판단
-	const float TOLERANCE_ROTATION = 0.13; // 15도 미만
+	const float TOLERANCE_POSITION_SQUARE = 0.5f; // x, y, z의 차이가 각 1.0 미만인 경우를 간단하게 판단
+	const float TOLERANCE_ROTATION = 0.13f; // 15도 미만
 
 	float posDistanceSq = Vector3::DistanceSquared(_transform.Position, other->Position);
 	float rotDisctance = Quaternion::AngularDistance(_transform.Rotation, other->Rotation);

@@ -22,7 +22,7 @@ void ObjectManager::Initiate()
 void ObjectManager::Terminate()
 {
 	ObjectID* keys = DNew ObjectID[NUM_OBJECTS_MAX];
-	int numCounts = 0;
+	UINT32 numCounts = 0;
 
 
 	_tankTable.GetIdsTo(keys, &numCounts);
@@ -58,7 +58,7 @@ void ObjectManager::Terminate()
 EGameObjectKind ObjectManager::FindObjectKindByID(ObjectID id)
 {
 	ObjectID objectIDs[NUM_OBJECTS_MAX];
-	int numObjects = 0;
+	UINT32 numObjects = 0;
 	_tankTable.GetIdsTo(objectIDs, &numObjects);
 	for (int i = 0; i < numObjects; ++i) {
 		if (objectIDs[i] == id) {
@@ -88,7 +88,7 @@ Tank* ObjectManager::CreateTank(UserDBIndex ownerIndex)
 	assert(_unusedObjectIdQueue.GetCount() != 0);
 	ObjectID objectId;
 	_unusedObjectIdQueue.TryPopTo(&objectId);
-	assert(objectId != UINT16_MAX);
+	assert(objectId != INVALID_OBJECT_ID);
 
 	
 	Tank* pTank = DNew Tank(objectId, ownerIndex);
@@ -120,9 +120,9 @@ void ObjectManager::RemoveTank(ObjectID objectId, UserDBIndex ownerId)
 Projectile* ObjectManager::CreateProjectile(UserDBIndex ownerId, Transform* pTransform)
 {
 	assert(_unusedObjectIdQueue.GetCount() != 0);
-	UINT16 objectId;
+	ObjectID objectId;
 	_unusedObjectIdQueue.TryPopTo(&objectId);
-	assert(objectId != UINT16_MAX);
+	assert(objectId != INVALID_OBJECT_ID);
 
 	
 
@@ -203,7 +203,7 @@ void ObjectManager::EndTankRotate(UserDBIndex ownerId, EROTATION rotation)
 	pTank->EndRotate(rotation);
 }
 
-void ObjectManager::UpdateTankTransform(ObjectID objectId, const Transform* pTransform)
+void ObjectManager::UpdateTankTransformByObjectID(ObjectID objectId, const Transform* pTransform)
 {
 	Tank* pTank = (Tank*)_tankTable.Get(objectId);
 	assert(pTank != nullptr);
@@ -211,7 +211,7 @@ void ObjectManager::UpdateTankTransform(ObjectID objectId, const Transform* pTra
 	pTank->UpdateTransform(pTransform);
 }
 
-void ObjectManager::UpdateTankTransform(UserDBIndex ownerId, const Transform* pTransform)
+void ObjectManager::UpdateTankTransformByOwnerID(UserDBIndex ownerId, const Transform* pTransform)
 {
 	Tank* pTank = (Tank*)_tankTableByOwner.Get(ownerId);
 	if (pTank == nullptr) {
@@ -221,17 +221,17 @@ void ObjectManager::UpdateTankTransform(UserDBIndex ownerId, const Transform* pT
 	pTank->UpdateTransform(pTransform);
 }
 
-UINT16 ObjectManager::GetCountObjects() const
+UINT32 ObjectManager::GetCountObjects() const
 {
-	int countTank = _tankTable.GetCount();
+	UINT32 countTank = _tankTable.GetCount();
 	
-	return (UINT16)countTank;
+	return countTank;
 }
 
 void ObjectManager::CopySnapshot(PACKET_OBJECT_INFO* dst)
 {
 	ObjectID* keys = DNew ObjectID[NUM_OBJECTS_MAX];
-	int numCounts = 0;
+	UINT32 numCounts = 0;
 	_tankTable.GetIdsTo(keys, &numCounts);
 
 	PACKET_OBJECT_INFO* pObjInfo = dst;
@@ -271,7 +271,7 @@ void ObjectManager::RemoveObject(EGameObjectKind objectKind, ObjectID key)
 
 }
 
-void ObjectManager::GetKeys(EGameObjectKind objectKind, ObjectID* out_keys, int* out_numKeys) const
+void ObjectManager::GetKeys(EGameObjectKind objectKind, ObjectID* out_keys, UINT32* out_numKeys) const
 {
 	if (out_keys == nullptr || out_numKeys == nullptr) {
 		__debugbreak();
@@ -323,7 +323,7 @@ GameObject* ObjectManager::GetObjectPtrOrNull(EGameObjectKind objectKind, Object
 GameObject* ObjectManager::GetObjectPtrOrNull(ObjectID id)
 {
 	ObjectID objectIDs[NUM_OBJECTS_MAX];
-	int numObjects = 0;
+	UINT32 numObjects = 0;
 	_tankTable.GetIdsTo(objectIDs, &numObjects);
 	for (int i = 0; i < numObjects; ++i) {
 		if (objectIDs[i] == id) {
@@ -347,25 +347,3 @@ GameObject* ObjectManager::GetObjectPtrOrNull(ObjectID id)
 
 	return nullptr;
 }
-
-AbstractCollidable* ObjectManager::GetAbstractCollidablePtrOrNull(ObjectID id)
-{
-	ObjectID objectIDs[NUM_OBJECTS_MAX];
-	int numObjects = 0;
-	_tankTable.GetIdsTo(objectIDs, &numObjects);
-	for (int i = 0; i < numObjects; ++i) {
-		if (objectIDs[i] == id) {
-			return (AbstractCollidable*)(Tank*)_tankTable.Get(id);
-		}
-	}
-
-	_projectileTable.GetIdsTo(objectIDs, &numObjects);
-	for (int i = 0; i < numObjects; ++i) {
-		if (objectIDs[i] == id) {
-			return (AbstractCollidable*)(Projectile*)_projectileTable.Get(id);;
-		}
-	}
-	return nullptr;
-}
-
-

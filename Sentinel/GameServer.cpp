@@ -192,7 +192,7 @@ void OnSessionDisconnect(UINT32 sessionID)
 void s_CleanupDestroyedObjects(ULONGLONG curTick)
 {
 	ObjectID keys[1024];
-	int numObj;
+	UINT32 numObj;
 
 	for (int i = 0; i <= (int)GAME_OBJECT_KIND_OBSTACLE; ++i) {
 		EGameObjectKind kind = (EGameObjectKind)i;
@@ -323,7 +323,7 @@ void s_ProcessDBResultUpdateScore(DBQueryUpdateStat* pQueryUpdateStat)
 void s_ApplyObjectLogic(ULONGLONG tickDiff)
 {
 	ObjectID keys[1024];
-	int countKeys;
+	UINT32 countKeys;
 
 	int objectKindEnumMax = (int)GAME_OBJECT_KIND_OBSTACLE;
 	for (int i = 0; i <= objectKindEnumMax; ++i) {

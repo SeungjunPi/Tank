@@ -31,8 +31,8 @@ public:
 
 	void GetTransformedModelOf(EGameObjectKind objectKind, ObjectID key, Vertex* out_vertices, UINT* out_numVectors);
 
-	void GetKeys(EGameObjectKind objectKind, ObjectID* out_keys, int* out_numKeys) const;
-	void GetAllKeys(ObjectID* out_keys, int* out_numKeys) const;
+	void GetKeys(EGameObjectKind objectKind, ObjectID* out_keys, UINT32* out_numKeys) const;
+	void GetAllKeys(ObjectID* out_keys, UINT32* out_numKeys) const;
 
 	GameObject* GetObjectPtrOrNull(EGameObjectKind objectKind, ObjectID key);
 
@@ -46,7 +46,7 @@ public:
 	void EndTankRotate(ObjectID objectId, EROTATION rotation, const Transform* pTransform);
 
 private:
-	PointerTable16 _tankTable;
-	PointerTable16 _projectileTable;
-	PointerTable16 _obstacleTable;
+	PointerTable32 _tankTable;
+	PointerTable32 _projectileTable;
+	PointerTable32 _obstacleTable;
 };

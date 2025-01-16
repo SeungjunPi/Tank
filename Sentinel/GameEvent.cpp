@@ -42,7 +42,7 @@ void GamePacket::HandlePacket(BYTE* pGameEvent, SessionID senderId)
 
 void GamePacket::SendSnapshot(SessionID sessionId)
 {
-	UINT16 countObjects = g_objectManager.GetCountObjects();
+	UINT32 countObjects = g_objectManager.GetCountObjects();
 	
 	if (countObjects == 0) {
 		const size_t PACKET_SIZE = sizeof(EGameEventCode) + sizeof(PACKET_SC_SNAPSHOT);

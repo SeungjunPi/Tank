@@ -6,7 +6,6 @@
 const int ID_LENGTH_MAX = 16;
 const int PW_LENGTH_MAX = 16;
 
-
 // [Kind3][Kind2][Kind1][SC, CS] 
 enum EGameEventCode
 {
@@ -47,7 +46,7 @@ struct PACKET_CS_LOGIN
 struct PACKET_SC_LOGIN
 {
 	BOOL result;
-	UINT32 playerKey;
+	UserDBIndex userDBIndex;
 	int hitCount;
 	int killCount;
 	int deathCount;
@@ -55,7 +54,7 @@ struct PACKET_SC_LOGIN
 
 struct PACKET_CS_LOAD_PLAYER_STAT
 {
-	UINT32 playerKey;
+	UserDBIndex userDBIndex;
 };
 
 struct PACKET_SC_LOAD_PLAYER_STAT
@@ -65,21 +64,22 @@ struct PACKET_SC_LOAD_PLAYER_STAT
 	int deathCount;
 };
 
+
 struct PACKET_SC_PLAYER_ID
 {
-	UINT32 id;
+	UserDBIndex id;
 };
 
 struct PACKET_SC_CREATE_TANK
 {
-	UINT32 ownerId;
-	UINT16 objectId;
+	UserDBIndex ownerId;
+	ObjectID objectId;
 	Transform transform;
 };
 
 struct PACKET_SC_DELETE_TANK
 {
-	UINT32 objectId;
+	ObjectID objectId;
 };
 
 
@@ -96,7 +96,7 @@ struct PACKET_CS_START_MOVE
 struct PACKET_SC_START_MOVE
 {
 	char movementFlag;
-	UINT16 objectId;
+	ObjectID objectId;
 	Transform transform; // 클라이언트가 확인하기 위한 용도
 };
 
@@ -109,7 +109,7 @@ struct PACKET_CS_END_MOVE
 struct PACKET_SC_END_MOVE
 {
 	char movementFlag;
-	UINT16 objectId;
+	ObjectID objectId;
 	Transform transform;
 };
 
@@ -120,15 +120,15 @@ struct PACKET_CS_MOVING
 
 struct PACKET_SC_MOVING
 {
-	UINT16 objectId;
+	ObjectID objectId;
 	Transform transform;
 };
 
 struct PACKET_OBJECT_INFO
 {
 	EGameObjectKind kind;
-	UINT16 objectId;
-	UINT32 ownerId;
+	ObjectID objectId;
+	UserDBIndex ownerId;
 	Transform transform;
 };
 
@@ -145,36 +145,38 @@ struct PACKET_CS_SHOOT
 
 struct PACKET_SC_SHOOT
 {
-	UINT16 objectId;
-	UINT32 ownerId;
+	ObjectID objectId;
+	UserDBIndex ownerId;
 	Transform transform;
 };
 
 struct PACKET_SC_TANK_HIT
 {
-	UINT16 tankId;
-	UINT16 projectileId;
-	UINT32 shooter;
-	UINT32 target;
+	ObjectID tankId;
+	ObjectID projectileId;
+	UserDBIndex shooter;
+	UserDBIndex target;
 };
 
 struct PACKET_SC_CREATE_OBSTACLE
 {
-	UINT16 obstacleId;
+	ObjectID obstacleId;
 	Transform transform;
 };
 
 struct PACKET_SC_DELETE_OBSTACLE
 {
-	UINT16 obstacleId;
-	UINT32 shooterId;
+	ObjectID obstacleId;
+	UserDBIndex shooterId;
 };
 
 struct PACKET_SC_RESPAWN_TANK
 {
-	UINT16 tankId;
+	ObjectID tankId;
 	Vector3 position;
 };
+
+
 
 class GamePacket
 {

@@ -187,7 +187,7 @@ void s_Draw(SHORT x, SHORT y, WCHAR c)
 
 void ConsoleRenderer::DrawObjects()
 {
-	int countObjects = 0;
+	UINT32 countObjects = 0;
 	ObjectID keys[128];
 
 

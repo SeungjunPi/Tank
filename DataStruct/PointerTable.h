@@ -10,26 +10,26 @@ public:
 	PointerTable32() = default;
 	~PointerTable32() = default;
 
-	bool Initiate(int capacity);
+	bool Initiate(UINT32 capacity);
 	bool Terminate();
 
-	bool Insert(int key, void* ptr);
+	bool Insert(UINT32 key, void* ptr);
 
 	// Warning: This method does not release allocated memory. 
-	bool Remove(int key);
-	void* Get(int key) const;
-	void* Pop(int key);
+	bool Remove(UINT32 key);
+	void* Get(UINT32 key) const;
+	void* Pop(UINT32 key);
 
-	int GetCount() const;
+	UINT32 GetCount() const;
 
-	void GetIdsTo(int* out_keys, int* out_numKeys) const;
+	void GetIdsTo(UINT32* out_keys, UINT32* out_numKeys) const;
 
-	int GetCapacity() const;
+	UINT32 GetCapacity() const;
 
 private:
-	int _capacity = 0;
+	UINT32 _capacity = 0;
 	void** _entries = nullptr;
-	int _count = 0;
+	UINT32 _count = 0;
 
 	LinearQueue _usingKeyQueue;
 };
@@ -41,26 +41,26 @@ public:
 	PointerTable16() = default;
 	~PointerTable16() = default;
 
-	bool Initiate(int capacity);
+	bool Initiate(UINT16 capacity);
 	bool Terminate();
 
-	bool Insert(unsigned short key, void* ptr);
+	bool Insert(UINT16 key, void* ptr);
 
 	// Warning: This method does not release allocated memory. 
-	bool Remove(unsigned short key);
-	void* Get(unsigned short key) const;
-	void* Pop(unsigned short key);
+	bool Remove(UINT16 key);
+	void* Get(UINT16 key) const;
+	void* Pop(UINT16 key);
 
-	int GetCount() const;
+	UINT16 GetCount() const;
 
-	void GetIdsTo(unsigned short* out_keys, int* out_numKeys) const;
+	void GetIdsTo(UINT16* out_keys, UINT16* out_numKeys) const;
 
-	int GetCapacity() const;
+	UINT16 GetCapacity() const;
 
 private:
-	int _capacity = 0;
+	UINT16 _capacity = 0;
 	void** _entries = nullptr;
-	int _count = 0;
+	UINT16 _count = 0;
 
 	LinearQueue _usingKeyQueue;
 };

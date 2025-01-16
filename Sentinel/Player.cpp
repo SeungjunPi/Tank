@@ -11,12 +11,12 @@ SessionID Player::GetSessionID() const
 	return _sessionId;
 }
 
-UINT16 Player::GetTankId() const
+UINT32 Player::GetTankId() const
 {
 	return _tankId;
 }
 
-void Player::SetTankId(UINT16 tankId)
+void Player::SetTankId(UINT32 tankId)
 {
 	_tankId = tankId;
 }

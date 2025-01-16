@@ -13,7 +13,7 @@ void AllocObjectManager::Initiate()
 void AllocObjectManager::Terminate()
 {
 	ObjectID* keys = DNew ObjectID[MAX_NUM_OBJECT];
-	int numCounts = 0;
+	UINT32 numCounts = 0;
 
 	_tankTable.GetIdsTo(keys, &numCounts);
 	for (int i = 0; i < numCounts; ++i) {
@@ -118,7 +118,7 @@ void AllocObjectManager::GetTransformedModelOf(EGameObjectKind objectKind, Objec
 	*out_numVectors = pGameObject->GetTransformedModel(out_vertices);
 }
 
-void AllocObjectManager::GetKeys(EGameObjectKind objectKind, ObjectID* out_keys, int* out_numKeys) const
+void AllocObjectManager::GetKeys(EGameObjectKind objectKind, ObjectID* out_keys, UINT32* out_numKeys) const
 {
 	if (out_keys == nullptr || out_numKeys == nullptr) {
 		__debugbreak();
@@ -144,7 +144,7 @@ void AllocObjectManager::GetKeys(EGameObjectKind objectKind, ObjectID* out_keys,
 	}
 }
 
-void AllocObjectManager::GetAllKeys(ObjectID* out_keys, int* out_numKeys) const
+void AllocObjectManager::GetAllKeys(ObjectID* out_keys, UINT32* out_numKeys) const
 {
 	if (out_keys == nullptr || out_numKeys == nullptr) {
 		__debugbreak();
@@ -152,7 +152,7 @@ void AllocObjectManager::GetAllKeys(ObjectID* out_keys, int* out_numKeys) const
 	}
 
 	ObjectID* keys = out_keys;
-	int countKeys = 0;
+	UINT32 countKeys = 0;
 
 	_tankTable.GetIdsTo(keys, &countKeys);
 	*out_numKeys += countKeys;

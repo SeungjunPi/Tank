@@ -2,5 +2,5 @@
 
 #include <windows.h>
 
-using ObjectID = UINT16;
-using UserIndex = UINT32;
+using ObjectID = UINT32;
+using UserDBIndex = UINT32;

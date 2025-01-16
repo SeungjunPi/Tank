@@ -4,7 +4,7 @@
 #include "NetCoreAliases.h"
 
 using UserDBIndex = UINT32;
-using ObjectID = UINT16;
+using ObjectID = UINT32;
 using ColliderID = UINT16;
 
-const ObjectID INVALID_OBJECT_ID = 0xFFFF;
+const ObjectID INVALID_OBJECT_ID = 0xFFFFFFFF;
