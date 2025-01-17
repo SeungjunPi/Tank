@@ -93,7 +93,7 @@ void GamePacket::HandleCreateTank(BYTE* pGameEvent, UINT32 senderId)
 
 	PACKET_SC_CREATE_TANK* pScCreateTank = (PACKET_SC_CREATE_TANK*)(pGameEvent + sizeof(EGameEventCode));
 	
-	Tank* pTank = g_objectManager.CreateTank(pScCreateTank->objectId);
+	Tank* pTank = g_objectManager.CreateTank(pScCreateTank->objectId, pScCreateTank->ownerId);
 	if (pScCreateTank->ownerId == g_playerId) {
 		g_pPlayerTank = pTank;
 		g_isTankCreateRequest = false;
@@ -229,13 +229,13 @@ void GamePacket::HandleSnapshot(BYTE* pGameEvent, UINT32 senderId)
 		switch (pObjInfo->kind) {
 		case GAME_OBJECT_TYPE_TANK:
 		{
-			Tank* pTank = g_objectManager.CreateTank(pObjInfo->objectId);
+			Tank* pTank = g_objectManager.CreateTank(pObjInfo->objectId, pObjInfo->ownerId);
 			pTank->UpdateTransform(&pObjInfo->transform);
 			break;
 		}
 		case GAME_OBJECT_TYPE_PROJECTILE:
 		{
-			Projectile* pProjectile = g_objectManager.CreateProjectile(pObjInfo->objectId, &pObjInfo->transform);
+			Projectile* pProjectile = g_objectManager.CreateProjectile(pObjInfo->objectId, &pObjInfo->transform, pObjInfo->ownerId);
 			pProjectile->UpdateTransform(&pObjInfo->transform);
 			break;
 		}
@@ -268,7 +268,7 @@ void GamePacket::HandleShoot(BYTE* pGameEvent, UINT32 senderId)
 	pScShoot->ownerId;
 	pScShoot->transform;
 
-	g_objectManager.CreateProjectile(pScShoot->objectId, &pScShoot->transform);
+	g_objectManager.CreateProjectile(pScShoot->objectId, &pScShoot->transform, pScShoot->ownerId);
 }
 
 BOOL GamePacket::ValidateShoot(BYTE* pGameEvent, UINT32 senderId)
@@ -284,7 +284,7 @@ void GamePacket::HandleTankHit(BYTE* pGameEvent, UINT32 senderId)
 	}
 
 	PACKET_SC_TANK_HIT* pScTankHit = (PACKET_SC_TANK_HIT*)(pGameEvent + sizeof(EGameEventCode));
-	GameObject* pTank = g_objectManager.GetObjectPtrOrNull(pScTankHit->tankId);
+	Tank* pTank = (Tank*)g_objectManager.GetObjectPtrOrNull(pScTankHit->tankId);
 	
 	if (g_playerId == pScTankHit->target) {
 		g_score.death++;
@@ -294,10 +294,10 @@ void GamePacket::HandleTankHit(BYTE* pGameEvent, UINT32 senderId)
 		g_score.kill++;
 	}
 
-	pTank->OnHit(g_currentGameTick);
+	pTank->OnHitByProjectile(g_currentGameTick);
 
-	GameObject* pProjectile = g_objectManager.GetObjectPtrOrNull(pScTankHit->projectileId);
-	pProjectile->OnHit(g_currentGameTick);
+	Projectile* pProjectile = (Projectile*)g_objectManager.GetObjectPtrOrNull(pScTankHit->projectileId);
+	pProjectile->OnHitTank(g_currentGameTick);
 }
 
 BOOL GamePacket::ValidateTankHit(BYTE* pGameEvent, UINT32 senderId)

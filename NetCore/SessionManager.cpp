@@ -67,8 +67,8 @@ void SessionManager::RemoveSession(SHORT id, ESessionRemoveReason reason)
 void SessionManager::DisconnectAllSessions()
 {
     AcquireSRWLockExclusive(&_srwLock);
-    int countSessions = _pointerTable.GetCount();
-    int* usingKeys = DNew int[countSessions];
+    UINT32 countSessions = _pointerTable.GetCount();
+    UINT32* usingKeys = DNew UINT32[countSessions];
     _pointerTable.GetIdsTo(usingKeys, &countSessions);
     for (SHORT i = 0; i < countSessions; ++i) {
         Session* pSession = (Session*)_pointerTable.Get(usingKeys[i]);

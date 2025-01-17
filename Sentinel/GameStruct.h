@@ -4,13 +4,6 @@
 #include "SentinelAliases.h"
 #include "GameMath.h"
 
-struct Chat
-{
-	UINT32 sender;
-	UINT32 length;
-	BYTE contents[128];
-};
-
 enum EGameObjectType: UINT16
 {
 	GAME_OBJECT_TYPE_TANK = 0x00,

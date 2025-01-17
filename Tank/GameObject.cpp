@@ -6,18 +6,20 @@ GameObject::GameObject()
 {
 }
 
-GameObject::GameObject(ObjectID id)
+GameObject::GameObject(ObjectID id, UserDBIndex ownerID)
 	: _transform{ 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f }
 	, _id(id)
 	, _model{ nullptr, 0 }
+	, _ownerID(ownerID)
 {
 }
 
-GameObject::GameObject(ObjectID id, BOOL activatable)
+GameObject::GameObject(ObjectID id, UserDBIndex ownerID, BOOL activatable)
 	: _transform{ 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f }
 	, _id(id)
 	, _isActivatable(activatable)
 	, _model{ nullptr, 0 }
+	, _ownerID(ownerID)
 {
 }
 
@@ -33,6 +35,11 @@ ObjectID GameObject::GetID() const
 Transform GameObject::GetTransform() const
 {
 	return _transform;
+}
+
+UserDBIndex GameObject::GetOwnerID() const
+{
+	return _ownerID;
 }
 
 const Transform* GameObject::GetTransformPtr() const
@@ -64,11 +71,6 @@ UINT GameObject::GetTransformedModel(Vertex* out_vertices)
 	return _model.numVertices;
 }
 
-UINT GameObject::GetColliderSize() const
-{
-	return _colliderSize;
-}
-
 BOOL GameObject::UpdateFrom(const GameObject* pOther)
 {
 	if (_id.equals(pOther->_id)) {
@@ -98,16 +100,6 @@ BOOL GameObject::IsDirty()
 	return _dirty;
 }
 
-void GameObject::Respawn()
-{
-	if (!_isActivatable) {
-		__debugbreak();
-	}
-	_isAlive = true;
-	_transform = { 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f };
-	_hitTick = 0;
-}
-
 void GameObject::OnHit(ULONGLONG currentTick)
 {
 	if (_hitTick == 0) {
@@ -115,8 +107,33 @@ void GameObject::OnHit(ULONGLONG currentTick)
 	}
 }
 
+void GameObject::OnRespawn()
+{
+	if (!_isActivatable) {
+		__debugbreak();
+	}
+	_isAlive = true;
+	_transform = { 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f };
+	_hitTick = 0;
+	OnUpdateTransform();
+}
+
 BOOL GameObject::IsDestroyed(ULONGLONG currentTick) const
 {
 	return !_isActivatable && (!_isAlive || _hitTick != 0);
+}
+
+void GameObject::Respawn()
+{
+	OnRespawn();
+}
+
+void GameObject::AttachCollider(Collider* pCollider)
+{
+	if (_pCollider != nullptr) {
+		__debugbreak();
+	}
+
+	_pCollider = pCollider;
 }
 
