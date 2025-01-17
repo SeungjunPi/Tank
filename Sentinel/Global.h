@@ -5,7 +5,7 @@
 
 class NetCore;
 class IJunDB;
-class CollisionManager;
+class ICollisionManager;
 class PlayerManager;
 class ObjectManager;
 
@@ -20,7 +20,7 @@ extern ULONGLONG g_currentGameTick;
 extern ULONGLONG g_previousGameTick;
 
 extern IJunDB* g_pJunDB;
-extern CollisionManager* g_pCollisionManager;
+extern ICollisionManager* g_pCollisionManager;
 extern PlayerManager g_playerManager;
 extern ObjectManager g_objectManager;
 

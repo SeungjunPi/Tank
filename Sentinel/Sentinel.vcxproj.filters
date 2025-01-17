@@ -31,9 +31,6 @@
     <Filter Include="Static Data">
       <UniqueIdentifier>{80d4aaa3-7e59-40db-9fb9-8ac49a183c9b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Collision">
-      <UniqueIdentifier>{a51888bb-d98a-4144-8a05-d0f441f9505f}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameServer.cpp">
@@ -50,12 +47,6 @@
     </ClCompile>
     <ClCompile Include="Player.cpp">
       <Filter>Player</Filter>
-    </ClCompile>
-    <ClCompile Include="Collider.cpp">
-      <Filter>Collision</Filter>
-    </ClCompile>
-    <ClCompile Include="CollisionManager.cpp">
-      <Filter>Collision</Filter>
     </ClCompile>
     <ClCompile Include="DBStruct.cpp">
       <Filter>DB</Filter>
@@ -90,16 +81,13 @@
     <ClCompile Include="ObjectManager.cpp">
       <Filter>Game Object</Filter>
     </ClCompile>
+    <ClCompile Include="ICollisionManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameServer.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Collider.h">
-      <Filter>Collision</Filter>
-    </ClInclude>
-    <ClInclude Include="CollisionManager.h">
-      <Filter>Collision</Filter>
     </ClInclude>
     <ClInclude Include="DBStruct.h">
       <Filter>DB</Filter>
