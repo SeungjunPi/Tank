@@ -1,8 +1,8 @@
 #pragma once
 
-
-#include "SentinelPch.h"
-#include "GameStruct.h"
+#include "CollisionPch.h"
+#include "CollisionAlias.h"
+#include "GameMath.h"
 
 const ColliderID INVALID_COLLIDER_ID = 0xffff;
 const UINT16 MAX_SIMULTANEOUS_COLLISIONS = 3;
@@ -52,3 +52,4 @@ private:
 
 	BOOL IsAttatchedToGameObject() const { return _pObject != nullptr; }
 };
+

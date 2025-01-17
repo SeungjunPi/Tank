@@ -1,14 +1,17 @@
-#include "GameServer.h"
-#include "Global.h"
-#include "NetCore.h"
-#include "GameStruct.h"
+#include "SentinelPch.h"
 
-#include "PlayerManager.h"
-#include "ObjectManager.h"
-
+#include "Collider.h"
 #include "GameEvent.h"
-#include "Tank.h"
+#include "GameServer.h"
+#include "GameStruct.h"
+#include "Global.h"
+#include "ICollisionManager.h"
 #include "JunDB.h"
+#include "NetCore.h"
+#include "ObjectManager.h"
+#include "PlayerManager.h"
+#include "Tank.h"
+
 
 static BOOL s_isRunning = false;
 
@@ -34,6 +37,7 @@ void GameServer::Initialize()
 {
 	CreateNetCore(&g_pNetCore);
 	CreateJunDB(&g_pJunDB);
+	CreateCollisionManager(&g_pCollisionManager);
 
 	g_playerManager.Initiate(2048);
 	g_objectManager.Initiate();
@@ -58,7 +62,6 @@ void GameServer::Start()
 
 	g_pJunDB->Start(dbConnectionInfo, 1);
 
-	g_pCollisionManager = DNew CollisionManager;
 	
 	UINT32 senderID = 0;
 
@@ -136,8 +139,8 @@ void GameServer::CleanUp()
 	g_objectManager.Terminate();
 	delete[] g_sessionIds;
 	DeleteNetCore(g_pNetCore);
-	delete g_pCollisionManager;
 	TerminateJunDB(g_pJunDB);
+	DeleteCollisionManager(g_pCollisionManager);
 }
 
 void GameServer::Broadcast(BYTE* msg, int len)

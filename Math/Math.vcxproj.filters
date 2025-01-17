@@ -13,35 +13,14 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="pch">
-      <UniqueIdentifier>{462cf0d0-1f9d-4067-a484-4d71d1170e97}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CollisionPch.h">
-      <Filter>pch</Filter>
-    </ClInclude>
-    <ClInclude Include="CollisionAlias.h">
-      <Filter>pch</Filter>
-    </ClInclude>
-    <ClInclude Include="Collider.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CollisionManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ICollisionManager.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="GameMath.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Collider.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CollisionManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ICollisionManager.cpp">
+    <ClCompile Include="GameMath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
