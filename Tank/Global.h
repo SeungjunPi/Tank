@@ -6,6 +6,7 @@ class NetCore;
 class Tank;
 class AllocObjectManager;
 class ICollisionManager;
+class GameCamera;
 
 struct Score
 {
@@ -41,6 +42,8 @@ extern std::wstring g_userName;
 extern std::wstring g_password;
 
 extern ICollisionManager* g_pCollisionManager;
+
+extern GameCamera* g_pCamera;
 
 class Global
 {

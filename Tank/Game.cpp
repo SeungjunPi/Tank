@@ -13,6 +13,8 @@
 #include "ICollisionManager.h"
 #include "Collider.h"
 
+#include "Camera.h"
+
 static void s_ApplyKeyboardEvents(ULONGLONG tickDiff);
 static void s_ApplyObjectLogic(ULONGLONG tickDiff);
 static void s_SyncOwnTankTransform();
@@ -45,6 +47,8 @@ void Game::Initialize()
 	}
 
 	CreateCollisionManager(&g_pCollisionManager);
+
+	g_pCamera = DNew GameCamera;
 }
 
 void Game::CleanUp()
@@ -61,6 +65,7 @@ void Game::CleanUp()
 	ConsoleRenderer::Terminate();
 	KeyboardEventListener::Terminate();
 	g_objectManager.Terminate();
+	delete g_pCamera;
 }
 
 void Game::Start()
@@ -230,56 +235,6 @@ void s_CollideObjects()
 		GameObject* pGameObject = pCollider->GetAttachedObjectPtr();
 		pGameObject->OnHit(g_currentGameTick);
 	}
-
-	//// consider hit per projectile
-	//UINT32 projectileKeys[32];
-	//UINT32 otherObjectKeys[32];
-	//UINT32 numProjectiles;
-	//g_objectManager.GetKeys(GAME_OBJECT_TYPE_PROJECTILE, projectileKeys, &numProjectiles);
-	//for (int i = 0; i < numProjectiles; ++i) {
-	//	GameObject* pProjectile = g_objectManager.GetObjectPtrOrNull(GAME_OBJECT_TYPE_PROJECTILE, projectileKeys[i]);
-	//	if (pProjectile == nullptr) {
-	//		__debugbreak();
-	//	}
-
-	//	for (int j = 0; j <= (int)GAME_OBJECT_TYPE_OBSTACLE; ++j) {
-	//		UINT32 numObjects;
-	//		EGameObjectType kind = (EGameObjectType)j;
-	//		if (kind == GAME_OBJECT_TYPE_PROJECTILE) {
-	//			continue;
-	//		}
-
-	//		g_objectManager.GetKeys(kind, otherObjectKeys, &numObjects);
-
-	//		for (int k = 0; k < numObjects; ++k) {
-
-	//			GameObject* pOtherObj = g_objectManager.GetObjectPtrOrNull(kind, otherObjectKeys[k]);
-	//			if (pOtherObj == nullptr) {
-	//				__debugbreak();
-	//			}
-
-	//			if (!pOtherObj->IsAlive()) {
-	//				continue;
-	//			}
-
-	//			Vector3 projectilePosition = pProjectile->GetPosition();
-	//			Vector3 otherObjPosition = pOtherObj->GetPosition();
-	//			float distanceSquared = Vector3::DistanceSquared(projectilePosition, otherObjPosition);
-
-	//			float collisionTolerance = pProjectile->GetColliderSize() + pOtherObj->GetColliderSize();
-
-	//			if (distanceSquared <= collisionTolerance * collisionTolerance) {
-	//				pProjectile->OnHit(currentTick);
-	//				pOtherObj->OnHit(currentTick);
-	//			}
-	//		}
-	//	}
-	//	
-	//	
-	//}
-
-
-	
 }
 
 BOOL s_IsShootable()

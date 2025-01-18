@@ -5,6 +5,7 @@
 #include "Collider.h"
 #include "ICollisionManager.h"
 #include "AllocObjectManager.h"
+#include "Camera.h"
 
 const float VELOCITY_WEIGHT = 0.75f;
 const float Tank::COLLIDER_RADIUS = 1.0f;
@@ -260,6 +261,9 @@ void Tank::OnHit(ULONGLONG currentTick)
 void Tank::OnUpdateTransform()
 {
 	_pCollider->UpdateCenterPosition(&_transform.Position);
+	if (g_playerId == _ownerID) {
+		g_pCamera->UpdateTransf(&_transform);
+	}
 }
 
 void Tank::OnRespawn()

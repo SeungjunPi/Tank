@@ -31,6 +31,9 @@
     <Filter Include="login">
       <UniqueIdentifier>{4ee3364b-5559-4184-9058-fc5f74219801}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Player">
+      <UniqueIdentifier>{216bdc60-be59-4baa-bc03-aeb10cba4da4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -78,6 +81,9 @@
     <ClCompile Include="TankAliases.h">
       <Filter>pch</Filter>
     </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Player</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">
@@ -121,6 +127,9 @@
     </ClInclude>
     <ClInclude Include="GameEvent.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Player</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -30,6 +30,8 @@ std::wstring g_password;
 
 ICollisionManager* g_pCollisionManager;
 
+GameCamera* g_pCamera;
+
 void Global::Initiate()
 {
 }

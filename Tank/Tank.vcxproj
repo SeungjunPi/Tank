@@ -71,8 +71,9 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>$(SolutionDir)..\bin\Debug;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)..\NetCore\;$(SolutionDir)..\Collision\;$(SolutionDir)..\Math\;$(SolutionDir)..\DataStruct\</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <IncludePath>
+    </IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -118,7 +119,7 @@
       <AdditionalDependencies>$(SolutionDir)..\NetCore\x64\Debug\NetCore.lib;$(SolutionDir)..\DataStruct\x64\Debug\DataStruct.lib;$(SolutionDir)..\Collision\x64\Debug\Collision.lib;$(SolutionDir)..\Math\x64\Debug\Math.lib;$(CoreLibraryDependencies);$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
-      <PerUserRedirection>true</PerUserRedirection>
+      <PerUserRedirection>false</PerUserRedirection>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(OutDir)*.*" "$(SolutionDir)..\bin\Debug"</Command>
@@ -142,6 +143,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AllocObjectManager.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ConsoleRenderer.cpp" />
     <ClCompile Include="DotObject.cpp" />
     <ClCompile Include="Game.cpp" />
@@ -159,6 +161,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AllocObjectManager.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="ConsoleRenderer.h" />
     <ClInclude Include="DotObject.h" />
     <ClInclude Include="Game.h" />
