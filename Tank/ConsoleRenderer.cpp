@@ -7,6 +7,7 @@
 #include "ConsoleRenderer.h"
 #include "GameObject.h"
 #include "ObjectManager.h"
+#include "Camera.h"
 
 AllocObjectManager* ConsoleRenderer::_pAllocObjManager = nullptr;
 
@@ -190,6 +191,7 @@ void ConsoleRenderer::DrawObjects()
 	UINT32 countObjects = 0;
 	UINT32 keys[128];
 
+	Vector3 cameraPos = g_pCamera->GetPosition();
 
 	int objectKindMax = (int)GAME_OBJECT_TYPE_OBSTACLE;
 	for (int i = 0; i < objectKindMax; ++i) {
@@ -212,7 +214,7 @@ void ConsoleRenderer::DrawObjects()
 
 			Vertex* pVertex = s_vertices;
 			for (UINT k = 0; k < numVectors; ++k) {
-				s_Draw((SHORT)roundf(pVertex->v.x), (SHORT)roundf(pVertex->v.y), pVertex->c);
+				s_Draw((SHORT)roundf(pVertex->v.x - cameraPos.x), (SHORT)roundf(pVertex->v.y) - cameraPos.y, pVertex->c);
 				pVertex++;
 			}
 		}

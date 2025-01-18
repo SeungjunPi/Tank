@@ -3,12 +3,14 @@
 #include "GameObject.h"
 
 
-
+class Collider;
 
 class Tank : public GameObject
 {
 public:
-	Tank(ObjectID id);
+	static const float COLLIDER_RADIUS;
+
+	Tank(ObjectID id, UserDBIndex ownerID);
 	Tank() = default;
 	~Tank();
 
@@ -31,13 +33,21 @@ public:
 	void GetTurretInfo(Vector3* out_position, Vector3* out_direction) const;
 	void GetTurretInfo(Transform* out_transform) const;
 
-	void OnFrame(ULONGLONG tickDiff) override;
+	virtual BOOL IsDestroyed(ULONGLONG currentTick) const override;
 
+	virtual void OnFrame(ULONGLONG tickDiff) override;
 	virtual void OnHit(ULONGLONG currentTick) override;
+	virtual void OnUpdateTransform() override;
+	virtual void OnRespawn() override;
+
+	void OnHitByProjectile(ULONGLONG currentTick);
+	
 
 private:
 	Vector3 _forwardDirection;
 	UserDBIndex _ownerId = 0;
+
+	Transform _prevTransform = { 0, };
 
 	bool _isMovingFoward = false;
 	bool _isMovingBackward = false;

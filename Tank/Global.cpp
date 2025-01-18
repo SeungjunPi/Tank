@@ -5,6 +5,7 @@
 #include "NetCore.h"
 #include "Tank.h"
 #include "AllocObjectManager.h"
+#include "ICollisionManager.h"
 
 
 ULONGLONG g_previousGameTick = 0;
@@ -26,6 +27,10 @@ Score g_score = { 0, };
 
 std::wstring g_userName;
 std::wstring g_password;
+
+ICollisionManager* g_pCollisionManager;
+
+GameCamera* g_pCamera;
 
 void Global::Initiate()
 {

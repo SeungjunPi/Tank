@@ -19,9 +19,9 @@ public:
 	void Initiate();
 	void Terminate();
 
-	Tank* CreateTank(ObjectID objectID);
-	Projectile* CreateProjectile(ObjectID objectID, Transform* pInitTransform);
-	Obstacle* CreateObstacle(ObjectID objectID, Transform* pInitTransform);
+	Tank* CreateTank(ObjectID objectID, UserDBIndex ownerIndex);
+	Projectile* CreateProjectile(ObjectID objectID, Transform* pInitTransform, UserDBIndex ownerIndex);
+	Obstacle* CreateObstacle(ObjectID objectID, Transform* pInitTransform, UserDBIndex ownerIndex);
 
 	void RemoveObject(EGameObjectType objectKind, ObjectKey objectKey);
 	void RemoveObject(ObjectID objectID);

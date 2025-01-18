@@ -2,11 +2,16 @@
 #include "StaticData.h"
 #include "Global.h"
 #include "GameEvent.h"
+#include "Collider.h"
+#include "ICollisionManager.h"
+#include "AllocObjectManager.h"
+#include "Camera.h"
 
 const float VELOCITY_WEIGHT = 0.75f;
+const float Tank::COLLIDER_RADIUS = 1.0f;
 
-Tank::Tank(ObjectID id)
-	: GameObject(id, true)
+Tank::Tank(ObjectID id, UserDBIndex ownerID)
+	: GameObject(id, ownerID, true)
 {
 	_forwardDirection = { .0f, -1.0f, .0f };
 
@@ -134,6 +139,7 @@ void Tank::MoveForward(ULONGLONG tickDiff)
 	_transform.Position.y = _transform.Position.y + _forwardDirection.y * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
 	_transform.Position.z = _transform.Position.z + _forwardDirection.z * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
 	_dirty = true;
+	OnUpdateTransform();
 }
 
 void Tank::MoveBackward(ULONGLONG tickDiff)
@@ -143,6 +149,7 @@ void Tank::MoveBackward(ULONGLONG tickDiff)
 	_transform.Position.y = _transform.Position.y - _forwardDirection.y * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
 	_transform.Position.z = _transform.Position.z - _forwardDirection.z * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
 	_dirty = true;
+	OnUpdateTransform();
 }
 
 void Tank::RotateRight(ULONGLONG tickDiff)
@@ -153,6 +160,7 @@ void Tank::RotateRight(ULONGLONG tickDiff)
 	_transform.Rotation = Quaternion::RotateZP(radian, _transform.Rotation);
 	
 	_dirty = true;
+	OnUpdateTransform();
 }
 
 void Tank::RotateLeft(ULONGLONG tickDiff)
@@ -163,6 +171,7 @@ void Tank::RotateLeft(ULONGLONG tickDiff)
 	_transform.Rotation = Quaternion::RotateZM(radian, _transform.Rotation);
 
 	_dirty = true;
+	OnUpdateTransform();
 }
 
 void Tank::GetTurretInfo(Vector3* out_position, Vector3* out_direction) const
@@ -196,9 +205,16 @@ void Tank::GetTurretInfo(Transform* out_transform) const
 	out_transform->Rotation = _transform.Rotation;
 }
 
+BOOL Tank::IsDestroyed(ULONGLONG currentTick) const
+{
+	return !_isActivatable && (!_isAlive || _hitTick != 0);
+}
+
 void Tank::OnFrame(ULONGLONG tickDiff)
 {
 	if (IsAlive()) {
+		memcpy(&_prevTransform, &_transform, sizeof(Transform));
+
 		if (_isMovingFoward) {
 			MoveForward(tickDiff);
 		}
@@ -220,11 +236,51 @@ void Tank::OnFrame(ULONGLONG tickDiff)
 
 void Tank::OnHit(ULONGLONG currentTick)
 {
+	ColliderID colliderIDs[MAX_SIMULTANEOUS_COLLISIONS];
+	UINT16 countColliders = _pCollider->GetCollidingIDs(colliderIDs);
+	for (UINT16 i = 0; i < countColliders; ++i) {
+		Collider* pOtherCollider = g_pCollisionManager->GetAttachedColliderPtr(colliderIDs[i]);
+		ObjectID otherObjID = pOtherCollider->GetAttachedObjectPtr()->GetID();
+		GameObject* pOtherObj = g_objectManager.GetObjectPtrOrNull(otherObjID);
+		switch (otherObjID.type) {
+		case GAME_OBJECT_TYPE_PROJECTILE:
+			// Do Nothing yet..
+			break;
+		case GAME_OBJECT_TYPE_TANK:
+			memcpy(&_transform, &_prevTransform, sizeof(Transform));
+			_pCollider->UpdateCenterPosition(&_transform.Position);
+			break;
+		case GAME_OBJECT_TYPE_OBSTACLE:
+			// Do Nothing yet..
+			break;
+		}
+	}
+
+}
+
+void Tank::OnUpdateTransform()
+{
+	_pCollider->UpdateCenterPosition(&_transform.Position);
+	if (g_playerId == _ownerID) {
+		g_pCamera->UpdateTransf(&_transform);
+	}
+}
+
+void Tank::OnRespawn()
+{
+	GameObject::OnRespawn();
+	_hitTick = 0;
+	_pCollider->Activate();
+}
+
+void Tank::OnHitByProjectile(ULONGLONG currentTick)
+{
 	_hitTick = currentTick;
 	_isAlive = false;
 	_isMovingFoward = false;
 	_isMovingBackward = false;
 	_isRotatingLeft = false;
 	_isRotatingRight = false;
+	_pCollider->Deactivate();
 }
 

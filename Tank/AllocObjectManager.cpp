@@ -1,5 +1,7 @@
 #include "AllocObjectManager.h"
 #include "GameObject.h"
+#include "Global.h"
+#include "ICollisionManager.h"
 
 static const int MAX_NUM_OBJECT = 4096;
 
@@ -43,29 +45,40 @@ void AllocObjectManager::Terminate()
 	_tankTable.Terminate();
 }
 
-Tank* AllocObjectManager::CreateTank(ObjectID objectID)
+Tank* AllocObjectManager::CreateTank(ObjectID objectID, UserDBIndex ownerIndex)
 {
-	Tank* pTank = DNew Tank;
-	pTank->Initiate(objectID);
-	_tankTable.Insert(objectID.key, pTank);
+	Tank* pTank = DNew Tank(objectID, ownerIndex);
+	//pTank = DNew Tank(objectID, ownerIndex);
+
+	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(Tank::COLLIDER_RADIUS, pTank);
+	pTank->AttachCollider(pCollider);
+
+	bool res = _tankTable.Insert(objectID.key, pTank);
+	if (!res) {
+		__debugbreak();
+	}
 	return pTank;
 }
 
-Projectile* AllocObjectManager::CreateProjectile(ObjectID objectID, Transform* pInitTransform)
+Projectile* AllocObjectManager::CreateProjectile(ObjectID objectID, Transform* pInitTransform, UserDBIndex ownerIndex)
 {
 	Projectile* pProjectile = DNew Projectile();
-	pProjectile->Initiate(objectID, pInitTransform);
+	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(Projectile::COLLIDER_RADIUS, pProjectile);
+	pProjectile->AttachCollider(pCollider);
+	pProjectile->Initiate(objectID, pInitTransform, ownerIndex);
 	_projectileTable.Insert(objectID.key, pProjectile);
 	return pProjectile;
 }
 
-Obstacle* AllocObjectManager::CreateObstacle(ObjectID objectID, Transform* pInitTransform)
+Obstacle* AllocObjectManager::CreateObstacle(ObjectID objectID, Transform* pInitTransform, UserDBIndex ownerIndex)
 {
-	
+	/*
 	Obstacle* pObstacle = DNew Obstacle();
 	pObstacle->Initiate(objectID, pInitTransform);
 	_obstacleTable.Insert(objectID.key, pObstacle);
-	return pObstacle;
+	return pObstacle;*/
+
+	return nullptr;
 }
 
 void AllocObjectManager::RemoveObject(EGameObjectType objectKind, ObjectKey objectKey)
@@ -73,14 +86,26 @@ void AllocObjectManager::RemoveObject(EGameObjectType objectKind, ObjectKey obje
 	void* ptr = nullptr;
 	switch (objectKind) {
 	case GAME_OBJECT_TYPE_TANK:
+	{
 		ptr = _tankTable.Pop(objectKey);
+		Tank* pTank = (Tank*)ptr;
+		Collider* pCollider = pTank->GetColliderPtr();
+		g_pCollisionManager->ReturnCollider(pCollider);
 		break;
+	}
 	case GAME_OBJECT_TYPE_PROJECTILE:
+	{
 		ptr = _projectileTable.Pop(objectKey);
+		Projectile* pProjectile = (Projectile*)ptr;
+		Collider* pCollider = pProjectile->GetColliderPtr();
+		g_pCollisionManager->ReturnCollider(pCollider);
 		break;
+	}
 	case GAME_OBJECT_TYPE_OBSTACLE:
+	{
 		ptr = _obstacleTable.Pop(objectKey);
 		break;
+	}
 	}
 
 	if (ptr != nullptr) {

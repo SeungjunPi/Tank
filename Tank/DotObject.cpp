@@ -8,8 +8,8 @@ DotObject::DotObject()
 	_model = MODEL_DOT;
 }
 
-DotObject::DotObject(ObjectID id)
-	: GameObject(id)
+DotObject::DotObject(ObjectID id, UserDBIndex ownerID)
+	: GameObject(id, ownerID)
 {
 	_model = MODEL_DOT;
 }

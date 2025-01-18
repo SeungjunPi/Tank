@@ -2,6 +2,7 @@
 
 #include "GameStruct.h"
 #include "StaticData.h"
+#include "GameMath.h"
 
 const int ID_LENGTH_MAX = 16;
 const int PW_LENGTH_MAX = 16;

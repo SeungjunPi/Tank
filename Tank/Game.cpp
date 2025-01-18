@@ -10,15 +10,16 @@
 
 #include "NetCore.h"
 #include "GameEvent.h"
+#include "ICollisionManager.h"
+#include "Collider.h"
 
-void CallbackSessionCreate(UINT32 sessionId);
-void CallbackSessionDisconnected(UINT32 sessionId);
+#include "Camera.h"
 
 static void s_ApplyKeyboardEvents(ULONGLONG tickDiff);
 static void s_ApplyObjectLogic(ULONGLONG tickDiff);
 static void s_SyncOwnTankTransform();
 static void s_HandleNetEvents();
-static void s_CollideObjects(ULONGLONG curTick);
+static void s_CollideObjects();
 static BOOL s_IsShootable();
 static void s_CleanupDestroyedObjects(ULONGLONG curTick);
 
@@ -45,28 +46,33 @@ void Game::Initialize()
 		__debugbreak();
 	}
 
-	g_serverId = g_pNetCore->ConnectTo("127.0.0.1", 30283);
+	CreateCollisionManager(&g_pCollisionManager);
+
+	g_pCamera = DNew GameCamera;
 }
 
 void Game::CleanUp()
 {
 	s_isRunning = false;
-
 	// Todo: disconnect to server
 
 	
 	g_pNetCore->EndNetCore();
-	
+
+	DeleteCollisionManager(g_pCollisionManager);
 	DeleteNetCore(g_pNetCore);
+	
 	ConsoleRenderer::Terminate();
 	KeyboardEventListener::Terminate();
 	g_objectManager.Terminate();
+	delete g_pCamera;
 }
 
 void Game::Start()
 {
-	// Send Login
+	g_serverId = g_pNetCore->ConnectTo("127.0.0.1", 30283);
 
+	// Send Login
 	GamePacket::SendLogin(g_userName, g_password);
 
 	g_previousGameTick = GetTickCount64();
@@ -88,7 +94,7 @@ void Game::Start()
 			s_ApplyObjectLogic(gameTickDiff);
 
 			// Apply Physics(Boundary Yank, Hit, etc...)
-			//s_CollideObjects(currentTick);
+			s_CollideObjects();
 
 			g_previousGameTick = g_currentGameTick;
 		}
@@ -106,14 +112,6 @@ void Game::Shutdown()
 void Game::End()
 {
 	
-}
-
-void CallbackSessionCreate(UINT32 sessionId)
-{
-}
-
-void CallbackSessionDisconnected(UINT32 sessionId)
-{
 }
 
 void s_ApplyKeyboardEvents(ULONGLONG tickDiff)
@@ -224,57 +222,19 @@ void s_HandleNetEvents()
 	g_pNetCore->EndHandleReceivedMessages();
 }
 
-void s_CollideObjects(ULONGLONG currentTick)
+void s_CollideObjects()
 {
-	// consider hit per projectile
-	UINT32 projectileKeys[32];
-	UINT32 otherObjectKeys[32];
-	UINT32 numProjectiles;
-	g_objectManager.GetKeys(GAME_OBJECT_TYPE_PROJECTILE, projectileKeys, &numProjectiles);
-	for (int i = 0; i < numProjectiles; ++i) {
-		GameObject* pProjectile = g_objectManager.GetObjectPtrOrNull(GAME_OBJECT_TYPE_PROJECTILE, projectileKeys[i]);
-		if (pProjectile == nullptr) {
-			__debugbreak();
+	ColliderID* pColliderIDs = nullptr;
+	UINT32 countCollidedObjects = g_pCollisionManager->DetectCollision(&pColliderIDs);
+	for (UINT32 i = 0; i < countCollidedObjects; ++i) {
+		Collider* pCollider = g_pCollisionManager->GetAttachedColliderPtr(pColliderIDs[i]);
+		if (pCollider == nullptr) {
+			continue;
 		}
 
-		for (int j = 0; j <= (int)GAME_OBJECT_TYPE_OBSTACLE; ++j) {
-			UINT32 numObjects;
-			EGameObjectType kind = (EGameObjectType)j;
-			if (kind == GAME_OBJECT_TYPE_PROJECTILE) {
-				continue;
-			}
-
-			g_objectManager.GetKeys(kind, otherObjectKeys, &numObjects);
-
-			for (int k = 0; k < numObjects; ++k) {
-
-				GameObject* pOtherObj = g_objectManager.GetObjectPtrOrNull(kind, otherObjectKeys[k]);
-				if (pOtherObj == nullptr) {
-					__debugbreak();
-				}
-
-				if (!pOtherObj->IsAlive()) {
-					continue;
-				}
-
-				Vector3 projectilePosition = pProjectile->GetPosition();
-				Vector3 otherObjPosition = pOtherObj->GetPosition();
-				float distanceSquared = Vector3::DistanceSquared(projectilePosition, otherObjPosition);
-
-				float collisionTolerance = pProjectile->GetColliderSize() + pOtherObj->GetColliderSize();
-
-				if (distanceSquared <= collisionTolerance * collisionTolerance) {
-					pProjectile->OnHit(currentTick);
-					pOtherObj->OnHit(currentTick);
-				}
-			}
-		}
-		
-		
+		GameObject* pGameObject = pCollider->GetAttachedObjectPtr();
+		pGameObject->OnHit(g_currentGameTick);
 	}
-
-
-	
 }
 
 BOOL s_IsShootable()
@@ -301,11 +261,11 @@ void s_CleanupDestroyedObjects(ULONGLONG curTick)
 	UINT32 numObj;
 
 	for (int i = 0; i < (int)GAME_OBJECT_TYPE_MAX; ++i) {
-		EGameObjectType kind = (EGameObjectType)i;
-		g_objectManager.GetKeys(kind, keys, &numObj);
+		EGameObjectType type = (EGameObjectType)i;
+		g_objectManager.GetKeys(type, keys, &numObj);
 
 		for (int i = 0; i < numObj; ++i) {
-			GameObject* pObj = g_objectManager.GetObjectPtrOrNull(kind, keys[i]);
+			GameObject* pObj = g_objectManager.GetObjectPtrOrNull(type, keys[i]);
 			if (pObj == nullptr) {
 				__debugbreak();
 			}
@@ -314,7 +274,7 @@ void s_CleanupDestroyedObjects(ULONGLONG curTick)
 				if (pObj == g_pPlayerTank) {
 					g_pPlayerTank = nullptr;
 				}
-				g_objectManager.RemoveObject(kind, keys[i]);
+				g_objectManager.RemoveObject(type, keys[i]);
 			}
 		}
 
