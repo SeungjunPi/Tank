@@ -33,6 +33,8 @@ public:
 	void GetTurretInfo(Vector3* out_position, Vector3* out_direction) const;
 	void GetTurretInfo(Transform* out_transform) const;
 
+	void ResetHP();
+
 	virtual BOOL IsDestroyed(ULONGLONG currentTick) const override;
 
 	virtual void OnFrame(ULONGLONG tickDiff) override;
@@ -48,6 +50,8 @@ private:
 	UserDBIndex _ownerId = 0;
 
 	Transform _prevTransform = { 0, };
+
+	int _hp = 0;
 
 	bool _isMovingFoward = false;
 	bool _isMovingBackward = false;

@@ -48,7 +48,6 @@ void AllocObjectManager::Terminate()
 Tank* AllocObjectManager::CreateTank(ObjectID objectID, UserDBIndex ownerIndex)
 {
 	Tank* pTank = DNew Tank(objectID, ownerIndex);
-	//pTank = DNew Tank(objectID, ownerIndex);
 
 	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(Tank::COLLIDER_RADIUS, pTank);
 	pTank->AttachCollider(pCollider);

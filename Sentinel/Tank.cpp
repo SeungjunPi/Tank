@@ -12,6 +12,7 @@ const float Tank::COLLIDER_RADIUS = 1.0f;
 Tank::Tank(ObjectID id, UserDBIndex ownerId)
 	: GameObject(id, ownerId, true)
 {
+	ResetHP();
 	_forwardDirection = { .0f, -1.0f, .0f };
 }
 
@@ -21,6 +22,7 @@ Tank::~Tank()
 
 void Tank::Initiate(ObjectID id)
 {
+	ResetHP();
 	_id = id;
 	_isActivatable = true;
 	_forwardDirection = { .0f, -1.0f, .0f };
@@ -151,6 +153,11 @@ void Tank::GetTurretInfo(Vector3* out_position, Vector3* out_direction) const
 	memcpy(out_direction, &forwardDirection, sizeof(Vector3));
 }
 
+void Tank::ResetHP()
+{
+	_hp = 5;
+}
+
 void Tank::OnFrame(ULONGLONG tickDiff)
 {
 	if (IsAlive()) {
@@ -198,15 +205,20 @@ void Tank::OnHit(ULONGLONG currentTick)
 		switch (otherObjID.type) {
 		case GAME_OBJECT_TYPE_PROJECTILE:
 			// hit
-			_pCollider->Deactivate();
-			_hitTick = currentTick;
-			_isAlive = false;
-			_isMovingFoward = false;
-			_isMovingBackward = false;
-			_isRotatingLeft = false;
-			_isRotatingRight = false;
-			g_playerManager.IncreaseDeathCount(_ownerIndex);
-			GamePacket::BroadcastTankHit(_id, otherObjID, pOtherObj->GetOwnerId(), _ownerIndex);
+			if (_hp > 0) {
+				if (--_hp == 0) {
+					_pCollider->Deactivate();
+					_hitTick = currentTick;
+					_isAlive = false;
+					_isMovingFoward = false;
+					_isMovingBackward = false;
+					_isRotatingLeft = false;
+					_isRotatingRight = false;
+					g_playerManager.IncreaseDeathCount(_ownerIndex);
+				}
+				g_playerManager.IncreaseHitCount(_ownerIndex);
+				GamePacket::BroadcastTankHit(_id, otherObjID, pOtherObj->GetOwnerId(), _ownerIndex);
+			}
 			break;
 		case GAME_OBJECT_TYPE_TANK:
 			memcpy(&_transform, &_prevTransform, sizeof(Transform));
@@ -229,6 +241,7 @@ void Tank::OnRespawn()
 	GameObject::OnRespawn();
 	_hitTick = 0;
 	_pCollider->Activate();
+	ResetHP();
 }
 
 BOOL Tank::IsTransformCloseEnough(const Transform* other)

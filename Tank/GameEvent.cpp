@@ -287,7 +287,7 @@ void GamePacket::HandleTankHit(BYTE* pGameEvent, UINT32 senderId)
 	Tank* pTank = (Tank*)g_objectManager.GetObjectPtrOrNull(pScTankHit->tankId);
 	
 	if (g_playerId == pScTankHit->target) {
-		g_score.death++;
+		g_score.hit++;
 	}
 
 	if (g_playerId == pScTankHit->shooter) {

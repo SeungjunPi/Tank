@@ -14,9 +14,11 @@ Tank::Tank(ObjectID id, UserDBIndex ownerID)
 	: GameObject(id, ownerID, true)
 {
 	_forwardDirection = { .0f, -1.0f, .0f };
-
+	
 	_model = g_pTankModel;
 	_colliderSize = 1;
+
+	ResetHP();
 }
 
 Tank::~Tank()
@@ -32,6 +34,7 @@ void Tank::Initiate(ObjectID id)
 	_model = g_pTankModel;
 	_colliderSize = 1;
 	_hitTick = 0;
+	ResetHP();
 }
 
 void Tank::Terminate()
@@ -205,6 +208,11 @@ void Tank::GetTurretInfo(Transform* out_transform) const
 	out_transform->Rotation = _transform.Rotation;
 }
 
+void Tank::ResetHP()
+{
+	_hp = 5;
+}
+
 BOOL Tank::IsDestroyed(ULONGLONG currentTick) const
 {
 	return !_isActivatable && (!_isAlive || _hitTick != 0);
@@ -271,16 +279,24 @@ void Tank::OnRespawn()
 	GameObject::OnRespawn();
 	_hitTick = 0;
 	_pCollider->Activate();
+	ResetHP();
 }
 
 void Tank::OnHitByProjectile(ULONGLONG currentTick)
 {
-	_hitTick = currentTick;
-	_isAlive = false;
-	_isMovingFoward = false;
-	_isMovingBackward = false;
-	_isRotatingLeft = false;
-	_isRotatingRight = false;
-	_pCollider->Deactivate();
+	if (_hp > 0) {
+		if (--_hp == 0) {
+			_hitTick = currentTick;
+			_isAlive = false;
+			_isMovingFoward = false;
+			_isMovingBackward = false;
+			_isRotatingLeft = false;
+			_isRotatingRight = false;
+			_pCollider->Deactivate();
+			if (g_playerId == _ownerID) {
+				g_score.death++;
+			}
+		}
+	}
 }
 

@@ -24,6 +24,8 @@ public:
 
 	void GetTurretInfo(Vector3* out_position, Vector3* out_direction) const;
 
+	void ResetHP();
+
 	void OnFrame(ULONGLONG tickDiff) override;
 
 	virtual BOOL IsDestroyed(ULONGLONG currentTick) const;
@@ -53,6 +55,6 @@ private:
 	void RotateRight(ULONGLONG tickDiff);
 	void RotateLeft(ULONGLONG tickDiff);
 
-	
+	int _hp = 0;
 
 };
