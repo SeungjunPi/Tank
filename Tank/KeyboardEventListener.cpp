@@ -35,7 +35,7 @@ void KeyboardEventListener::ProcessInputs()
 		// Todo: 윈도우 비활성화 시 모든 입력을 비활성화하게 변경, 필요시 OnKeyUp을 호출하게 변경 
 		return;
 	}
-	if (GetAsyncKeyState('W') || GetAsyncKeyState('w')) {
+	if (GetAsyncKeyState(VK_UP)) {
 		if (!inputs.up) {
 			OnKeyDown_W();
 		}
@@ -48,7 +48,7 @@ void KeyboardEventListener::ProcessInputs()
 		}
 	}
 
-	if (GetAsyncKeyState('S') || GetAsyncKeyState('s')) {
+	if (GetAsyncKeyState(VK_DOWN)) {
 		if (!inputs.down) {
 			OnKeyDown_S();
 		}
@@ -61,7 +61,7 @@ void KeyboardEventListener::ProcessInputs()
 		}
 	}
 
-	if (GetAsyncKeyState('A') || GetAsyncKeyState('a')) {
+	if (GetAsyncKeyState(VK_LEFT)) {
 		if (!inputs.left) {
 			OnKeyDown_A();
 		}
@@ -74,7 +74,7 @@ void KeyboardEventListener::ProcessInputs()
 		}
 	}
 
-	if (GetAsyncKeyState('D') || GetAsyncKeyState('d')) {
+	if (GetAsyncKeyState(VK_RIGHT)) {
 		if (!inputs.right) {
 			OnKeyDown_D();
 		}

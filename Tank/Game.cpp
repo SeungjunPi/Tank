@@ -240,7 +240,7 @@ void s_CollideObjects()
 BOOL s_IsShootable()
 {
 	static ULONGLONG lastShoot = 0;
-	const static ULONGLONG SHOOT_COOL_DOWN = 500;
+	const static ULONGLONG SHOOT_COOL_DOWN = 250;
 
 	if (g_pPlayerTank == nullptr) {
 		return false;

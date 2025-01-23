@@ -7,7 +7,7 @@
 #include "AllocObjectManager.h"
 #include "ICollisionManager.h"
 
-const float VELOCITY_WEIGHT = 1.5f;
+const float POSITION_VELOCITY_WEIGHT = 1.5f;
 const float Projectile::COLLIDER_RADIUS = 1.0f;
 
 void Projectile::Initiate(ObjectID id, Transform* transform, UserDBIndex ownerID)
