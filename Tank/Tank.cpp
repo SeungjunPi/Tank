@@ -10,6 +10,7 @@
 const float POSITION_VELOCITY_WEIGHT = 0.5f;
 const float ROTATION_VELOCITY_WEIGHT = 0.25f;
 const float Tank::COLLIDER_RADIUS = 1.0f;
+const float Tank::MACHINE_GUN_DELAY = 0.25;
 
 Tank::Tank(ObjectID id, UserDBIndex ownerID)
 	: GameObject(id, ownerID, true)
@@ -60,6 +61,8 @@ void Tank::StartMove(EMOVEMENT movement)
 	default:
 		__debugbreak();
 	}
+
+	
 }
 
 void Tank::EndMove(EMOVEMENT movement)
@@ -209,6 +212,16 @@ void Tank::GetTurretInfo(Transform* out_transform) const
 	out_transform->Rotation = _transform.Rotation;
 }
 
+void Tank::OnFiringMachineGun(ULONGLONG currentTick)
+{
+	if (_lastMachineGunFiringTick + MACHINE_GUN_DELAY > currentTick) {
+		return;
+	}
+
+	_lastMachineGunFiringTick = currentTick;
+	// Send Fire
+}
+
 void Tank::ResetHP()
 {
 	_hp = 5;
@@ -221,24 +234,28 @@ BOOL Tank::IsDestroyed(ULONGLONG currentTick) const
 
 void Tank::OnFrame(ULONGLONG tickDiff)
 {
-	if (IsAlive()) {
-		memcpy(&_prevTransform, &_transform, sizeof(Transform));
-
-		if (_isMovingFoward) {
-			MoveForward(tickDiff);
-		}
-		if (_isMovingBackward) {
-			MoveBackward(tickDiff);
-		}
-		if (_isRotatingLeft) {
-			RotateLeft(tickDiff);
-		}
-		if (_isRotatingRight) {
-			RotateRight(tickDiff);
-		}
-
+	if (!IsAlive()) {
 		return;
 	}
+	memcpy(&_prevTransform, &_transform, sizeof(Transform));
+
+	if (_isMovingFoward) {
+		MoveForward(tickDiff);
+	}
+	if (_isMovingBackward) {
+		MoveBackward(tickDiff);
+	}
+	if (_isRotatingLeft) {
+		RotateLeft(tickDiff);
+	}
+	if (_isRotatingRight) {
+		RotateRight(tickDiff);
+	}
+
+	if (_flagFiringMachineGun) {
+		OnFiringMachineGun(g_currentGameTick);
+	}
+
 
 	return;
 }

@@ -118,60 +118,55 @@ void s_ApplyKeyboardEvents(ULONGLONG tickDiff)
 {
 	KeyboardEventListener::ProcessInputs();
 
-	if (KeyboardEventListener::inputs.escape) {
+	UINT64 pressedFlag;
+	UINT64 releasedFlag;
+	KeyboardEventListener::GetAndUpdateKeyboardMovementStatus(&pressedFlag, &releasedFlag);
+
+	if (pressedFlag & INPUT_FLAG_ESCAPE) {
 		s_isRunning = false;
 		return;
 	}
 
 	if (g_pPlayerTank != NULL) {
-		char startFlag;
-		char endFlag;
-		char movingFlag;
-		KeyboardEventListener::GetAndUpdateKeyboardMovementStatus(&startFlag, &endFlag, &movingFlag);
-		if (startFlag) {
-			if (startFlag & KEYBOARD_INPUT_FLAG_W) {
+		if (pressedFlag) {
+			if (pressedFlag & INPUT_FLAG_UP) {
 				g_pPlayerTank->StartMove(EMOVEMENT::FORWARD);
 			} 
-			if (startFlag & KEYBOARD_INPUT_FLAG_S) {
+			if (pressedFlag & INPUT_FLAG_DOWN) {
 				g_pPlayerTank->StartMove(EMOVEMENT::BACKWARD);
 			}
-			if (startFlag & KEYBOARD_INPUT_FLAG_A) {
+			if (pressedFlag & INPUT_FLAG_LEFT) {
 				g_pPlayerTank->StartRotate(EROTATION::LEFT);
 			}
-			if (startFlag & KEYBOARD_INPUT_FLAG_D) {
+			if (pressedFlag & INPUT_FLAG_RIGHT) {
 				g_pPlayerTank->StartRotate(EROTATION::RIGHT);
 			}
-			GamePacket::SendStartMove(g_pPlayerTank->GetTransformPtr(), startFlag);
+			GamePacket::SendStartMove(g_pPlayerTank->GetTransformPtr(), pressedFlag);
 			g_lastOwnTankSyncTick = g_currentGameTick;
 		}
 
-		if (endFlag) {
-			if (endFlag & KEYBOARD_INPUT_FLAG_W) {
-				g_pPlayerTank->EndMove(EMOVEMENT::FORWARD);
-			}
-			if (endFlag & KEYBOARD_INPUT_FLAG_S) {
-				g_pPlayerTank->EndMove(EMOVEMENT::BACKWARD);
-			}
-			if (endFlag & KEYBOARD_INPUT_FLAG_A) {
-				g_pPlayerTank->EndRotate(EROTATION::LEFT);
-			}
-			if (endFlag & KEYBOARD_INPUT_FLAG_D) {
-				g_pPlayerTank->EndRotate(EROTATION::RIGHT);
-			}
-			GamePacket::SendEndMove(g_pPlayerTank->GetTransformPtr(), endFlag);
-			g_lastOwnTankSyncTick = g_currentGameTick;
-		}
-
-		if (movingFlag) {
-			s_SyncOwnTankTransform();
-		}
-
-		if (KeyboardEventListener::inputs.shoot) {
+		if (pressedFlag & INPUT_FLAG_SPACE) {
 			if (s_IsShootable()) {
 				Transform transf = { 0.f, };
 				g_pPlayerTank->GetTurretInfo(&transf);
 				GamePacket::SendShoot(&transf);
 			}
+		}
+
+		if (releasedFlag) {
+			if (releasedFlag & INPUT_FLAG_UP) {
+				g_pPlayerTank->EndMove(EMOVEMENT::FORWARD);
+			}
+			if (releasedFlag & INPUT_FLAG_DOWN) {
+				g_pPlayerTank->EndMove(EMOVEMENT::BACKWARD);
+			}
+			if (releasedFlag & INPUT_FLAG_LEFT) {
+				g_pPlayerTank->EndRotate(EROTATION::LEFT);
+			}
+			if (releasedFlag & INPUT_FLAG_RIGHT) {
+				g_pPlayerTank->EndRotate(EROTATION::RIGHT);
+			}
+			GamePacket::SendEndMove(g_pPlayerTank->GetTransformPtr(), releasedFlag);
 		}
 	}
 }

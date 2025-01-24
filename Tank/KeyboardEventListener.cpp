@@ -6,10 +6,8 @@
 #include <thread>
 #include "KeyboardEventListener.h"
 
-
-KeyboardInputs KeyboardEventListener::inputs = { 0, };
-char KeyboardEventListener::_movingFlag = 0;
-char KeyboardEventListener::_prevMovingFlag = 0;
+UINT64 KeyboardEventListener::_crntInputFlag = 0;
+UINT64 KeyboardEventListener::_prevInputFlag = 0;
 
 
 
@@ -19,13 +17,17 @@ static HWND s_gameWindowHandle = nullptr;
 
 void KeyboardEventListener::Initiate()
 {
-	ZeroMemory(&inputs, sizeof(KeyboardInputs));
-	inputs.escape = false;
 	s_gameWindowHandle = GetForegroundWindow();
 }
 
 void KeyboardEventListener::Terminate()
 {
+}
+
+void KeyboardEventListener::ResetInputFlag()
+{
+	_prevInputFlag = _crntInputFlag;
+	_crntInputFlag = 0;
 }
 
 void KeyboardEventListener::ProcessInputs()
@@ -35,56 +37,35 @@ void KeyboardEventListener::ProcessInputs()
 		// Todo: 윈도우 비활성화 시 모든 입력을 비활성화하게 변경, 필요시 OnKeyUp을 호출하게 변경 
 		return;
 	}
+
+	
+
 	if (GetAsyncKeyState(VK_UP)) {
-		if (!inputs.up) {
-			OnKeyDown_W();
-		}
-		inputs.up = true;
+		_crntInputFlag |= KeyboardFlagEx::INPUT_FLAG_UP;
 	}
 	else {
-		if (inputs.up) {
-			OnKeyUp_W();
-			inputs.up = false;
-		}
+		_crntInputFlag &= (~KeyboardFlagEx::INPUT_FLAG_UP);
 	}
 
 	if (GetAsyncKeyState(VK_DOWN)) {
-		if (!inputs.down) {
-			OnKeyDown_S();
-		}
-		inputs.down = true;
+		_crntInputFlag |= KeyboardFlagEx::INPUT_FLAG_DOWN;
 	}
 	else {
-		if (inputs.down) {
-			OnKeyUp_S();
-			inputs.down = false;
-		}
+		_crntInputFlag &= (~KeyboardFlagEx::INPUT_FLAG_DOWN);
 	}
 
 	if (GetAsyncKeyState(VK_LEFT)) {
-		if (!inputs.left) {
-			OnKeyDown_A();
-		}
-		inputs.left = true;
+		_crntInputFlag |= KeyboardFlagEx::INPUT_FLAG_LEFT;
 	}
 	else {
-		if (inputs.left) {
-			OnKeyUp_A();
-			inputs.left = false;
-		}
+		_crntInputFlag &= (~KeyboardFlagEx::INPUT_FLAG_LEFT);
 	}
 
 	if (GetAsyncKeyState(VK_RIGHT)) {
-		if (!inputs.right) {
-			OnKeyDown_D();
-		}
-		inputs.right = true;
+		_crntInputFlag |= KeyboardFlagEx::INPUT_FLAG_LEFT;
 	}
 	else {
-		if (inputs.right) {
-			OnKeyUp_D();
-			inputs.right = false;
-		}
+		_crntInputFlag &= (~KeyboardFlagEx::INPUT_FLAG_LEFT);
 	}
 
 	if (GetAsyncKeyState('I') || GetAsyncKeyState('i')) {
@@ -102,97 +83,27 @@ void KeyboardEventListener::ProcessInputs()
 	}
 
 	if (GetAsyncKeyState(VK_ESCAPE)) {
-		inputs.escape = true;
+		_crntInputFlag |= KeyboardFlagEx::INPUT_FLAG_ESCAPE;
 	}
 	else {
-		inputs.escape = false;
+		_crntInputFlag &= (~KeyboardFlagEx::INPUT_FLAG_ESCAPE);
 	}
 
 	if (GetAsyncKeyState(VK_SPACE)) {
-		inputs.shoot = true;
+		_crntInputFlag |= KeyboardFlagEx::INPUT_FLAG_SPACE;
 	}
 	else {
-		inputs.shoot = false;
+		_crntInputFlag &= (~KeyboardFlagEx::INPUT_FLAG_SPACE);
 	}
-
 	return;
 }
 
-EKeyboardMovementStatus KeyboardEventListener::GetAndUpdateKeyboardMovingStatus()
+void KeyboardEventListener::GetAndUpdateKeyboardMovementStatus(UINT64* out_pressedKeys, UINT64* out_releasedKeys)
 {
-	if (!(_movingFlag ^ _prevMovingFlag)) {
-		if (_movingFlag != 0) {
-			return KEYBOARD_MOVEMENT_STATUS_MOVING;
-		}
-		return KEYBOARD_MOVEMENT_STATUS_NONE;
-	}
-	
-	if (_movingFlag != 0 && _prevMovingFlag != 0) {
-		_prevMovingFlag = _movingFlag;
-		return KEYBOARD_MOVEMENT_STATUS_MOVING;
-	}
+	UINT64 edgeTrigger = _crntInputFlag ^ _prevInputFlag;
 
-	_prevMovingFlag = _movingFlag;
-	if (_movingFlag == 0) {
-		return KEYBOARD_MOVEMENT_STATUS_ENDED;
-	}
+	*out_pressedKeys = edgeTrigger & _crntInputFlag;
+	*out_releasedKeys = edgeTrigger & (~_crntInputFlag);
 
-	return KEYBOARD_MOVEMENT_STATUS_STARTED;
-}
-
-void KeyboardEventListener::ResetKeyboardMovementStatus()
-{
-	KeyboardEventListener::_movingFlag = 0;
-	KeyboardEventListener::_prevMovingFlag = 0;
-}
-
-void KeyboardEventListener::GetAndUpdateKeyboardMovementStatus(char* out_startFlag, char* out_endFlag, char* out_movingFlag)
-{
-	char edgeTrigger = _movingFlag ^ _prevMovingFlag;
-
-	*out_startFlag = edgeTrigger & _movingFlag;
-	*out_endFlag = edgeTrigger & (~_movingFlag);
-	*out_movingFlag = _movingFlag;
-
-	_prevMovingFlag = _movingFlag;
-}
-
-void KeyboardEventListener::OnKeyDown_W()
-{
-	KeyboardEventListener::_movingFlag = KeyboardEventListener::_movingFlag | KEYBOARD_INPUT_FLAG_W;
-}
-
-void KeyboardEventListener::OnKeyUp_W()
-{
-	KeyboardEventListener::_movingFlag = KeyboardEventListener::_movingFlag & (~KEYBOARD_INPUT_FLAG_W);
-}
-
-void KeyboardEventListener::OnKeyDown_S()
-{
-	KeyboardEventListener::_movingFlag = KeyboardEventListener::_movingFlag | KEYBOARD_INPUT_FLAG_S;
-}
-
-void KeyboardEventListener::OnKeyUp_S()
-{
-	KeyboardEventListener::_movingFlag = KeyboardEventListener::_movingFlag & (~KEYBOARD_INPUT_FLAG_S);
-}
-
-void KeyboardEventListener::OnKeyDown_A()
-{
-	KeyboardEventListener::_movingFlag = KeyboardEventListener::_movingFlag | KEYBOARD_INPUT_FLAG_A;
-}
-
-void KeyboardEventListener::OnKeyUp_A()
-{
-	KeyboardEventListener::_movingFlag = KeyboardEventListener::_movingFlag & (~KEYBOARD_INPUT_FLAG_A);
-}
-
-void KeyboardEventListener::OnKeyDown_D()
-{
-	KeyboardEventListener::_movingFlag = KeyboardEventListener::_movingFlag | KEYBOARD_INPUT_FLAG_D;
-}
-
-void KeyboardEventListener::OnKeyUp_D()
-{
-	KeyboardEventListener::_movingFlag = KeyboardEventListener::_movingFlag & (~KEYBOARD_INPUT_FLAG_D);
+	ResetInputFlag();
 }

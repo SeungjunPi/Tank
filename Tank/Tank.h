@@ -9,6 +9,7 @@ class Tank : public GameObject
 {
 public:
 	static const float COLLIDER_RADIUS;
+	static const float MACHINE_GUN_DELAY;
 
 	Tank(ObjectID id, UserDBIndex ownerID);
 	Tank() = default;
@@ -32,6 +33,10 @@ public:
 
 	void GetTurretInfo(Vector3* out_position, Vector3* out_direction) const;
 	void GetTurretInfo(Transform* out_transform) const;
+
+	void SetMachineGunFiringFlag() { _flagFiringMachineGun = true; }
+	void ClearMachineGunFiringFlag() { _flagFiringMachineGun = false; }
+	void OnFiringMachineGun(ULONGLONG currentTick);
 
 	void ResetHP();
 
@@ -57,6 +62,12 @@ private:
 	bool _isMovingBackward = false;
 	bool _isRotatingLeft = false;
 	bool _isRotatingRight = false;
+	ULONGLONG _lastTransformSyncTick = 0;
+
+	ULONGLONG _lastMachineGunFiringTick = 0;
+	bool _flagFiringMachineGun = false;
+	
+	
 };
 
 
