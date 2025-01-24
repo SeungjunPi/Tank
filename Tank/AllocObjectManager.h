@@ -42,11 +42,11 @@ public:
 	int GetCountObjects() const;
 
 
-	void StartTankMove(ObjectID objectId, EMOVEMENT movement);
-	void EndTankMove(ObjectID objectId, EMOVEMENT movement, const Transform* pTransform);
+	void StartTankMove(ObjectID objectId, EMovement movement);
+	void EndTankMove(ObjectID objectId, EMovement movement, const Transform* pTransform);
 
-	void StartTankRotate(ObjectID objectId, EROTATION rotation);
-	void EndTankRotate(ObjectID objectId, EROTATION rotation, const Transform* pTransform);
+	void StartTankRotate(ObjectID objectId, ERotation rotation);
+	void EndTankRotate(ObjectID objectId, ERotation rotation, const Transform* pTransform);
 
 private:
 	PointerTable32 _tankTable;

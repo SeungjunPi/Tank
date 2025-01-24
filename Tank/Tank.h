@@ -18,13 +18,17 @@ public:
 	void Initiate(ObjectID id);
 	void Terminate();
 
-	void StartMove(EMOVEMENT movement);
-	void EndMove(EMOVEMENT movement);
-	void EndMove(EMOVEMENT movement, const Transform* pTransform);
+	void SetMovementState(bool forward, bool backward, bool left, bool right);
 
-	void StartRotate(EROTATION rotation);
-	void EndRotate(EROTATION rotation);
-	void EndRotate(EROTATION rotation, const Transform* pTransform);
+
+
+	void StartMove(EMovement movement);
+	void EndMove(EMovement movement);
+	void EndMove(EMovement movement, const Transform* pTransform);
+
+	void StartRotate(ERotation rotation);
+	void EndRotate(ERotation rotation);
+	void EndRotate(ERotation rotation, const Transform* pTransform);
 
 	void MoveForward(ULONGLONG tickDiff);
 	void MoveBackward(ULONGLONG tickDiff);
@@ -36,6 +40,7 @@ public:
 
 	void SetMachineGunFiringFlag() { _flagFiringMachineGun = true; }
 	void ClearMachineGunFiringFlag() { _flagFiringMachineGun = false; }
+	bool CanFireMachineGun() const;
 	void OnFiringMachineGun(ULONGLONG currentTick);
 
 	void ResetHP();

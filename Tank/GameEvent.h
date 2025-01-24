@@ -14,7 +14,6 @@ enum EGameEventCode
 	GAME_EVENT_CODE_SC_LOGIN,
 	GAME_EVENT_CODE_CS_LOAD_PLAYER_STAT,
 	GAME_EVENT_CODE_SC_LOAD_PLAYER_STAT,
-	GAME_EVENT_CODE_SC_PLAYER_ID = 0x00010102,
 	GAME_EVENT_CODE_SC_SNAPSHOT = 0x00010202,
 	GAME_EVENT_CODE_SC_CREATE_TANK = 0x01010102,
 	GAME_EVENT_CODE_SC_DELETE_TANK = 0x01010202,
@@ -189,13 +188,10 @@ public:
 	static void SendStartMove(const Transform* pTankTransform, char moveFlag);
 	static void SendEndMove(const Transform* pTankTransform, char moveFlag);
 	static void SendMoving(const Transform* pTankTransform);
-	static void SendShoot(const Transform* pTurretTransform);
+	static void SendFireMachineGun(const Transform* pTurretTransform);
 
 private:
 	static void HandleLoginResult(BYTE* pGameEvent, UINT32 senderId);
-
-	static void HandlePlayerId(BYTE* pGameEvent, UINT32 senderId); // Deprecated
-	static BOOL ValidatePlayerId(BYTE* pGameEvent, UINT32 senderId); // Deprecated
 
 	static void HandleCreateTank(BYTE* pGameEvent, UINT32 senderId);
 	static BOOL ValidateCreateTank(BYTE* pGameEvent, UINT32 senderId);

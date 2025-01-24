@@ -237,7 +237,7 @@ int AllocObjectManager::GetCountObjects() const
 	return countObject;
 }
 
-void AllocObjectManager::StartTankMove(ObjectID objectId, EMOVEMENT movement)
+void AllocObjectManager::StartTankMove(ObjectID objectId, EMovement movement)
 {
 	Tank* pTank = (Tank*)_tankTable.Get(objectId.key);
 	if (pTank == nullptr) {
@@ -247,7 +247,7 @@ void AllocObjectManager::StartTankMove(ObjectID objectId, EMOVEMENT movement)
 	pTank->StartMove(movement);
 }
 
-void AllocObjectManager::EndTankMove(ObjectID objectId, EMOVEMENT movement, const Transform* pTransform)
+void AllocObjectManager::EndTankMove(ObjectID objectId, EMovement movement, const Transform* pTransform)
 {
 	Tank* pTank = (Tank*)_tankTable.Get(objectId.key);
 	if (pTank == nullptr) {
@@ -257,7 +257,7 @@ void AllocObjectManager::EndTankMove(ObjectID objectId, EMOVEMENT movement, cons
 	pTank->EndMove(movement, pTransform);
 }
 
-void AllocObjectManager::StartTankRotate(ObjectID objectId, EROTATION rotation)
+void AllocObjectManager::StartTankRotate(ObjectID objectId, ERotation rotation)
 {
 	Tank* pTank = (Tank*)_tankTable.Get(objectId.key);
 	if (pTank == nullptr) {
@@ -267,7 +267,7 @@ void AllocObjectManager::StartTankRotate(ObjectID objectId, EROTATION rotation)
 	pTank->StartRotate(rotation);
 }
 
-void AllocObjectManager::EndTankRotate(ObjectID objectId, EROTATION rotation, const Transform* pTransform)
+void AllocObjectManager::EndTankRotate(ObjectID objectId, ERotation rotation, const Transform* pTransform)
 {
 	Tank* pTank = (Tank*)_tankTable.Get(objectId.key);
 	if (pTank == nullptr) {

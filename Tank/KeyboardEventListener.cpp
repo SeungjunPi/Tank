@@ -38,34 +38,32 @@ void KeyboardEventListener::ProcessInputs()
 		return;
 	}
 
-	
-
 	if (GetAsyncKeyState(VK_UP)) {
-		_crntInputFlag |= KeyboardFlagEx::INPUT_FLAG_UP;
+		_crntInputFlag |= EKeyboardFlagEx::KEYBOARD_INPUT_FLAG_UP;
 	}
 	else {
-		_crntInputFlag &= (~KeyboardFlagEx::INPUT_FLAG_UP);
+		_crntInputFlag &= (~EKeyboardFlagEx::KEYBOARD_INPUT_FLAG_UP);
 	}
 
 	if (GetAsyncKeyState(VK_DOWN)) {
-		_crntInputFlag |= KeyboardFlagEx::INPUT_FLAG_DOWN;
+		_crntInputFlag |= EKeyboardFlagEx::KEYBOARD_INPUT_FLAG_DOWN;
 	}
 	else {
-		_crntInputFlag &= (~KeyboardFlagEx::INPUT_FLAG_DOWN);
+		_crntInputFlag &= (~EKeyboardFlagEx::KEYBOARD_INPUT_FLAG_DOWN);
 	}
 
 	if (GetAsyncKeyState(VK_LEFT)) {
-		_crntInputFlag |= KeyboardFlagEx::INPUT_FLAG_LEFT;
+		_crntInputFlag |= EKeyboardFlagEx::KEYBOARD_INPUT_FLAG_LEFT;
 	}
 	else {
-		_crntInputFlag &= (~KeyboardFlagEx::INPUT_FLAG_LEFT);
+		_crntInputFlag &= (~EKeyboardFlagEx::KEYBOARD_INPUT_FLAG_LEFT);
 	}
 
 	if (GetAsyncKeyState(VK_RIGHT)) {
-		_crntInputFlag |= KeyboardFlagEx::INPUT_FLAG_LEFT;
+		_crntInputFlag |= EKeyboardFlagEx::KEYBOARD_INPUT_FLAG_LEFT;
 	}
 	else {
-		_crntInputFlag &= (~KeyboardFlagEx::INPUT_FLAG_LEFT);
+		_crntInputFlag &= (~EKeyboardFlagEx::KEYBOARD_INPUT_FLAG_LEFT);
 	}
 
 	if (GetAsyncKeyState('I') || GetAsyncKeyState('i')) {
@@ -83,23 +81,24 @@ void KeyboardEventListener::ProcessInputs()
 	}
 
 	if (GetAsyncKeyState(VK_ESCAPE)) {
-		_crntInputFlag |= KeyboardFlagEx::INPUT_FLAG_ESCAPE;
+		_crntInputFlag |= EKeyboardFlagEx::KEYBOARD_INPUT_FLAG_ESC;
 	}
 	else {
-		_crntInputFlag &= (~KeyboardFlagEx::INPUT_FLAG_ESCAPE);
+		_crntInputFlag &= (~EKeyboardFlagEx::KEYBOARD_INPUT_FLAG_ESC);
 	}
 
 	if (GetAsyncKeyState(VK_SPACE)) {
-		_crntInputFlag |= KeyboardFlagEx::INPUT_FLAG_SPACE;
+		_crntInputFlag |= EKeyboardFlagEx::KEYBOARD_INPUT_FLAG_SPACE;
 	}
 	else {
-		_crntInputFlag &= (~KeyboardFlagEx::INPUT_FLAG_SPACE);
+		_crntInputFlag &= (~EKeyboardFlagEx::KEYBOARD_INPUT_FLAG_SPACE);
 	}
 	return;
 }
 
-void KeyboardEventListener::GetAndUpdateKeyboardMovementStatus(UINT64* out_pressedKeys, UINT64* out_releasedKeys)
+void KeyboardEventListener::GetAndUpdateKeyboardMovementStatus(UINT64* out_pressedKeys, UINT64* out_releasedKeys, UINT64* out_heldKeys)
 {
+	*out_heldKeys = _crntInputFlag;
 	UINT64 edgeTrigger = _crntInputFlag ^ _prevInputFlag;
 
 	*out_pressedKeys = edgeTrigger & _crntInputFlag;

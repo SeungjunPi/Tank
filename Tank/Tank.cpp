@@ -6,6 +6,7 @@
 #include "ICollisionManager.h"
 #include "AllocObjectManager.h"
 #include "Camera.h"
+#include "Player.h"
 
 const float POSITION_VELOCITY_WEIGHT = 0.5f;
 const float ROTATION_VELOCITY_WEIGHT = 0.25f;
@@ -48,14 +49,22 @@ void Tank::Terminate()
 	_colliderSize = 0;
 }
 
+void Tank::SetMovementState(bool forward, bool backward, bool left, bool right)
+{
+	_isMovingFoward = forward;
+	_isMovingBackward = backward;
+	_isRotatingLeft = left;
+	_isRotatingRight = right;
+}
 
-void Tank::StartMove(EMOVEMENT movement)
+
+void Tank::StartMove(EMovement movement)
 {
 	switch (movement) {
-	case EMOVEMENT::FORWARD:
+	case EMovement::FORWARD:
 		_isMovingFoward = true;
 		break;
-	case EMOVEMENT::BACKWARD:
+	case EMovement::BACKWARD:
 		_isMovingBackward = true;
 		break;
 	default:
@@ -65,13 +74,13 @@ void Tank::StartMove(EMOVEMENT movement)
 	
 }
 
-void Tank::EndMove(EMOVEMENT movement)
+void Tank::EndMove(EMovement movement)
 {
 	switch (movement) {
-	case EMOVEMENT::FORWARD:
+	case EMovement::FORWARD:
 		_isMovingFoward = false;
 		break;
-	case EMOVEMENT::BACKWARD:
+	case EMovement::BACKWARD:
 		_isMovingBackward = false;
 		break;
 	default:
@@ -79,14 +88,14 @@ void Tank::EndMove(EMOVEMENT movement)
 	}
 }
 
-void Tank::EndMove(EMOVEMENT movement, const Transform* pTransform)
+void Tank::EndMove(EMovement movement, const Transform* pTransform)
 {
 	switch (movement) {
-	case EMOVEMENT::FORWARD:
+	case EMovement::FORWARD:
 		_isMovingFoward = false;
 		memcpy(&_transform, pTransform, sizeof(Transform));
 		break;
-	case EMOVEMENT::BACKWARD:
+	case EMovement::BACKWARD:
 		_isMovingBackward = false;
 		memcpy(&_transform, pTransform, sizeof(Transform));
 		break;
@@ -95,13 +104,13 @@ void Tank::EndMove(EMOVEMENT movement, const Transform* pTransform)
 	}
 }
 
-void Tank::StartRotate(EROTATION rotation)
+void Tank::StartRotate(ERotation rotation)
 {
 	switch (rotation) {
-	case EROTATION::LEFT:
+	case ERotation::LEFT:
 		_isRotatingLeft = true;
 		break;
-	case EROTATION::RIGHT:
+	case ERotation::RIGHT:
 		_isRotatingRight = true;
 		break;
 	default:
@@ -109,13 +118,13 @@ void Tank::StartRotate(EROTATION rotation)
 	}
 }
 
-void Tank::EndRotate(EROTATION rotation)
+void Tank::EndRotate(ERotation rotation)
 {
 	switch (rotation) {
-	case EROTATION::LEFT:
+	case ERotation::LEFT:
 		_isRotatingLeft = false;
 		break;
-	case EROTATION::RIGHT:
+	case ERotation::RIGHT:
 		_isRotatingRight = false;
 		break;
 	default:
@@ -123,14 +132,14 @@ void Tank::EndRotate(EROTATION rotation)
 	}
 }
 
-void Tank::EndRotate(EROTATION rotation, const Transform* pTransform)
+void Tank::EndRotate(ERotation rotation, const Transform* pTransform)
 {
 	switch (rotation) {
-	case EROTATION::LEFT:
+	case ERotation::LEFT:
 		memcpy(&_transform, pTransform, sizeof(Transform));
 		_isRotatingLeft = false;
 		break;
-	case EROTATION::RIGHT:
+	case ERotation::RIGHT:
 		memcpy(&_transform, pTransform, sizeof(Transform));
 		_isRotatingRight = false;
 		break;
@@ -212,12 +221,13 @@ void Tank::GetTurretInfo(Transform* out_transform) const
 	out_transform->Rotation = _transform.Rotation;
 }
 
+bool Tank::CanFireMachineGun() const
+{
+	return _flagFiringMachineGun && _lastMachineGunFiringTick + MACHINE_GUN_DELAY > g_currentGameTick;
+}
+
 void Tank::OnFiringMachineGun(ULONGLONG currentTick)
 {
-	if (_lastMachineGunFiringTick + MACHINE_GUN_DELAY > currentTick) {
-		return;
-	}
-
 	_lastMachineGunFiringTick = currentTick;
 	// Send Fire
 }
@@ -287,7 +297,7 @@ void Tank::OnHit(ULONGLONG currentTick)
 void Tank::OnUpdateTransform()
 {
 	_pCollider->UpdateCenterPosition(&_transform.Position);
-	if (g_playerId == _ownerID) {
+	if (g_pPlayer->GetUserID() == _ownerID) {
 		g_pCamera->UpdateTransf(&_transform);
 	}
 }
@@ -311,8 +321,8 @@ void Tank::OnHitByProjectile(ULONGLONG currentTick)
 			_isRotatingLeft = false;
 			_isRotatingRight = false;
 			_pCollider->Deactivate();
-			if (g_playerId == _ownerID) {
-				g_score.death++;
+			if (g_pPlayer->GetUserID() == _ownerID) {
+				g_pPlayer->IncreaseDeath();
 			}
 		}
 	}

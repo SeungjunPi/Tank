@@ -18,12 +18,11 @@ NetCore* g_pNetCore;
 UINT32 g_serverId;
 
 bool g_isTankCreateRequest = false;
-Tank* g_pPlayerTank;
+Player* g_pPlayer = nullptr;
+Score g_score;
 AllocObjectManager g_objectManager;
 
 UINT32 g_playerId;
-
-Score g_score = { 0, };
 
 std::wstring g_userName;
 std::wstring g_password;

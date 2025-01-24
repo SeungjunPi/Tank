@@ -7,14 +7,14 @@ class Collider;
 
 const Vector3 FORWARD_DIRECTION = { .0f, -1.0f, .0f };
 
-enum class EMOVEMENT
+enum class EMovement
 {
 	NONE,
 	FORWARD,
 	BACKWARD
 };
 
-enum class EROTATION
+enum class ERotation
 {
 	NONE,
 	LEFT,

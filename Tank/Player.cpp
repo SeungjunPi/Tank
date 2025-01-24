@@ -1,6 +1,12 @@
+﻿
+
+#include "TankPch.h"
+#include "Global.h"
 #include "Player.h"
 #include "Tank.h"
 
+#include "KeyboardEventListener.h"
+#include "GameEvent.h"
 
 Player::Player(std::wstring name, std::wstring password)
 	: _name(name)
@@ -12,7 +18,7 @@ Player::~Player()
 {
 }
 
-void Player::SetSessionID(SessionID sessionID)
+void Player::OnConnected(SessionID sessionID)
 {
 	if (_sessionID != INVALID_SESSION_ID) {
 		__debugbreak();
@@ -21,21 +27,32 @@ void Player::SetSessionID(SessionID sessionID)
 	_sessionID = sessionID;
 }
 
-void Player::SetUserKey(UserDBIndex key)
+void Player::OnSuccessLogin(UserDBIndex key, Score score)
 {
-	if (_userKey != INVALID_USER_KEY) {
+	if (_userID != INVALID_USER_ID) {
 		__debugbreak();
 		return;
 	}
-	_userKey = key;
+	_userID = key;
+	memcpy(&_score, &score, sizeof(Score));
+	memcpy(&g_score, &_score, sizeof(Score));
 }
 
 void Player::SetTank(Tank* pTank)
 {
-	if (pTank != nullptr) {
+	if (_pTank != nullptr) {
 		__debugbreak();
 	}
 	_pTank = pTank;
+}
+
+ObjectID Player::GetTankID()
+{
+	if (_pTank) {
+		return _pTank->GetID();
+	}
+	
+	return INVALID_OBJECT_ID;
 }
 
 Tank* Player::ClearTank()
@@ -48,3 +65,85 @@ Tank* Player::ClearTank()
 	_pTank = nullptr;
 	return tmp;
 }
+
+void Player::HandleKeyboardEvents(UINT64 pressedKeys, UINT64 releasedKeys, UINT64 heldKeys)
+{
+	if (_pTank == nullptr) {
+		// Do something?
+		return;
+	}
+	
+	if (pressedKeys) {
+		switch (pressedKeys) {
+		case KEYBOARD_INPUT_FLAG_UP:
+			_pTank->StartMove(EMovement::FORWARD);
+			break;
+		case KEYBOARD_INPUT_FLAG_DOWN:
+			_pTank->StartMove(EMovement::BACKWARD);
+			break;
+		case KEYBOARD_INPUT_FLAG_LEFT:
+			_pTank->StartRotate(ERotation::LEFT);
+			break;
+		case KEYBOARD_INPUT_FLAG_RIGHT:
+			_pTank->StartRotate(ERotation::RIGHT);
+			break;
+		case KEYBOARD_INPUT_FLAG_SPACE:
+			break;
+		}
+		char moveFlag = pressedKeys & 0xFF;
+		GamePacket::SendStartMove(_pTank->GetTransformPtr(), moveFlag);
+		//g_lastOwnTankSyncTick = g_currentGameTick;
+	}
+
+	if (releasedKeys) {
+		switch (releasedKeys) {
+		case KEYBOARD_INPUT_FLAG_UP:
+			_pTank->EndMove(EMovement::FORWARD);
+			break;
+		case KEYBOARD_INPUT_FLAG_DOWN:
+			_pTank->EndMove(EMovement::BACKWARD);
+			break;
+		case KEYBOARD_INPUT_FLAG_LEFT:
+			_pTank->EndRotate(ERotation::LEFT);
+			break;
+		case KEYBOARD_INPUT_FLAG_RIGHT:
+			_pTank->EndRotate(ERotation::RIGHT);
+			break;
+		case KEYBOARD_INPUT_FLAG_SPACE:
+			// end fire machine gun
+			break;
+		}
+		char moveFlag = pressedKeys & 0xFF;
+		GamePacket::SendEndMove(_pTank->GetTransformPtr(), moveFlag);
+	}
+
+	if (heldKeys & KEYBOARD_INPUT_FLAG_SPACE) {
+		// 서버에서 오기 전 반복해서 Fire 요청을 보낼 수 있으나, 서버에서 무시될 것.
+		bool canFire = _pTank->CanFireMachineGun();
+		if (canFire) {
+			Transform transf = { 0.f, };
+			_pTank->GetTurretInfo(&transf);
+			GamePacket::SendFireMachineGun(&transf);
+		}
+	}
+	
+}
+
+INT Player::IncreaseHit()
+{
+	g_score.hit = ++_score.hit;
+	return _score.hit;
+}
+
+INT Player::IncreaseKill()
+{
+	g_score.kill = ++_score.kill;
+	return _score.kill;
+}
+
+INT Player::IncreaseDeath()
+{
+	g_score.death = ++_score.death;
+	return _score.death;
+}
+
