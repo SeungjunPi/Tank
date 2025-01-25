@@ -6,9 +6,12 @@
 #include "ICollisionManager.h"
 #include "AllocObjectManager.h"
 #include "Camera.h"
+#include "Player.h"
 
-const float VELOCITY_WEIGHT = 0.75f;
+const float POSITION_VELOCITY_WEIGHT = 0.5f;
+const float ROTATION_VELOCITY_WEIGHT = 0.25f;
 const float Tank::COLLIDER_RADIUS = 1.0f;
+const ULONGLONG Tank::MACHINE_GUN_DELAY = 250;
 
 Tank::Tank(ObjectID id, UserDBIndex ownerID)
 	: GameObject(id, ownerID, true)
@@ -46,28 +49,38 @@ void Tank::Terminate()
 	_colliderSize = 0;
 }
 
+void Tank::SetMovementState(bool forward, bool backward, bool left, bool right)
+{
+	_isMovingFoward = forward;
+	_isMovingBackward = backward;
+	_isRotatingLeft = left;
+	_isRotatingRight = right;
+}
 
-void Tank::StartMove(EMOVEMENT movement)
+
+void Tank::StartMove(EMovement movement)
 {
 	switch (movement) {
-	case EMOVEMENT::FORWARD:
+	case EMovement::FORWARD:
 		_isMovingFoward = true;
 		break;
-	case EMOVEMENT::BACKWARD:
+	case EMovement::BACKWARD:
 		_isMovingBackward = true;
 		break;
 	default:
 		__debugbreak();
 	}
+
+	
 }
 
-void Tank::EndMove(EMOVEMENT movement)
+void Tank::EndMove(EMovement movement)
 {
 	switch (movement) {
-	case EMOVEMENT::FORWARD:
+	case EMovement::FORWARD:
 		_isMovingFoward = false;
 		break;
-	case EMOVEMENT::BACKWARD:
+	case EMovement::BACKWARD:
 		_isMovingBackward = false;
 		break;
 	default:
@@ -75,14 +88,14 @@ void Tank::EndMove(EMOVEMENT movement)
 	}
 }
 
-void Tank::EndMove(EMOVEMENT movement, const Transform* pTransform)
+void Tank::EndMove(EMovement movement, const Transform* pTransform)
 {
 	switch (movement) {
-	case EMOVEMENT::FORWARD:
+	case EMovement::FORWARD:
 		_isMovingFoward = false;
 		memcpy(&_transform, pTransform, sizeof(Transform));
 		break;
-	case EMOVEMENT::BACKWARD:
+	case EMovement::BACKWARD:
 		_isMovingBackward = false;
 		memcpy(&_transform, pTransform, sizeof(Transform));
 		break;
@@ -91,13 +104,13 @@ void Tank::EndMove(EMOVEMENT movement, const Transform* pTransform)
 	}
 }
 
-void Tank::StartRotate(EROTATION rotation)
+void Tank::StartRotate(ERotation rotation)
 {
 	switch (rotation) {
-	case EROTATION::LEFT:
+	case ERotation::LEFT:
 		_isRotatingLeft = true;
 		break;
-	case EROTATION::RIGHT:
+	case ERotation::RIGHT:
 		_isRotatingRight = true;
 		break;
 	default:
@@ -105,13 +118,13 @@ void Tank::StartRotate(EROTATION rotation)
 	}
 }
 
-void Tank::EndRotate(EROTATION rotation)
+void Tank::EndRotate(ERotation rotation)
 {
 	switch (rotation) {
-	case EROTATION::LEFT:
+	case ERotation::LEFT:
 		_isRotatingLeft = false;
 		break;
-	case EROTATION::RIGHT:
+	case ERotation::RIGHT:
 		_isRotatingRight = false;
 		break;
 	default:
@@ -119,14 +132,14 @@ void Tank::EndRotate(EROTATION rotation)
 	}
 }
 
-void Tank::EndRotate(EROTATION rotation, const Transform* pTransform)
+void Tank::EndRotate(ERotation rotation, const Transform* pTransform)
 {
 	switch (rotation) {
-	case EROTATION::LEFT:
+	case ERotation::LEFT:
 		memcpy(&_transform, pTransform, sizeof(Transform));
 		_isRotatingLeft = false;
 		break;
-	case EROTATION::RIGHT:
+	case ERotation::RIGHT:
 		memcpy(&_transform, pTransform, sizeof(Transform));
 		_isRotatingRight = false;
 		break;
@@ -138,9 +151,9 @@ void Tank::EndRotate(EROTATION rotation, const Transform* pTransform)
 void Tank::MoveForward(ULONGLONG tickDiff)
 {
 	_forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
-	_transform.Position.x = _transform.Position.x + _forwardDirection.x * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
-	_transform.Position.y = _transform.Position.y + _forwardDirection.y * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
-	_transform.Position.z = _transform.Position.z + _forwardDirection.z * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
+	_transform.Position.x = _transform.Position.x + _forwardDirection.x * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
+	_transform.Position.y = _transform.Position.y + _forwardDirection.y * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
+	_transform.Position.z = _transform.Position.z + _forwardDirection.z * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
 	_dirty = true;
 	OnUpdateTransform();
 }
@@ -148,9 +161,9 @@ void Tank::MoveForward(ULONGLONG tickDiff)
 void Tank::MoveBackward(ULONGLONG tickDiff)
 {
 	_forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
-	_transform.Position.x = _transform.Position.x - _forwardDirection.x * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
-	_transform.Position.y = _transform.Position.y - _forwardDirection.y * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
-	_transform.Position.z = _transform.Position.z - _forwardDirection.z * (tickDiff / 1000.f * 60.f) * VELOCITY_WEIGHT;
+	_transform.Position.x = _transform.Position.x - _forwardDirection.x * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
+	_transform.Position.y = _transform.Position.y - _forwardDirection.y * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
+	_transform.Position.z = _transform.Position.z - _forwardDirection.z * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
 	_dirty = true;
 	OnUpdateTransform();
 }
@@ -158,7 +171,7 @@ void Tank::MoveBackward(ULONGLONG tickDiff)
 void Tank::RotateRight(ULONGLONG tickDiff)
 {
 	const float angularVelocity = 3.14159265358979323846f / 1000.f * 60.f / 32.f;
-	float radian = tickDiff * angularVelocity * VELOCITY_WEIGHT;
+	float radian = tickDiff * angularVelocity * ROTATION_VELOCITY_WEIGHT;
 
 	_transform.Rotation = Quaternion::RotateZP(radian, _transform.Rotation);
 	
@@ -169,7 +182,7 @@ void Tank::RotateRight(ULONGLONG tickDiff)
 void Tank::RotateLeft(ULONGLONG tickDiff)
 {
 	const float angularVelocity = 3.14159265358979323846f / 1000.f * 60.f / 32.f;
-	float radian = tickDiff * angularVelocity * VELOCITY_WEIGHT;
+	float radian = tickDiff * angularVelocity * ROTATION_VELOCITY_WEIGHT;
 
 	_transform.Rotation = Quaternion::RotateZM(radian, _transform.Rotation);
 
@@ -208,6 +221,17 @@ void Tank::GetTurretInfo(Transform* out_transform) const
 	out_transform->Rotation = _transform.Rotation;
 }
 
+bool Tank::CanFireMachineGun() const
+{
+	return _lastMachineGunFiringTick + MACHINE_GUN_DELAY <= g_currentGameTick;
+}
+
+void Tank::OnFiringMachineGun(ULONGLONG currentTick)
+{
+	_lastMachineGunFiringTick = currentTick;
+	// Send Fire
+}
+
 void Tank::ResetHP()
 {
 	_hp = 5;
@@ -220,24 +244,28 @@ BOOL Tank::IsDestroyed(ULONGLONG currentTick) const
 
 void Tank::OnFrame(ULONGLONG tickDiff)
 {
-	if (IsAlive()) {
-		memcpy(&_prevTransform, &_transform, sizeof(Transform));
-
-		if (_isMovingFoward) {
-			MoveForward(tickDiff);
-		}
-		if (_isMovingBackward) {
-			MoveBackward(tickDiff);
-		}
-		if (_isRotatingLeft) {
-			RotateLeft(tickDiff);
-		}
-		if (_isRotatingRight) {
-			RotateRight(tickDiff);
-		}
-
+	if (!IsAlive()) {
 		return;
 	}
+	memcpy(&_prevTransform, &_transform, sizeof(Transform));
+
+	if (_isMovingFoward) {
+		MoveForward(tickDiff);
+	}
+	if (_isMovingBackward) {
+		MoveBackward(tickDiff);
+	}
+	if (_isRotatingLeft) {
+		RotateLeft(tickDiff);
+	}
+	if (_isRotatingRight) {
+		RotateRight(tickDiff);
+	}
+
+	if (_flagFiringMachineGun) {
+		OnFiringMachineGun(g_currentGameTick);
+	}
+
 
 	return;
 }
@@ -269,7 +297,7 @@ void Tank::OnHit(ULONGLONG currentTick)
 void Tank::OnUpdateTransform()
 {
 	_pCollider->UpdateCenterPosition(&_transform.Position);
-	if (g_playerId == _ownerID) {
+	if (g_pPlayer->GetUserID() == _ownerID) {
 		g_pCamera->UpdateTransf(&_transform);
 	}
 }
@@ -293,8 +321,8 @@ void Tank::OnHitByProjectile(ULONGLONG currentTick)
 			_isRotatingLeft = false;
 			_isRotatingRight = false;
 			_pCollider->Deactivate();
-			if (g_playerId == _ownerID) {
-				g_score.death++;
+			if (g_pPlayer->GetUserID() == _ownerID) {
+				g_pPlayer->IncreaseDeath();
 			}
 		}
 	}

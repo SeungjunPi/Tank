@@ -10,6 +10,8 @@ struct TankScore
 	UINT16 deathCount = 0;
 };
 
+const ULONGLONG MACHINE_GUN_DELAY = 250;
+
 class PlayerManager;
 
 class Player
@@ -30,6 +32,8 @@ public:
 	void IncreaseKillCount();
 	void IncreaseDeathCount();
 
+	bool FireMachineGunIfCan();
+
 private:
 	SessionID _sessionId = 0;
 	UINT32 _userIndex = 0;
@@ -38,5 +42,7 @@ private:
 	UINT16 _hitCount = 0;
 	UINT16 _killCount = 0;
 	UINT16 _deathCount = 0;
+
+	ULONGLONG _lastMachineGunFireTick = 0;
 };
 

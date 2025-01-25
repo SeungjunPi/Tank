@@ -12,6 +12,7 @@
 #include "GameEvent.h"
 #include "ICollisionManager.h"
 #include "Collider.h"
+#include "Player.h"
 
 #include "Camera.h"
 
@@ -32,7 +33,6 @@ static BOOL s_isMoving;
 
 void Game::Initialize()
 {
-	g_pPlayerTank = NULL;
 	s_isRunning = true;
 	KeyboardEventListener::Initiate();
 
@@ -70,7 +70,9 @@ void Game::CleanUp()
 
 void Game::Start()
 {
-	g_serverId = g_pNetCore->ConnectTo("127.0.0.1", 30283);
+	g_pPlayer = DNew Player(g_userName, g_password);
+	SessionID serverID = g_pNetCore->ConnectTo("127.0.0.1", 30283);
+	g_pPlayer->OnConnected(serverID);
 
 	// Send Login
 	GamePacket::SendLogin(g_userName, g_password);
@@ -118,62 +120,19 @@ void s_ApplyKeyboardEvents(ULONGLONG tickDiff)
 {
 	KeyboardEventListener::ProcessInputs();
 
-	if (KeyboardEventListener::inputs.escape) {
+	UINT64 pressedFlag;
+	UINT64 releasedFlag;
+	UINT64 heldFlag;
+	KeyboardEventListener::GetAndUpdateKeyboardMovementStatus(&pressedFlag, &releasedFlag, &heldFlag);
+
+	if (pressedFlag & KEYBOARD_INPUT_FLAG_ESC) {
 		s_isRunning = false;
 		return;
 	}
 
-	if (g_pPlayerTank != NULL) {
-		char startFlag;
-		char endFlag;
-		char movingFlag;
-		KeyboardEventListener::GetAndUpdateKeyboardMovementStatus(&startFlag, &endFlag, &movingFlag);
-		if (startFlag) {
-			if (startFlag & KEYBOARD_INPUT_FLAG_W) {
-				g_pPlayerTank->StartMove(EMOVEMENT::FORWARD);
-			} 
-			if (startFlag & KEYBOARD_INPUT_FLAG_S) {
-				g_pPlayerTank->StartMove(EMOVEMENT::BACKWARD);
-			}
-			if (startFlag & KEYBOARD_INPUT_FLAG_A) {
-				g_pPlayerTank->StartRotate(EROTATION::LEFT);
-			}
-			if (startFlag & KEYBOARD_INPUT_FLAG_D) {
-				g_pPlayerTank->StartRotate(EROTATION::RIGHT);
-			}
-			GamePacket::SendStartMove(g_pPlayerTank->GetTransformPtr(), startFlag);
-			g_lastOwnTankSyncTick = g_currentGameTick;
-		}
-
-		if (endFlag) {
-			if (endFlag & KEYBOARD_INPUT_FLAG_W) {
-				g_pPlayerTank->EndMove(EMOVEMENT::FORWARD);
-			}
-			if (endFlag & KEYBOARD_INPUT_FLAG_S) {
-				g_pPlayerTank->EndMove(EMOVEMENT::BACKWARD);
-			}
-			if (endFlag & KEYBOARD_INPUT_FLAG_A) {
-				g_pPlayerTank->EndRotate(EROTATION::LEFT);
-			}
-			if (endFlag & KEYBOARD_INPUT_FLAG_D) {
-				g_pPlayerTank->EndRotate(EROTATION::RIGHT);
-			}
-			GamePacket::SendEndMove(g_pPlayerTank->GetTransformPtr(), endFlag);
-			g_lastOwnTankSyncTick = g_currentGameTick;
-		}
-
-		if (movingFlag) {
-			s_SyncOwnTankTransform();
-		}
-
-		if (KeyboardEventListener::inputs.shoot) {
-			if (s_IsShootable()) {
-				Transform transf = { 0.f, };
-				g_pPlayerTank->GetTurretInfo(&transf);
-				GamePacket::SendShoot(&transf);
-			}
-		}
-	}
+	if (g_pPlayer != nullptr) {
+		g_pPlayer->HandleKeyboardEvents(pressedFlag, releasedFlag, heldFlag);
+	}	
 }
 
 void s_ApplyObjectLogic(ULONGLONG tickDiff)
@@ -198,7 +157,7 @@ void s_ApplyObjectLogic(ULONGLONG tickDiff)
 
 void s_SyncOwnTankTransform()
 {
-	if (g_pPlayerTank == nullptr) {
+	/*if (g_pPlayer->GetTankID().equals(INVALID_OBJECT_ID)) {
 		return;
 	}
 
@@ -207,7 +166,7 @@ void s_SyncOwnTankTransform()
 	}
 
 	g_lastOwnTankSyncTick = g_currentGameTick;
-	GamePacket::SendMoving(g_pPlayerTank->GetTransformPtr());
+	GamePacket::SendMoving(g_pPlayerTank->GetTransformPtr());*/
 }
 
 void s_HandleNetEvents()
@@ -237,23 +196,23 @@ void s_CollideObjects()
 	}
 }
 
-BOOL s_IsShootable()
-{
-	static ULONGLONG lastShoot = 0;
-	const static ULONGLONG SHOOT_COOL_DOWN = 500;
-
-	if (g_pPlayerTank == nullptr) {
-		return false;
-	}
-
-	if (g_previousGameTick - lastShoot > SHOOT_COOL_DOWN) {
-		s_bIsShootable = true;
-		lastShoot = g_previousGameTick;
-		return true;
-	}
-
-	return false;
-}
+//BOOL s_IsShootable()
+//{
+//	static ULONGLONG lastShoot = 0;
+//	const static ULONGLONG SHOOT_COOL_DOWN = 250;
+//
+//	if (g_pPlayerTank == nullptr) {
+//		return false;
+//	}
+//
+//	if (g_previousGameTick - lastShoot > SHOOT_COOL_DOWN) {
+//		s_bIsShootable = true;
+//		lastShoot = g_previousGameTick;
+//		return true;
+//	}
+//
+//	return false;
+//}
 
 void s_CleanupDestroyedObjects(ULONGLONG curTick)
 {
@@ -271,9 +230,6 @@ void s_CleanupDestroyedObjects(ULONGLONG curTick)
 			}
 
 			if (pObj->IsDestroyed(curTick)) {
-				if (pObj == g_pPlayerTank) {
-					g_pPlayerTank = nullptr;
-				}
 				g_objectManager.RemoveObject(type, keys[i]);
 			}
 		}

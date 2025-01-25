@@ -3,16 +3,16 @@
 #include "TankPch.h"
 
 class NetCore;
-class Tank;
 class AllocObjectManager;
 class ICollisionManager;
 class GameCamera;
+class Player;
 
 struct Score
 {
-	SHORT kill;
-	SHORT death;
-	SHORT hit;
+	int kill;
+	int death;
+	int hit;
 };
 
 
@@ -28,15 +28,11 @@ extern DWORD g_currentFPS;
 extern ULONGLONG g_lastOwnTankSyncTick;
 
 extern NetCore* g_pNetCore;
-extern UINT32 g_serverId;
 
 extern bool g_isTankCreateRequest;
-extern Tank* g_pPlayerTank;
-extern AllocObjectManager g_objectManager;
-
-extern UINT32 g_playerId;
-
+extern Player* g_pPlayer;
 extern Score g_score;
+extern AllocObjectManager g_objectManager;
 
 extern std::wstring g_userName;
 extern std::wstring g_password;

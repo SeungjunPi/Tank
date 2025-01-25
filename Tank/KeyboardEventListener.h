@@ -1,29 +1,13 @@
 #pragma once
 
-enum KeyboardFlag : char
+enum EKeyboardFlagEx : UINT64
 {
-	KEYBOARD_INPUT_FLAG_W = 0b00000001,
-	KEYBOARD_INPUT_FLAG_S = 0b00000010,
-	KEYBOARD_INPUT_FLAG_A = 0b00000100,
-	KEYBOARD_INPUT_FLAG_D = 0b00001000
-};
-
-struct KeyboardInputs
-{
-	bool up;
-	bool down;
-	bool left;
-	bool right;
-	bool escape;
-	bool shoot;
-};
-
-enum EKeyboardMovementStatus
-{
-	KEYBOARD_MOVEMENT_STATUS_NONE,
-	KEYBOARD_MOVEMENT_STATUS_STARTED,
-	KEYBOARD_MOVEMENT_STATUS_ENDED,
-	KEYBOARD_MOVEMENT_STATUS_MOVING
+	KEYBOARD_INPUT_FLAG_UP		= 0b00000001,
+	KEYBOARD_INPUT_FLAG_DOWN	= 0b00000010,
+	KEYBOARD_INPUT_FLAG_LEFT	= 0b00000100,
+	KEYBOARD_INPUT_FLAG_RIGHT	= 0b00001000,
+	KEYBOARD_INPUT_FLAG_ESC		= 0b00010000,
+	KEYBOARD_INPUT_FLAG_SPACE	= 0b00100000
 };
 
 class KeyboardEventListener
@@ -33,26 +17,14 @@ public:
 	static void Initiate();
 	static void Terminate();
 
+	static void ResetInputFlag();
 	static void ProcessInputs();
 
-	static KeyboardInputs inputs;
-
-	static EKeyboardMovementStatus GetAndUpdateKeyboardMovingStatus(); // deprecated
-	static void ResetKeyboardMovementStatus();
-	static void GetAndUpdateKeyboardMovementStatus(char* out_startFlag, char* out_endFlag, char* out_movingFlag);
+	static void GetAndUpdateKeyboardMovementStatus(UINT64* out_pressedKeys, UINT64* out_releasedKeys, UINT64* out_heldKeys);
 
 
 private:
-	static void OnKeyDown_W();
-	static void OnKeyUp_W();
-	static void OnKeyDown_S();
-	static void OnKeyUp_S();
-	static void OnKeyDown_A();
-	static void OnKeyUp_A();
-	static void OnKeyDown_D();
-	static void OnKeyUp_D();
-
-	static char _movingFlag;
-	static char _prevMovingFlag;
+	static UINT64 _crntInputFlag;
+	static UINT64 _prevInputFlag;
 };
 
