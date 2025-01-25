@@ -194,35 +194,24 @@ private:
 	static void HandleLoginResult(BYTE* pGameEvent, UINT32 senderId);
 
 	static void HandleCreateTank(BYTE* pGameEvent, UINT32 senderId);
-	static BOOL ValidateCreateTank(BYTE* pGameEvent, UINT32 senderId);
 
 	static void HandleDeleteTank(BYTE* pGameEvent, UINT32 senderId);
-	static BOOL ValidateDeleteTank(BYTE* pGameEvent, UINT32 senderId);
 
 	static void HandleStartMove(BYTE* pGameEvent, UINT32 senderId);
-	static BOOL ValidateStartMove(BYTE* pGameEvent, UINT32 senderId);
 
 	static void HandleEndMove(BYTE* pGameEvent, UINT32 senderId);
-	static BOOL ValidateEndMove(BYTE* pGameEvent, UINT32 senderId);
 
 	static void HandleMoving(BYTE* pGameEvent, UINT32 senderId);
-	static BOOL ValidateMoving(BYTE* pGameEvent, UINT32 senderId);
 
 	static void HandleSnapshot(BYTE* pGameEvent, UINT32 senderId);
-	static BOOL ValidateSnapshot(BYTE* pGameEvent, UINT32 senderId);
 
 	static void HandleShoot(BYTE* pGameEvent, UINT32 senderId);
-	static BOOL ValidateShoot(BYTE* pGameEvent, UINT32 senderId);
 	
 	static void HandleTankHit(BYTE* pGameEvent, UINT32 senderId);
-	static BOOL ValidateTankHit(BYTE* pGameEvent, UINT32 senderId);
 
 	static void HandleCreateObstacle(BYTE* pGameEvent, UINT32 senderId);
-	static BOOL ValidateCreateObstacle(BYTE* pGameEvent, UINT32 senderId);
 
 	static void HandleDeleteObstacle(BYTE* pGameEvent, UINT32 senderId);
-	static BOOL ValidateDeleteObstacle(BYTE* pGameEvent, UINT32 senderId);
 
 	static void HandleRespawnTank(BYTE* pGameEvent, UINT32 senderId);
-	static BOOL ValidateRespawnTank(BYTE* pGameEvent, UINT32 senderId);
 };

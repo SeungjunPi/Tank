@@ -66,11 +66,6 @@ void GamePacket::HandleLoginResult(BYTE* pGameEvent, UINT32 senderId)
 
 void GamePacket::HandleCreateTank(BYTE* pGameEvent, UINT32 senderId)
 {
-	bool isValid = ValidateCreateTank(pGameEvent, senderId);
-	if (!isValid) {
-		return;
-	}
-
 	PACKET_SC_CREATE_TANK* pScCreateTank = (PACKET_SC_CREATE_TANK*)(pGameEvent + sizeof(EGameEventCode));
 	
 	Tank* pTank = g_objectManager.CreateTank(pScCreateTank->objectId, pScCreateTank->ownerId);
@@ -80,18 +75,8 @@ void GamePacket::HandleCreateTank(BYTE* pGameEvent, UINT32 senderId)
 	}
 }
 
-BOOL GamePacket::ValidateCreateTank(BYTE* pGameEvent, UINT32 senderId)
-{
-	return true;
-}
-
 void GamePacket::HandleDeleteTank(BYTE* pGameEvent, UINT32 senderId)
 {
-	bool isValid = ValidateDeleteTank(pGameEvent, senderId);
-	if (!isValid) {
-		return;
-	}
-
 	PACKET_SC_DELETE_TANK* pScDeleteTank = (PACKET_SC_DELETE_TANK*)(pGameEvent + sizeof(EGameEventCode));
 
 	if (pScDeleteTank->objectId.equals(g_pPlayer->GetTankID())) {
@@ -100,18 +85,8 @@ void GamePacket::HandleDeleteTank(BYTE* pGameEvent, UINT32 senderId)
 	g_objectManager.RemoveObject(pScDeleteTank->objectId);
 }
 
-BOOL GamePacket::ValidateDeleteTank(BYTE* pGameEvent, UINT32 senderId)
-{
-	return true;
-}
-
 void GamePacket::HandleStartMove(BYTE* pGameEvent, UINT32 senderId)
 {
-	bool isValid = ValidateStartMove(pGameEvent, senderId);
-	if (!isValid) {
-		return;
-	}
-
 	PACKET_SC_START_MOVE* pScStartMove = (PACKET_SC_START_MOVE*)(pGameEvent + sizeof(EGameEventCode));
 	if (pScStartMove->objectId.equals(g_pPlayer->GetTankID())) {
 		g_lastOwnTankSyncTick = g_currentGameTick;
@@ -132,18 +107,8 @@ void GamePacket::HandleStartMove(BYTE* pGameEvent, UINT32 senderId)
 	}
 }
 
-BOOL GamePacket::ValidateStartMove(BYTE* pGameEvent, UINT32 senderId)
-{
-	return true;
-}
-
 void GamePacket::HandleEndMove(BYTE* pGameEvent, UINT32 senderId)
 {
-	bool isValid = ValidateEndMove(pGameEvent, senderId);
-	if (!isValid) {
-		return;
-	}
-
 	PACKET_SC_END_MOVE* pScEndMove = (PACKET_SC_END_MOVE*)(pGameEvent + sizeof(EGameEventCode));
 	
 	if (pScEndMove->objectId.equals(g_pPlayer->GetTankID())) {
@@ -165,18 +130,8 @@ void GamePacket::HandleEndMove(BYTE* pGameEvent, UINT32 senderId)
 	}
 }
 
-BOOL GamePacket::ValidateEndMove(BYTE* pGameEvent, UINT32 senderId)
-{
-	return true;
-}
-
 void GamePacket::HandleMoving(BYTE* pGameEvent, UINT32 senderId)
 {
-	bool isValid = ValidateMoving(pGameEvent, senderId);
-	if (!isValid) {
-		return;
-	}
-
 	PACKET_SC_MOVING* pScMoving = (PACKET_SC_MOVING*)(pGameEvent + sizeof(EGameEventCode));
 	
 	if (pScMoving->objectId.equals(g_pPlayer->GetTankID())) {
@@ -187,18 +142,8 @@ void GamePacket::HandleMoving(BYTE* pGameEvent, UINT32 senderId)
 	}
 }
 
-BOOL GamePacket::ValidateMoving(BYTE* pGameEvent, UINT32 senderId)
-{
-	return true;
-}
-
 void GamePacket::HandleSnapshot(BYTE* pGameEvent, UINT32 senderId)
 {
-	bool isValid = ValidateSnapshot(pGameEvent, senderId);
-	if (!isValid) {
-		return;
-	}
-
 	PACKET_SC_SNAPSHOT* pScSnapshot = (PACKET_SC_SNAPSHOT*)(pGameEvent + sizeof(EGameEventCode));
 	if (pScSnapshot->countObjects == 0) {
 		// Todo: set start flag
@@ -227,23 +172,11 @@ void GamePacket::HandleSnapshot(BYTE* pGameEvent, UINT32 senderId)
 			__debugbreak();
 		}
 		++pObjInfo;
-	}
-
-	
-}
-
-BOOL GamePacket::ValidateSnapshot(BYTE* pGameEvent, UINT32 senderId)
-{
-	return true;
+	}	
 }
 
 void GamePacket::HandleShoot(BYTE* pGameEvent, UINT32 senderId)
 {
-	bool isValid = ValidateShoot(pGameEvent, senderId);
-	if (!isValid) {
-		return;
-	}
-
 	PACKET_SC_SHOOT* pScShoot= (PACKET_SC_SHOOT*)(pGameEvent + sizeof(EGameEventCode));
 	pScShoot->objectId;
 	pScShoot->ownerId;
@@ -252,18 +185,8 @@ void GamePacket::HandleShoot(BYTE* pGameEvent, UINT32 senderId)
 	g_objectManager.CreateProjectile(pScShoot->objectId, &pScShoot->transform, pScShoot->ownerId);
 }
 
-BOOL GamePacket::ValidateShoot(BYTE* pGameEvent, UINT32 senderId)
-{
-	return true;
-}
-
 void GamePacket::HandleTankHit(BYTE* pGameEvent, UINT32 senderId)
 {
-	bool isValid = ValidateTankHit(pGameEvent, senderId);
-	if (!isValid) {
-		return;
-	}
-
 	PACKET_SC_TANK_HIT* pScTankHit = (PACKET_SC_TANK_HIT*)(pGameEvent + sizeof(EGameEventCode));
 	Tank* pTank = (Tank*)g_objectManager.GetObjectPtrOrNull(pScTankHit->tankId);
 	
@@ -281,19 +204,9 @@ void GamePacket::HandleTankHit(BYTE* pGameEvent, UINT32 senderId)
 	pProjectile->OnHitTank(g_currentGameTick);
 }
 
-BOOL GamePacket::ValidateTankHit(BYTE* pGameEvent, UINT32 senderId)
-{
-	return true;
-}
-
 void GamePacket::HandleCreateObstacle(BYTE* pGameEvent, UINT32 senderId)
 {
 
-}
-
-BOOL GamePacket::ValidateCreateObstacle(BYTE* pGameEvent, UINT32 senderId)
-{
-	return true;
 }
 
 void GamePacket::HandleDeleteObstacle(BYTE* pGameEvent, UINT32 senderId)
@@ -301,26 +214,12 @@ void GamePacket::HandleDeleteObstacle(BYTE* pGameEvent, UINT32 senderId)
 
 }
 
-BOOL GamePacket::ValidateDeleteObstacle(BYTE* pGameEvent, UINT32 senderId)
-{
-	return true;
-}
-
 void GamePacket::HandleRespawnTank(BYTE* pGameEvent, UINT32 senderId)
 {
-	bool isValid = ValidateRespawnTank(pGameEvent, senderId);
-	if (!isValid) {
-		return;
-	}
 
 	PACKET_SC_RESPAWN_TANK* pScTankHit = (PACKET_SC_RESPAWN_TANK*)(pGameEvent + sizeof(EGameEventCode));
 	GameObject* pTank = g_objectManager.GetObjectPtrOrNull(pScTankHit->tankId);
 	pTank->Respawn();
-}
-
-BOOL GamePacket::ValidateRespawnTank(BYTE* pGameEvent, UINT32 senderId)
-{
-	return true;
 }
 
 void GamePacket::SendLogin(const std::wstring& wID, const std::wstring& wPw)
