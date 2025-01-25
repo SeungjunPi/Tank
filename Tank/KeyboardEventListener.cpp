@@ -60,10 +60,10 @@ void KeyboardEventListener::ProcessInputs()
 	}
 
 	if (GetAsyncKeyState(VK_RIGHT)) {
-		_crntInputFlag |= EKeyboardFlagEx::KEYBOARD_INPUT_FLAG_LEFT;
+		_crntInputFlag |= EKeyboardFlagEx::KEYBOARD_INPUT_FLAG_RIGHT;
 	}
 	else {
-		_crntInputFlag &= (~EKeyboardFlagEx::KEYBOARD_INPUT_FLAG_LEFT);
+		_crntInputFlag &= (~EKeyboardFlagEx::KEYBOARD_INPUT_FLAG_RIGHT);
 	}
 
 	if (GetAsyncKeyState('I') || GetAsyncKeyState('i')) {

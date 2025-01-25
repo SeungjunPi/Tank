@@ -11,7 +11,7 @@
 const float POSITION_VELOCITY_WEIGHT = 0.5f;
 const float ROTATION_VELOCITY_WEIGHT = 0.25f;
 const float Tank::COLLIDER_RADIUS = 1.0f;
-const float Tank::MACHINE_GUN_DELAY = 0.25;
+const ULONGLONG Tank::MACHINE_GUN_DELAY = 250;
 
 Tank::Tank(ObjectID id, UserDBIndex ownerID)
 	: GameObject(id, ownerID, true)
@@ -223,7 +223,7 @@ void Tank::GetTurretInfo(Transform* out_transform) const
 
 bool Tank::CanFireMachineGun() const
 {
-	return _flagFiringMachineGun && _lastMachineGunFiringTick + MACHINE_GUN_DELAY > g_currentGameTick;
+	return _lastMachineGunFiringTick + MACHINE_GUN_DELAY <= g_currentGameTick;
 }
 
 void Tank::OnFiringMachineGun(ULONGLONG currentTick)

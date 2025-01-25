@@ -9,7 +9,7 @@ class Tank : public GameObject
 {
 public:
 	static const float COLLIDER_RADIUS;
-	static const float MACHINE_GUN_DELAY;
+	static const ULONGLONG MACHINE_GUN_DELAY;
 
 	Tank(ObjectID id, UserDBIndex ownerID);
 	Tank() = default;

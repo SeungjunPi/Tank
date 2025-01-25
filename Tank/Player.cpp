@@ -11,6 +11,7 @@
 Player::Player(std::wstring name, std::wstring password)
 	: _name(name)
 	, _password(password)
+	, _score({ 0, 0, 0 })
 {
 }
 
@@ -72,48 +73,47 @@ void Player::HandleKeyboardEvents(UINT64 pressedKeys, UINT64 releasedKeys, UINT6
 		// Do something?
 		return;
 	}
-	
-	if (pressedKeys) {
-		switch (pressedKeys) {
-		case KEYBOARD_INPUT_FLAG_UP:
-			_pTank->StartMove(EMovement::FORWARD);
-			break;
-		case KEYBOARD_INPUT_FLAG_DOWN:
-			_pTank->StartMove(EMovement::BACKWARD);
-			break;
-		case KEYBOARD_INPUT_FLAG_LEFT:
-			_pTank->StartRotate(ERotation::LEFT);
-			break;
-		case KEYBOARD_INPUT_FLAG_RIGHT:
-			_pTank->StartRotate(ERotation::RIGHT);
-			break;
-		case KEYBOARD_INPUT_FLAG_SPACE:
-			break;
-		}
+
+	if (pressedKeys & KEYBOARD_INPUT_FLAG_UP) {
+		_pTank->StartMove(EMovement::FORWARD);
+	}
+
+	if (pressedKeys & KEYBOARD_INPUT_FLAG_DOWN) {
+		_pTank->StartMove(EMovement::BACKWARD);
+	}
+	if (pressedKeys & KEYBOARD_INPUT_FLAG_LEFT) {
+		_pTank->StartRotate(ERotation::LEFT);
+	}
+				
+	if (pressedKeys & KEYBOARD_INPUT_FLAG_RIGHT) {
+		_pTank->StartRotate(ERotation::RIGHT);
+	}
+
+	if (pressedKeys & 0xFF) {
 		char moveFlag = pressedKeys & 0xFF;
 		GamePacket::SendStartMove(_pTank->GetTransformPtr(), moveFlag);
 		//g_lastOwnTankSyncTick = g_currentGameTick;
 	}
 
-	if (releasedKeys) {
-		switch (releasedKeys) {
-		case KEYBOARD_INPUT_FLAG_UP:
-			_pTank->EndMove(EMovement::FORWARD);
-			break;
-		case KEYBOARD_INPUT_FLAG_DOWN:
-			_pTank->EndMove(EMovement::BACKWARD);
-			break;
-		case KEYBOARD_INPUT_FLAG_LEFT:
-			_pTank->EndRotate(ERotation::LEFT);
-			break;
-		case KEYBOARD_INPUT_FLAG_RIGHT:
-			_pTank->EndRotate(ERotation::RIGHT);
-			break;
-		case KEYBOARD_INPUT_FLAG_SPACE:
-			// end fire machine gun
-			break;
-		}
-		char moveFlag = pressedKeys & 0xFF;
+
+	if (releasedKeys & KEYBOARD_INPUT_FLAG_UP) {
+		_pTank->EndMove(EMovement::FORWARD);
+	}
+
+	if (releasedKeys & KEYBOARD_INPUT_FLAG_DOWN) {
+		_pTank->EndMove(EMovement::BACKWARD);
+	}
+
+	if (releasedKeys & KEYBOARD_INPUT_FLAG_LEFT) {
+		_pTank->EndRotate(ERotation::LEFT);
+	}
+
+	if (releasedKeys & KEYBOARD_INPUT_FLAG_RIGHT) {
+		_pTank->EndRotate(ERotation::RIGHT);
+	}
+
+	if (releasedKeys & 0xFF) {
+		char moveFlag = releasedKeys & 0xFF;
 		GamePacket::SendEndMove(_pTank->GetTransformPtr(), moveFlag);
 	}
 

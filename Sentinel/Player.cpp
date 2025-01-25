@@ -1,4 +1,5 @@
 #include "Player.h"
+#include "Global.h"
 
 Player::Player(SessionID sessionId, UserDBIndex userID)
 	: _sessionId(sessionId)
@@ -39,5 +40,14 @@ void Player::IncreaseKillCount()
 void Player::IncreaseDeathCount()
 {
 	++_deathCount;
+}
+
+bool Player::FireMachineGunIfCan()
+{
+	if (_lastMachineGunFireTick + MACHINE_GUN_DELAY < g_currentGameTick) {
+		_lastMachineGunFireTick = g_currentGameTick;
+		return true;
+	}
+	return false;
 }
 

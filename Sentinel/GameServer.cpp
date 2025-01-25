@@ -75,6 +75,15 @@ void GameServer::Start()
 		g_currentGameTick = currentTick;
 		ULONGLONG gameTickDiff = currentTick - g_previousGameTick;
 
+		// Physics(Detect Collision)
+
+		// Input
+
+		// Game Logic(DB, Apply Collision, )
+
+		// Destroy Game Objects
+
+
 		// Handle NetCore Session Events
 		NetSessionEventQueue* pNetSessionEventQueue = g_pNetCore->StartHandleSessionEvents();
 		ESessionEvent sessionEvent = pNetSessionEventQueue->GetNetSessionEvent(&senderID);

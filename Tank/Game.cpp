@@ -70,7 +70,7 @@ void Game::CleanUp()
 
 void Game::Start()
 {
-	g_pPlayer = new Player(g_userName, g_password);
+	g_pPlayer = DNew Player(g_userName, g_password);
 	SessionID serverID = g_pNetCore->ConnectTo("127.0.0.1", 30283);
 	g_pPlayer->OnConnected(serverID);
 

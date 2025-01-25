@@ -58,8 +58,9 @@ Quaternion Quaternion::RotateZM90(Quaternion v)
 
 float Quaternion::AngularDistance(Quaternion q1, Quaternion q2)
 {
-    float dotProduct = q1.w* q2.w + q1.x * q2.x + q1.y * q2.y + q1.z * q2.z;
-    return 2.0 * acosf(fabs(dotProduct));
+    float dotProduct = fabsf(q1.w* q2.w + q1.x * q2.x + q1.y * q2.y + q1.z * q2.z);
+    float clamped = fmaxf(dotProduct, 1.0f);
+    return 2.0 * acosf(clamped);
 }
 
 Vector3 Vector3::Rotate(Vector3 v, Quaternion rotQuat)

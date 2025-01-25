@@ -358,8 +358,13 @@ void GamePacket::HandleShoot(BYTE* pGameEvent, SessionID senderId)
 	if (pPlayer == nullptr) {
 		__debugbreak();
 	}
-	UserDBIndex userIndex = pPlayer->GetUserIndex();
 
+	if (!pPlayer->FireMachineGunIfCan()) {
+		printf("Fire Failed[owner=%u, Too many]\n", pPlayer->GetUserIndex());
+		return;
+	}
+
+	UserDBIndex userIndex = pPlayer->GetUserIndex();
 	Projectile* pProjectile = g_objectManager.CreateProjectile(userIndex, &pCsShoot->transform);
 
 	const size_t PACKET_SIZE = sizeof(EGameEventCode) + sizeof(PACKET_SC_SHOOT);
