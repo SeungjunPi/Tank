@@ -1,0 +1,156 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Static Data">
+      <UniqueIdentifier>{f9ff48f9-2d40-44c3-957a-b47e850041d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pch">
+      <UniqueIdentifier>{d24de01c-f58b-4f85-a81e-4d5f3a627735}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="input">
+      <UniqueIdentifier>{f2653241-13a2-463d-9581-3022e05092a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="game object">
+      <UniqueIdentifier>{7ec4045a-8c8b-4e28-8869-807964293175}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="collision">
+      <UniqueIdentifier>{6834202e-1f71-4e09-b2c8-511b43fbc73a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="login">
+      <UniqueIdentifier>{4ee3364b-5559-4184-9058-fc5f74219801}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Player">
+      <UniqueIdentifier>{216bdc60-be59-4baa-bc03-aeb10cba4da4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dummy">
+      <UniqueIdentifier>{2c062d88-ec51-44f6-8335-bca824b79ce1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Global.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ConsoleRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StaticData.cpp">
+      <Filter>Static Data</Filter>
+    </ClCompile>
+    <ClCompile Include="KeyboardEventListener.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>game object</Filter>
+    </ClCompile>
+    <ClCompile Include="GameStruct.cpp">
+      <Filter>game object</Filter>
+    </ClCompile>
+    <ClCompile Include="Projectile.cpp">
+      <Filter>game object</Filter>
+    </ClCompile>
+    <ClCompile Include="Tank.cpp">
+      <Filter>game object</Filter>
+    </ClCompile>
+    <ClCompile Include="DotObject.cpp">
+      <Filter>game object</Filter>
+    </ClCompile>
+    <ClCompile Include="Obstacle.cpp">
+      <Filter>game object</Filter>
+    </ClCompile>
+    <ClCompile Include="AllocObjectManager.cpp">
+      <Filter>game object</Filter>
+    </ClCompile>
+    <ClCompile Include="GameEvent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TankAliases.h">
+      <Filter>pch</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>Player</Filter>
+    </ClCompile>
+    <ClCompile Include="DummyManager.cpp">
+      <Filter>Dummy</Filter>
+    </ClCompile>
+    <ClCompile Include="Dummy.cpp">
+      <Filter>Dummy</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Game.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Global.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ConsoleRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticData.h">
+      <Filter>Static Data</Filter>
+    </ClInclude>
+    <ClInclude Include="TankPch.h">
+      <Filter>pch</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyboardEventListener.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStruct.h">
+      <Filter>game object</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject.h">
+      <Filter>game object</Filter>
+    </ClInclude>
+    <ClInclude Include="Projectile.h">
+      <Filter>game object</Filter>
+    </ClInclude>
+    <ClInclude Include="Tank.h">
+      <Filter>game object</Filter>
+    </ClInclude>
+    <ClInclude Include="DotObject.h">
+      <Filter>game object</Filter>
+    </ClInclude>
+    <ClInclude Include="Obstacle.h">
+      <Filter>game object</Filter>
+    </ClInclude>
+    <ClInclude Include="AllocObjectManager.h">
+      <Filter>game object</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEvent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Dummy.h">
+      <Filter>Dummy</Filter>
+    </ClInclude>
+    <ClInclude Include="DummyManager.h">
+      <Filter>Dummy</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
