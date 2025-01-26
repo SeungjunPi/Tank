@@ -18,9 +18,15 @@
     <ClInclude Include="GameMath.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="MyAssert.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameMath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

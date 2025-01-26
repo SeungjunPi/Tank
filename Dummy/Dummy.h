@@ -2,6 +2,8 @@
 
 #include "Player.h"
 
+const ULONGLONG DUMMY_TICK_INTERVAL = 200;
+
 class Dummy : public Player
 {
 public:
@@ -22,7 +24,9 @@ private:
 
 	bool _isConnecting = false;
 
-	bool RotateTankIfNotHeadToDest();
+	ULONGLONG _prevTick = 0;
+
+	void DetermineInput();
 
 	
 };

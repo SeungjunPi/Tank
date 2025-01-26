@@ -63,12 +63,17 @@ void Dummy::OnFrame()
 	}
 	else {
 		// forward가 destination으로 충분히 향하고 있다면 전진만, 아니면 회전만 함. 
-		if (!RotateTankIfNotHeadToDest()) {
-			_virtualInputEvent |= KEYBOARD_INPUT_FLAG_UP;
-		}
+		DetermineInput();
 	}
 	
 	UINT64 edgeTrigger = _virtualInputEvent ^ _prevInputEvent;
+	if (edgeTrigger) {
+		// 사람의 반응속도 이상을 할 수 없으므로..
+		if (_prevTick + DUMMY_TICK_INTERVAL > g_currentGameTick) {
+			return;
+		}
+		_prevTick = g_currentGameTick;
+	}
 	UINT64 pressedKeys = edgeTrigger & _virtualInputEvent;
 	UINT64 releasedKeys = edgeTrigger & (~_virtualInputEvent);
 	if (releasedKeys || pressedKeys) {
@@ -82,7 +87,7 @@ void Dummy::OnFrame()
 		dstDir.x /= sq;
 		dstDir.y /= sq;
 
-		printf("DstDir[%f, %f], MoveDir[%f, %f], %X, %X\n", dstDir.x, dstDir.y, moveDir.x, moveDir.y,  pressedKeys, releasedKeys);
+		//printf("DstDir[%f, %f], MoveDir[%f, %f], %X, %X\n", dstDir.x, dstDir.y, moveDir.x, moveDir.y,  pressedKeys, releasedKeys);
 	}
 	
 
@@ -92,35 +97,31 @@ void Dummy::OnFrame()
 	_virtualInputEvent = 0;
 }
 
-bool Dummy::RotateTankIfNotHeadToDest()
+void Dummy::DetermineInput()
 {
 	Tank* pTank = GetTank();
 	Vector3 tankPosition = pTank->GetPosition();
 	Vector3 forwardDirection = pTank->GetForwardDirection();
 
-	Vector3 v1{ _destinationCoord.x - tankPosition.x, _destinationCoord.y - tankPosition.y, _destinationCoord.z - tankPosition.z };
-	float norm = sqrtf(v1.x * v1.x + v1.y * v1.y);
-	v1.x /= norm;
-	v1.y /= norm;
-	
+	Vector2 moveDir{ _destinationCoord.x - tankPosition.x, _destinationCoord.y - tankPosition.y };
+	Vector2 headDir{ forwardDirection.x, forwardDirection.y };
 
-	float cosAngle = (v1.x * forwardDirection.x + v1.y * forwardDirection.y);
-	printf("FoDir:[%f, %f], DstDir:[%f, %f]\n", forwardDirection.x, forwardDirection.y, v1.x, v1.y);
-	if (cosAngle > 0.75) {
-		// Do not rotate
-		return false;
+	int moveDetermine = Vector2::DeterminRotationDirection(headDir, moveDir);
+
+	if (moveDetermine == 0) {
+		_virtualInputEvent |= KEYBOARD_INPUT_FLAG_UP;
+		printf("[GO] FoDir:[%f, %f], MoveDir:[%f, %f]\n", headDir.x, headDir.y, moveDir.x, moveDir.y);
+		return;
 	}
-	
-	float cross = v1.y * forwardDirection.x - v1.x * forwardDirection.y;
-	if (cross <= 0) {
-		// Rotate left
-		_virtualInputEvent |= KEYBOARD_INPUT_FLAG_LEFT;
-	}
-	else {
-		// Rotate right
+
+	if (moveDetermine > 0) {
+		printf("[RR] FoDir:[%f, %f], MoveDir:[%f, %f]\n", headDir.x, headDir.y, moveDir.x, moveDir.y);
 		_virtualInputEvent |= KEYBOARD_INPUT_FLAG_RIGHT;
 	}
-	return true;
+	else {
+		printf("[LL] FoDir:[%f, %f], MoveDir:[%f, %f]\n", headDir.x, headDir.y, moveDir.x, moveDir.y);
+		_virtualInputEvent |= KEYBOARD_INPUT_FLAG_LEFT;
+	}
 }
 
 

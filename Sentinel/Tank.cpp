@@ -96,7 +96,6 @@ void Tank::EndRotate(EROTATION rotation)
 
 void Tank::MoveForward(ULONGLONG tickDiff)
 {
-	_forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
 	_transform.Position.x = _transform.Position.x + _forwardDirection.x * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
 	_transform.Position.y = _transform.Position.y + _forwardDirection.y * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
 	_transform.Position.z = _transform.Position.z + _forwardDirection.z * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
@@ -107,7 +106,6 @@ void Tank::MoveForward(ULONGLONG tickDiff)
 
 void Tank::MoveBackward(ULONGLONG tickDiff)
 {
-	_forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
 	_transform.Position.x = _transform.Position.x - _forwardDirection.x * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
 	_transform.Position.y = _transform.Position.y - _forwardDirection.y * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
 	_transform.Position.z = _transform.Position.z - _forwardDirection.z * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
@@ -121,6 +119,7 @@ void Tank::RotateRight(ULONGLONG tickDiff)
 	float radian = tickDiff * angularVelocity * ROTATION_VELOCITY_WEIGHT;
 
 	_transform.Rotation = Quaternion::RotateZP(radian, _transform.Rotation);
+	_forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
 
 	_dirty = true;
 	OnUpdateTransform();
@@ -132,6 +131,7 @@ void Tank::RotateLeft(ULONGLONG tickDiff)
 	float radian = tickDiff * angularVelocity * ROTATION_VELOCITY_WEIGHT;
 
 	_transform.Rotation = Quaternion::RotateZM(radian, _transform.Rotation);
+	_forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
 
 	_dirty = true;
 	OnUpdateTransform();

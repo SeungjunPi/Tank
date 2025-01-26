@@ -138,10 +138,90 @@ Vector3 Vector3::RotateZM90(Vector3 v)
     return w;
 }
 
+float Vector3::SquareSum(Vector3 v)
+{
+    return v.x * v.x + v.y * v.y + v.z * v.z;
+}
+
+float Vector3::Norm(Vector3 v)
+{
+    float sqSum = SquareSum(v);
+    return sqrtf(sqSum);
+}
+
+void Vector3::Normalize(Vector3* out_normalized, Vector3 v)
+{
+    float norm = Norm(v);
+
+    if (norm < 0E-010) {
+        __debugbreak();
+    }
+
+    out_normalized->x = v.x / norm;
+    out_normalized->y = v.y / norm;
+    out_normalized->z = v.z / norm;
+}
+
 float Vector3::DistanceSquared(Vector3 v, Vector3 w)
 {
     float x = v.x - w.x;
     float y = v.y - w.y;
     float z = v.z - w.z;
     return x * x + y * y + z * z;
+}
+
+const float Vector2::TRUNCATION = 1E-02;
+
+float Vector2::SquareSum(Vector2 v)
+{
+    return v.x * v.x + v.y * v.y;
+}
+
+float Vector2::Norm(Vector2 v)
+{
+    return sqrtf(SquareSum(v));
+}
+
+void Vector2::Normalize(Vector2* out_normalized, Vector2 v)
+{
+    float norm = Norm(v);
+    out_normalized->x = v.x / norm;
+    out_normalized->y = v.y / norm;
+}
+
+float Vector2::DistanceSquared(Vector2 v, Vector2 w)
+{
+    float dx = v.x - w.x;
+    float dy = v.y - w.y;
+
+    return dx * dx + dy * dy;
+}
+
+int Vector2::DeterminRotationDirection(Vector2 crntDir, Vector2 targetDir)
+{
+    float dot = DotProduct(crntDir, targetDir);
+    dot /= Norm(crntDir);
+    dot /= Norm(targetDir);
+    if (dot >= 1.0 - TRUNCATION) {
+        // Same Direction
+        return 0;
+    }
+
+    float cross = CrossProduct(crntDir, targetDir);
+    if (cross >= 0) {
+        return 1;
+    }
+    else {
+        return -1;
+    }
+}
+
+float Vector2::DotProduct(Vector2 v, Vector2 w)
+{
+    return v.x * w.x + v.y * w.y;
+}
+
+float Vector2::CrossProduct(Vector2 v, Vector2 w)
+{
+    return v.x * w.y - v.y * w.x;
 }

@@ -74,18 +74,18 @@ void Player::HandleKeyboardEvents(UINT64 pressedKeys, UINT64 releasedKeys, UINT6
 		return;
 	}
 
-	if (pressedKeys & KEYBOARD_INPUT_FLAG_UP) {
+	if (heldKeys & KEYBOARD_INPUT_FLAG_UP) {
 		_pTank->StartMove(EMovement::FORWARD);
 	}
 
-	if (pressedKeys & KEYBOARD_INPUT_FLAG_DOWN) {
+	if (heldKeys & KEYBOARD_INPUT_FLAG_DOWN) {
 		_pTank->StartMove(EMovement::BACKWARD);
 	}
-	if (pressedKeys & KEYBOARD_INPUT_FLAG_LEFT) {
+	if (heldKeys & KEYBOARD_INPUT_FLAG_LEFT) {
 		_pTank->StartRotate(ERotation::LEFT);
 	}
 				
-	if (pressedKeys & KEYBOARD_INPUT_FLAG_RIGHT) {
+	if (heldKeys & KEYBOARD_INPUT_FLAG_RIGHT) {
 		_pTank->StartRotate(ERotation::RIGHT);
 	}
 

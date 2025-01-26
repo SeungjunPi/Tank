@@ -39,8 +39,8 @@ void Game::Initialize()
 
 	g_objectManager.Initiate();
 
-	//ConsoleRenderer::Initiate(&g_objectManager);
-	//ConsoleRenderer::TurnOnShowDebugInfo();
+	ConsoleRenderer::Initiate(&g_objectManager);
+	ConsoleRenderer::TurnOnShowDebugInfo();
 
 	CreateNetCore(&g_pNetCore);
 	BOOL res = g_pNetCore->StartNetCore();
@@ -65,7 +65,7 @@ void Game::CleanUp()
 	DeleteCollisionManager(g_pCollisionManager);
 	DeleteNetCore(g_pNetCore);
 	
-	//ConsoleRenderer::Terminate();
+	ConsoleRenderer::Terminate();
 	KeyboardEventListener::Terminate();
 	g_objectManager.Terminate();
 	delete g_pCamera;
