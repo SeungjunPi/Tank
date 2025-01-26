@@ -68,6 +68,8 @@ void Game::CleanUp()
 	ConsoleRenderer::Terminate();
 	KeyboardEventListener::Terminate();
 	g_objectManager.Terminate();
+	g_pDummyManager->RemovePlayer();
+	delete g_pDummyManager;
 	delete g_pCamera;
 }
 

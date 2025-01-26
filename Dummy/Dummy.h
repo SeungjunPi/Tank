@@ -2,7 +2,7 @@
 
 #include "Player.h"
 
-const ULONGLONG DUMMY_TICK_INTERVAL = 200;
+const ULONGLONG DUMMY_REACTION_SPEED = 300;
 
 class Dummy : public Player
 {

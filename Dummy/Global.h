@@ -26,22 +26,12 @@ extern ULONGLONG g_previousGameTick;
 extern ULONGLONG g_currentGameTick;
 extern DWORD g_currentFPS;
 
-extern ULONGLONG g_lastOwnTankSyncTick;
-
 extern NetCore* g_pNetCore;
 
-extern bool g_isTankCreateRequest;
-
-extern Score g_score;
 extern AllocObjectManager g_objectManager;
-
-extern std::wstring g_userName;
-extern std::wstring g_password;
-
 extern ICollisionManager* g_pCollisionManager;
 
 extern GameCamera* g_pCamera;
-
 extern DummyManager* g_pDummyManager;
 
 class Global

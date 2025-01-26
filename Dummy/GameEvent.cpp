@@ -97,7 +97,7 @@ void GamePacket::HandleStartMove(BYTE* pGameEvent, UINT32 senderId)
 
 	Dummy* pDummy = g_pDummyManager->GetDummyBySessionID(senderId);
 	if (pScStartMove->objectId.equals(pDummy->GetTankID())) {
-		g_lastOwnTankSyncTick = g_currentGameTick;
+		
 	}
 	else {
 		if (pScStartMove->movementFlag & FLAG_MOVE_FORWARD) {
@@ -122,7 +122,7 @@ void GamePacket::HandleEndMove(BYTE* pGameEvent, UINT32 senderId)
 	Dummy* pDummy = g_pDummyManager->GetDummyBySessionID(senderId);
 	if (pScEndMove->objectId.equals(pDummy->GetTankID())) {
 		// TODO: Log "Adjusted based on ther server's transform\n"
-		g_lastOwnTankSyncTick = g_currentGameTick;
+		//g_lastOwnTankSyncTick = g_currentGameTick;
 	}
 
 	if (pScEndMove->movementFlag & FLAG_MOVE_FORWARD) {

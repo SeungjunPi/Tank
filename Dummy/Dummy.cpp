@@ -69,27 +69,13 @@ void Dummy::OnFrame()
 	UINT64 edgeTrigger = _virtualInputEvent ^ _prevInputEvent;
 	if (edgeTrigger) {
 		// 사람의 반응속도 이상을 할 수 없으므로..
-		if (_prevTick + DUMMY_TICK_INTERVAL > g_currentGameTick) {
+		if (_prevTick + DUMMY_REACTION_SPEED > g_currentGameTick) {
 			return;
 		}
 		_prevTick = g_currentGameTick;
 	}
 	UINT64 pressedKeys = edgeTrigger & _virtualInputEvent;
 	UINT64 releasedKeys = edgeTrigger & (~_virtualInputEvent);
-	if (releasedKeys || pressedKeys) {
-		Vector3 moveDir = pTank->GetForwardDirection();
-		Vector3 dstDir = _destinationCoord;
-		dstDir.x -= pTank->GetPosition().x;
-		dstDir.y -= pTank->GetPosition().y;
-
-		float sq = dstDir.x * dstDir.x + dstDir.y * dstDir.y;
-
-		dstDir.x /= sq;
-		dstDir.y /= sq;
-
-		//printf("DstDir[%f, %f], MoveDir[%f, %f], %X, %X\n", dstDir.x, dstDir.y, moveDir.x, moveDir.y,  pressedKeys, releasedKeys);
-	}
-	
 
 	HandleKeyboardEvents(pressedKeys, releasedKeys, _virtualInputEvent);
 

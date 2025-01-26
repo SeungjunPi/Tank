@@ -13,7 +13,9 @@ DummyManager::~DummyManager()
 
 void DummyManager::CreatePlayer()
 {
-	_dummy = DNew Dummy(L"player008", L"passw0rd008");
+	std::wstring name(L"player008");
+	std::wstring pw(L"passw0rd008");
+	_dummy = DNew Dummy(name, pw);
 }
 
 void DummyManager::RemovePlayer()
