@@ -52,6 +52,7 @@ void Game::Initialize()
 
 	g_pCamera = DNew GameCamera;
 	g_pDummyManager = DNew DummyManager();
+	g_pDummyManager->Initiate();
 }
 
 void Game::CleanUp()
@@ -68,7 +69,7 @@ void Game::CleanUp()
 	ConsoleRenderer::Terminate();
 	KeyboardEventListener::Terminate();
 	g_objectManager.Terminate();
-	g_pDummyManager->RemovePlayer();
+	g_pDummyManager->Shutdown();
 	delete g_pDummyManager;
 	delete g_pCamera;
 }

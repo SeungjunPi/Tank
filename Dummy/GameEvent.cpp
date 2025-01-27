@@ -54,16 +54,16 @@ void GamePacket::HandlePacket(BYTE* pGameEvent, UINT32 senderId)
 }
 
 
-void GamePacket::HandleLoginResult(BYTE* pGameEvent, UINT32 senderId)
+void GamePacket::HandleLoginResult(BYTE* pGameEvent, UINT32 sessionID)
 {
 	PACKET_SC_LOGIN* pScLogin = (PACKET_SC_LOGIN*)(pGameEvent + sizeof(EGameEventCode));
 	if (pScLogin->result == FALSE) {
 		// End game.
-		Game::Shutdown();
+		g_pDummyManager->RemoveDummy(sessionID);
 		return;
 	}
 
-	Dummy* pDummy = g_pDummyManager->GetDummyBySessionID(senderId);
+	Dummy* pDummy = g_pDummyManager->GetDummyBySessionID(sessionID);
 	// Find dummy and call
 	pDummy->OnSuccessLogin(pScLogin->userDBIndex, { pScLogin->hitCount , pScLogin->killCount , pScLogin->deathCount });
 }
@@ -73,11 +73,19 @@ void GamePacket::HandleCreateTank(BYTE* pGameEvent, UINT32 senderId)
 	PACKET_SC_CREATE_TANK* pScCreateTank = (PACKET_SC_CREATE_TANK*)(pGameEvent + sizeof(EGameEventCode));
 
 	Dummy* pDummy = g_pDummyManager->GetDummyBySessionID(senderId);
-	// TODO: 중복 생성의 가능성이 있으므로, 적절하게 처리.
-	Tank* pTank = g_objectManager.CreateTank(pScCreateTank->objectId, pScCreateTank->ownerId);
-	if (pScCreateTank->ownerId == pDummy->GetUserID()) {
-		pDummy->SetTank(pTank);
+	if (pDummy == nullptr) {
+		// 이 클라이언트에 있는 Dummy가 아닌 접속한 다른 유저의 객체.
+		Tank* pTank = g_objectManager.CreateTank(pScCreateTank->objectId, pScCreateTank->ownerId);
+		return;
 	}
+
+	if (pScCreateTank->ownerId != pDummy->GetUserID()) {
+		// 더미는 보낸 요청에 대해 자신에게 온 응답만 처리함
+		return;
+	}
+
+	Tank* pTank = g_objectManager.CreateTank(pScCreateTank->objectId, pScCreateTank->ownerId);
+	pDummy->SetTank(pTank);
 }
 
 void GamePacket::HandleDeleteTank(BYTE* pGameEvent, UINT32 senderId)
@@ -85,9 +93,28 @@ void GamePacket::HandleDeleteTank(BYTE* pGameEvent, UINT32 senderId)
 	PACKET_SC_DELETE_TANK* pScDeleteTank = (PACKET_SC_DELETE_TANK*)(pGameEvent + sizeof(EGameEventCode));
 
 	Dummy* pDummy = g_pDummyManager->GetDummyBySessionID(senderId);
-	if (pScDeleteTank->objectId.equals(pDummy->GetTankID())) {
-		pDummy->ClearTank();
+	if (pDummy == nullptr) {
+		// 이 클라이언트에 있는 Dummy가 아닌 접속한 다른 유저의 객체.
+		g_objectManager.RemoveObject(pScDeleteTank->objectId);
+		return;
 	}
+	
+	GameObject* pObj = g_objectManager.GetObjectPtrOrNull(pScDeleteTank->objectId);
+	if (pObj == nullptr) {
+		// 이미 지운 객체
+		return;
+	}
+
+	if (pObj->GetOwnerID() != senderId) {
+		// 다른 더미의 요청에 대한 처리 패킷
+		return;
+	}
+
+	if (!pScDeleteTank->objectId.equals(pDummy->GetTankID())) {
+		__debugbreak();
+	}
+	
+	pDummy->ClearTank();
 	g_objectManager.RemoveObject(pScDeleteTank->objectId);
 }
 

@@ -191,27 +191,27 @@ public:
 	static void SendFireMachineGun(const Transform* pTurretTransform, UINT32 sessionID);
 
 private:
-	static void HandleLoginResult(BYTE* pGameEvent, UINT32 senderId);
+	static void HandleLoginResult(BYTE* pGameEvent, UINT32 sessionID);
 
-	static void HandleCreateTank(BYTE* pGameEvent, UINT32 senderId);
+	static void HandleCreateTank(BYTE* pGameEvent, UINT32 sessionID);
 
-	static void HandleDeleteTank(BYTE* pGameEvent, UINT32 senderId);
+	static void HandleDeleteTank(BYTE* pGameEvent, UINT32 sessionID);
 
-	static void HandleStartMove(BYTE* pGameEvent, UINT32 senderId);
+	static void HandleStartMove(BYTE* pGameEvent, UINT32 sessionID);
 
-	static void HandleEndMove(BYTE* pGameEvent, UINT32 senderId);
+	static void HandleEndMove(BYTE* pGameEvent, UINT32 sessionID);
 
-	static void HandleMoving(BYTE* pGameEvent, UINT32 senderId);
+	static void HandleMoving(BYTE* pGameEvent, UINT32 sessionID);
 
-	static void HandleSnapshot(BYTE* pGameEvent, UINT32 senderId);
+	static void HandleSnapshot(BYTE* pGameEvent, UINT32 sessionID);
 
-	static void HandleShoot(BYTE* pGameEvent, UINT32 senderId);
+	static void HandleShoot(BYTE* pGameEvent, UINT32 sessionID);
 	
-	static void HandleTankHit(BYTE* pGameEvent, UINT32 senderId);
+	static void HandleTankHit(BYTE* pGameEvent, UINT32 sessionID);
 
-	static void HandleCreateObstacle(BYTE* pGameEvent, UINT32 senderId);
+	static void HandleCreateObstacle(BYTE* pGameEvent, UINT32 sessionID);
 
-	static void HandleDeleteObstacle(BYTE* pGameEvent, UINT32 senderId);
+	static void HandleDeleteObstacle(BYTE* pGameEvent, UINT32 sessionID);
 
-	static void HandleRespawnTank(BYTE* pGameEvent, UINT32 senderId);
+	static void HandleRespawnTank(BYTE* pGameEvent, UINT32 sessionID);
 };

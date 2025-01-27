@@ -11,34 +11,59 @@ DummyManager::~DummyManager()
 {
 }
 
-void DummyManager::CreatePlayer()
+void DummyManager::Initiate()
 {
+	if (_pDummyMaster != nullptr) {
+		__debugbreak();
+	}
 	std::wstring name(L"player008");
 	std::wstring pw(L"passw0rd008");
-	_dummy = DNew Dummy(name, pw);
+	_pDummyMaster = DNew Dummy(name, pw);
 }
 
-void DummyManager::RemovePlayer()
+void DummyManager::Shutdown()
 {
-	if (_dummy != nullptr) {
-		delete _dummy;
+	if (_pDummyMaster == nullptr) {
+		__debugbreak();
 	}
+
+	delete _pDummyMaster;
+}
+
+void DummyManager::CreateDummy()
+{
+	__debugbreak();
+}
+
+void DummyManager::RemoveDummy(SessionID sessionID)
+{
+	__debugbreak();
+	
+}
+
+bool DummyManager::IsMaster(SessionID sessionID) const
+{
+	if (_pDummyMaster == nullptr) {
+		__debugbreak();
+	}
+
+	return _pDummyMaster->GetSessionID() == sessionID;
 }
 
 Dummy* DummyManager::GetDummyBySessionID(SessionID sessionID)
 {
-	return _dummy;
+	return _pDummyMaster;
 }
 
 void DummyManager::OnFrame()
 {
 	// Player 추가
-	if (_dummy == nullptr) {
-		CreatePlayer();
+	if (_pDummyMaster == nullptr) {
+		__debugbreak();
 	}
 
 	// Player 동작
-	_dummy->OnFrame();
+	_pDummyMaster->OnFrame();
 	
 	// Player 제거
 }
