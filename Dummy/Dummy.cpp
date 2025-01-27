@@ -40,6 +40,11 @@ void Dummy::OnSuccessLogin(UserDBIndex key, Score score)
 	Player::OnSuccessLogin(key, score);
 }
 
+void Dummy::UpdateLastSyncTick()
+{
+	// 지금은 무시. 
+}
+
 void Dummy::OnFrame()
 {
 	if (!_isConnecting) {

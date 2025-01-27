@@ -52,7 +52,18 @@ bool DummyManager::IsMaster(SessionID sessionID) const
 
 Dummy* DummyManager::GetDummyBySessionID(SessionID sessionID)
 {
-	return _pDummyMaster;
+	if (_pDummyMaster->GetSessionID() == sessionID) {
+		return _pDummyMaster;
+	}
+	return nullptr;
+}
+
+Dummy* DummyManager::GetDummyByUserID(UserDBIndex userID)
+{
+	if (_pDummyMaster->GetUserID() == userID) {
+		return _pDummyMaster;
+	}
+	return nullptr;
 }
 
 void DummyManager::OnFrame()

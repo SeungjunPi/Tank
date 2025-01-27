@@ -68,89 +68,76 @@ void GamePacket::HandleLoginResult(BYTE* pGameEvent, UINT32 sessionID)
 	pDummy->OnSuccessLogin(pScLogin->userDBIndex, { pScLogin->hitCount , pScLogin->killCount , pScLogin->deathCount });
 }
 
-void GamePacket::HandleCreateTank(BYTE* pGameEvent, UINT32 senderId)
+void GamePacket::HandleCreateTank(BYTE* pGameEvent, UINT32 sessionID)
 {
-	PACKET_SC_CREATE_TANK* pScCreateTank = (PACKET_SC_CREATE_TANK*)(pGameEvent + sizeof(EGameEventCode));
-
-	Dummy* pDummy = g_pDummyManager->GetDummyBySessionID(senderId);
-	if (pDummy == nullptr) {
-		// 이 클라이언트에 있는 Dummy가 아닌 접속한 다른 유저의 객체.
-		Tank* pTank = g_objectManager.CreateTank(pScCreateTank->objectId, pScCreateTank->ownerId);
+	if (!g_pDummyManager->IsMaster(sessionID)) {
 		return;
 	}
+	PACKET_SC_CREATE_TANK* pScCreateTank = (PACKET_SC_CREATE_TANK*)(pGameEvent + sizeof(EGameEventCode));
 
-	if (pScCreateTank->ownerId != pDummy->GetUserID()) {
-		// 더미는 보낸 요청에 대해 자신에게 온 응답만 처리함
-		return;
+	Dummy* pDummy = g_pDummyManager->GetDummyByUserID(pScCreateTank->ownerId);
+	if (pDummy == nullptr) {
+		__debugbreak();
 	}
 
 	Tank* pTank = g_objectManager.CreateTank(pScCreateTank->objectId, pScCreateTank->ownerId);
 	pDummy->SetTank(pTank);
 }
 
-void GamePacket::HandleDeleteTank(BYTE* pGameEvent, UINT32 senderId)
+void GamePacket::HandleDeleteTank(BYTE* pGameEvent, UINT32 sessionID)
 {
+	if (!g_pDummyManager->IsMaster(sessionID)) {
+		return;
+	}
+
 	PACKET_SC_DELETE_TANK* pScDeleteTank = (PACKET_SC_DELETE_TANK*)(pGameEvent + sizeof(EGameEventCode));
+	GameObject* pTargetObj = g_objectManager.GetObjectPtrOrNull(pScDeleteTank->objectId);
+	Dummy* pDummy = g_pDummyManager->GetDummyByUserID(pTargetObj->GetOwnerID());
+	pTargetObj = nullptr;
 
-	Dummy* pDummy = g_pDummyManager->GetDummyBySessionID(senderId);
-	if (pDummy == nullptr) {
-		// 이 클라이언트에 있는 Dummy가 아닌 접속한 다른 유저의 객체.
-		g_objectManager.RemoveObject(pScDeleteTank->objectId);
-		return;
+	if (pDummy != nullptr) {
+		// 더미에서 Tank 제거	
+		pDummy->ClearTank();
 	}
 	
-	GameObject* pObj = g_objectManager.GetObjectPtrOrNull(pScDeleteTank->objectId);
-	if (pObj == nullptr) {
-		// 이미 지운 객체
-		return;
-	}
-
-	if (pObj->GetOwnerID() != senderId) {
-		// 다른 더미의 요청에 대한 처리 패킷
-		return;
-	}
-
-	if (!pScDeleteTank->objectId.equals(pDummy->GetTankID())) {
-		__debugbreak();
-	}
-	
-	pDummy->ClearTank();
 	g_objectManager.RemoveObject(pScDeleteTank->objectId);
 }
 
-void GamePacket::HandleStartMove(BYTE* pGameEvent, UINT32 senderId)
+void GamePacket::HandleStartMove(BYTE* pGameEvent, UINT32 sessionID)
 {
+	if (!g_pDummyManager->IsMaster(sessionID)) {
+		return;
+	}
 	PACKET_SC_START_MOVE* pScStartMove = (PACKET_SC_START_MOVE*)(pGameEvent + sizeof(EGameEventCode));
 
-	Dummy* pDummy = g_pDummyManager->GetDummyBySessionID(senderId);
-	if (pScStartMove->objectId.equals(pDummy->GetTankID())) {
-		
+	if (pScStartMove->movementFlag & FLAG_MOVE_FORWARD) {
+		g_objectManager.StartTankMove(pScStartMove->objectId, EMovement::FORWARD);
 	}
-	else {
-		if (pScStartMove->movementFlag & FLAG_MOVE_FORWARD) {
-			g_objectManager.StartTankMove(pScStartMove->objectId, EMovement::FORWARD);
-		}
-		if (pScStartMove->movementFlag & FLAG_MOVE_BACKWARD) {
-			g_objectManager.StartTankMove(pScStartMove->objectId, EMovement::BACKWARD);
-		}
-		if (pScStartMove->movementFlag & FLAG_ROTATE_LEFT) {
-			g_objectManager.StartTankRotate(pScStartMove->objectId, ERotation::LEFT);
-		}
-		if (pScStartMove->movementFlag & FLAG_ROTATE_RIGHT) {
-			g_objectManager.StartTankRotate(pScStartMove->objectId, ERotation::RIGHT);
-		}
+	if (pScStartMove->movementFlag & FLAG_MOVE_BACKWARD) {
+		g_objectManager.StartTankMove(pScStartMove->objectId, EMovement::BACKWARD);
 	}
+	if (pScStartMove->movementFlag & FLAG_ROTATE_LEFT) {
+		g_objectManager.StartTankRotate(pScStartMove->objectId, ERotation::LEFT);
+	}
+	if (pScStartMove->movementFlag & FLAG_ROTATE_RIGHT) {
+		g_objectManager.StartTankRotate(pScStartMove->objectId, ERotation::RIGHT);
+	}
+
+	GameObject* pObj = g_objectManager.GetObjectPtrOrNull(pScStartMove->objectId);
+	Dummy* pDummy = g_pDummyManager->GetDummyByUserID(pObj->GetOwnerID());
+	if (pDummy == nullptr) {
+		return;
+	}
+
+	pDummy->UpdateLastSyncTick();
 }
 
-void GamePacket::HandleEndMove(BYTE* pGameEvent, UINT32 senderId)
+void GamePacket::HandleEndMove(BYTE* pGameEvent, UINT32 sessionID)
 {
-	PACKET_SC_END_MOVE* pScEndMove = (PACKET_SC_END_MOVE*)(pGameEvent + sizeof(EGameEventCode));
-	
-	Dummy* pDummy = g_pDummyManager->GetDummyBySessionID(senderId);
-	if (pScEndMove->objectId.equals(pDummy->GetTankID())) {
-		// TODO: Log "Adjusted based on ther server's transform\n"
-		//g_lastOwnTankSyncTick = g_currentGameTick;
+	if (!g_pDummyManager->IsMaster(sessionID)) {
+		return;
 	}
+	PACKET_SC_END_MOVE* pScEndMove = (PACKET_SC_END_MOVE*)(pGameEvent + sizeof(EGameEventCode));
 
 	if (pScEndMove->movementFlag & FLAG_MOVE_FORWARD) {
 		g_objectManager.EndTankMove(pScEndMove->objectId, EMovement::FORWARD, &pScEndMove->transform);
@@ -164,26 +151,40 @@ void GamePacket::HandleEndMove(BYTE* pGameEvent, UINT32 senderId)
 	if (pScEndMove->movementFlag & FLAG_ROTATE_RIGHT) {
 		g_objectManager.EndTankRotate(pScEndMove->objectId, ERotation::RIGHT, &pScEndMove->transform);
 	}
-}
-
-void GamePacket::HandleMoving(BYTE* pGameEvent, UINT32 senderId)
-{
-	PACKET_SC_MOVING* pScMoving = (PACKET_SC_MOVING*)(pGameEvent + sizeof(EGameEventCode));
 	
-	Dummy* pDummy = g_pDummyManager->GetDummyBySessionID(senderId);
-	if (pScMoving->objectId.equals(pDummy->GetTankID())) {
-		// update if transforms are diffrent
+	GameObject* pObj = g_objectManager.GetObjectPtrOrNull(pScEndMove->objectId);
+	Dummy* pDummy = g_pDummyManager->GetDummyByUserID(pObj->GetOwnerID());
+	if (pDummy == nullptr) {
+		return;
 	}
-	else {
-		g_objectManager.UpdateObjectTransform(pScMoving->objectId, &pScMoving->transform);
-	}
+
+	pDummy->UpdateLastSyncTick();
 }
 
-void GamePacket::HandleSnapshot(BYTE* pGameEvent, UINT32 senderId)
+void GamePacket::HandleMoving(BYTE* pGameEvent, UINT32 sessionID)
 {
+	if (!g_pDummyManager->IsMaster(sessionID)) {
+		return;
+	}
+	PACKET_SC_MOVING* pScMoving = (PACKET_SC_MOVING*)(pGameEvent + sizeof(EGameEventCode));
+	g_objectManager.UpdateObjectTransform(pScMoving->objectId, &pScMoving->transform);
+
+	GameObject* pObj = g_objectManager.GetObjectPtrOrNull(pScMoving->objectId);
+	Dummy* pDummy = g_pDummyManager->GetDummyByUserID(pObj->GetOwnerID());
+	if (pDummy == nullptr) {
+		return;
+	}
+
+	pDummy->UpdateLastSyncTick();
+}
+
+void GamePacket::HandleSnapshot(BYTE* pGameEvent, UINT32 sessionID)
+{
+	if (!g_pDummyManager->IsMaster(sessionID)) {
+		return;
+	}
 	PACKET_SC_SNAPSHOT* pScSnapshot = (PACKET_SC_SNAPSHOT*)(pGameEvent + sizeof(EGameEventCode));
 	if (pScSnapshot->countObjects == 0) {
-		// Todo: set start flag
 		return;
 	}
 
@@ -212,31 +213,31 @@ void GamePacket::HandleSnapshot(BYTE* pGameEvent, UINT32 senderId)
 	}	
 }
 
-void GamePacket::HandleShoot(BYTE* pGameEvent, UINT32 senderId)
+void GamePacket::HandleShoot(BYTE* pGameEvent, UINT32 sessionID)
 {
-	PACKET_SC_SHOOT* pScShoot= (PACKET_SC_SHOOT*)(pGameEvent + sizeof(EGameEventCode));
-	pScShoot->objectId;
-	pScShoot->ownerId;
-	pScShoot->transform;
+	if (!g_pDummyManager->IsMaster(sessionID)) {
+		return;
+	}
+	PACKET_SC_SHOOT* pScShoot = (PACKET_SC_SHOOT*)(pGameEvent + sizeof(EGameEventCode));
 
 	g_objectManager.CreateProjectile(pScShoot->objectId, &pScShoot->transform, pScShoot->ownerId);
 }
 
-void GamePacket::HandleTankHit(BYTE* pGameEvent, UINT32 senderId)
+void GamePacket::HandleTankHit(BYTE* pGameEvent, UINT32 sessionID)
 {
+	if (!g_pDummyManager->IsMaster(sessionID)) {
+		return;
+	}
 	PACKET_SC_TANK_HIT* pScTankHit = (PACKET_SC_TANK_HIT*)(pGameEvent + sizeof(EGameEventCode));
+	
 	Tank* pTank = (Tank*)g_objectManager.GetObjectPtrOrNull(pScTankHit->tankId);
-	Dummy* pDummy = g_pDummyManager->GetDummyBySessionID(senderId);
-	if (pDummy->GetUserID() == pScTankHit->target) {
+	Dummy* pDummy = g_pDummyManager->GetDummyByUserID(pTank->GetOwnerID());
+
+	if (pDummy->GetUserID() == pScTankHit->shooter) {
 		pDummy->IncreaseHit();
 	}
 
-	if (pDummy->GetUserID() == pScTankHit->shooter) {
-		pDummy->IncreaseKill();
-	}
-
 	pTank->OnHitByProjectile(g_currentGameTick);
-
 	Projectile* pProjectile = (Projectile*)g_objectManager.GetObjectPtrOrNull(pScTankHit->projectileId);
 	pProjectile->OnHitTank(g_currentGameTick);
 }
@@ -251,10 +252,13 @@ void GamePacket::HandleDeleteObstacle(BYTE* pGameEvent, UINT32 senderId)
 
 }
 
-void GamePacket::HandleRespawnTank(BYTE* pGameEvent, UINT32 senderId)
+void GamePacket::HandleRespawnTank(BYTE* pGameEvent, UINT32 sessionID)
 {
-
+	if (!g_pDummyManager->IsMaster(sessionID)) {
+		return;
+	}
 	PACKET_SC_RESPAWN_TANK* pScTankHit = (PACKET_SC_RESPAWN_TANK*)(pGameEvent + sizeof(EGameEventCode));
+	
 	GameObject* pTank = g_objectManager.GetObjectPtrOrNull(pScTankHit->tankId);
 	pTank->Respawn();
 }

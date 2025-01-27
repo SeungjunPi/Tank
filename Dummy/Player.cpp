@@ -36,7 +36,6 @@ void Player::OnSuccessLogin(UserDBIndex key, Score score)
 	}
 	_userID = key;
 	memcpy(&_score, &score, sizeof(Score));
-	memcpy(&g_score, &_score, sizeof(Score));
 }
 
 void Player::SetTank(Tank* pTank)
@@ -131,19 +130,19 @@ void Player::HandleKeyboardEvents(UINT64 pressedKeys, UINT64 releasedKeys, UINT6
 
 INT Player::IncreaseHit()
 {
-	g_score.hit = ++_score.hit;
+	++_score.hit;
 	return _score.hit;
 }
 
 INT Player::IncreaseKill()
 {
-	g_score.kill = ++_score.kill;
+	++_score.kill;
 	return _score.kill;
 }
 
 INT Player::IncreaseDeath()
 {
-	g_score.death = ++_score.death;
+	++_score.death;
 	return _score.death;
 }
 

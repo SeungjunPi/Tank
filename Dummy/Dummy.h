@@ -12,6 +12,7 @@ public:
 	virtual void OnConnected(SessionID sessionID) override;
 	virtual void OnSuccessLogin(UserDBIndex key, Score score) override;
 
+	void UpdateLastSyncTick();
 	void OnFrame();
 	
 

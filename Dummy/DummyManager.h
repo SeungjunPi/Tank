@@ -1,6 +1,8 @@
 ﻿#pragma once
 
+#include "TankPch.h"
 #include "NetCoreAliases.h"
+#include "TankAliases.h"
 
 class Dummy;
 
@@ -21,6 +23,7 @@ public:
 
 	// 없는 더미의 ID인 경우 nullptr 반환
 	Dummy* GetDummyBySessionID(SessionID sessionID);
+	Dummy* GetDummyByUserID(UserDBIndex userID);
 
 	void OnFrame();
 
