@@ -75,13 +75,12 @@ void GamePacket::HandleCreateTank(BYTE* pGameEvent, UINT32 sessionID)
 	}
 	PACKET_SC_CREATE_TANK* pScCreateTank = (PACKET_SC_CREATE_TANK*)(pGameEvent + sizeof(EGameEventCode));
 
-	Dummy* pDummy = g_pDummyManager->GetDummyByUserID(pScCreateTank->ownerId);
-	if (pDummy == nullptr) {
-		__debugbreak();
-	}
-
 	Tank* pTank = g_objectManager.CreateTank(pScCreateTank->objectId, pScCreateTank->ownerId);
-	pDummy->SetTank(pTank);
+
+	Dummy* pDummy = g_pDummyManager->GetDummyByUserID(pScCreateTank->ownerId);
+	if (pDummy != nullptr) {
+		pDummy->SetTank(pTank);
+	}
 }
 
 void GamePacket::HandleDeleteTank(BYTE* pGameEvent, UINT32 sessionID)

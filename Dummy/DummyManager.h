@@ -1,11 +1,14 @@
 ﻿#pragma once
 
+#include <unordered_map>
+
 #include "TankPch.h"
 #include "NetCoreAliases.h"
 #include "TankAliases.h"
 
 class Dummy;
 
+const ULONGLONG DUMMY_ADD_DELAY = 5000;
 
 class DummyManager
 {
@@ -16,7 +19,7 @@ public:
 	void Initiate();
 	void Shutdown();
 
-	void CreateDummy();
+	void CreateDummyOrNot();
 	void RemoveDummy(SessionID sessionID);
 
 	bool IsMaster(SessionID sessionID) const;
@@ -28,7 +31,11 @@ public:
 	void OnFrame();
 
 private:
-	int _countPlayer = 0;
+	int _countDummy = 0;
 	Dummy* _pDummyMaster = nullptr;
+
+	std::unordered_map<SessionID, Dummy*> _dummyMap;
+
+	ULONGLONG _lastDummyAddTick = 0;
 };
 

@@ -36,6 +36,9 @@ public:
 	INT IncreaseDeath();
 
 
+protected:
+	ULONGLONG _prevSyncTick = MAXULONGLONG;
+
 private:
 	std::wstring _name;
 	std::wstring _password;
@@ -45,4 +48,6 @@ private:
 
 	Tank* _pTank = nullptr;
 	Score _score;
+
+	
 };

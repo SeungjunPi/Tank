@@ -3,6 +3,7 @@
 #include "Player.h"
 
 const ULONGLONG DUMMY_REACTION_SPEED = 300;
+const ULONGLONG MOVING_SYNC_INTERVAL = TICK_PER_GAME_FRAME * 30;
 
 class Dummy : public Player
 {
@@ -11,6 +12,8 @@ public:
 
 	virtual void OnConnected(SessionID sessionID) override;
 	virtual void OnSuccessLogin(UserDBIndex key, Score score) override;
+
+	SessionID ConnectToServer();
 
 	void UpdateLastSyncTick();
 	void OnFrame();
@@ -25,7 +28,7 @@ private:
 
 	bool _isConnecting = false;
 
-	ULONGLONG _prevTick = 0;
+	ULONGLONG _prevReactionTick = 0;
 
 	void DetermineInput();
 

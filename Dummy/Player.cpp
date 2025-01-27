@@ -92,28 +92,30 @@ void Player::HandleKeyboardEvents(UINT64 pressedKeys, UINT64 releasedKeys, UINT6
 		char moveFlag = pressedKeys & 0xFF;
 		GamePacket::SendStartMove(_pTank->GetTransformPtr(), moveFlag, _sessionID);
 		//g_lastOwnTankSyncTick = g_currentGameTick;
+		_prevSyncTick = g_currentGameTick;
 	}
 
 
-	if (releasedKeys & KEYBOARD_INPUT_FLAG_UP) {
+	if (~heldKeys & KEYBOARD_INPUT_FLAG_UP) {
 		_pTank->EndMove(EMovement::FORWARD);
 	}
 
-	if (releasedKeys & KEYBOARD_INPUT_FLAG_DOWN) {
+	if (~heldKeys & KEYBOARD_INPUT_FLAG_DOWN) {
 		_pTank->EndMove(EMovement::BACKWARD);
 	}
 
-	if (releasedKeys & KEYBOARD_INPUT_FLAG_LEFT) {
+	if (~heldKeys & KEYBOARD_INPUT_FLAG_LEFT) {
 		_pTank->EndRotate(ERotation::LEFT);
 	}
 
-	if (releasedKeys & KEYBOARD_INPUT_FLAG_RIGHT) {
+	if (~heldKeys & KEYBOARD_INPUT_FLAG_RIGHT) {
 		_pTank->EndRotate(ERotation::RIGHT);
 	}
 
 	if (releasedKeys & 0xFF) {
 		char moveFlag = releasedKeys & 0xFF;
 		GamePacket::SendEndMove(_pTank->GetTransformPtr(), moveFlag, _sessionID);
+		_prevSyncTick = g_currentGameTick;
 	}
 
 	if (heldKeys & KEYBOARD_INPUT_FLAG_SPACE) {

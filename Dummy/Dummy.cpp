@@ -40,6 +40,18 @@ void Dummy::OnSuccessLogin(UserDBIndex key, Score score)
 	Player::OnSuccessLogin(key, score);
 }
 
+SessionID Dummy::ConnectToServer()
+{
+	SessionID serverID;
+	if (!_isConnecting) {
+		serverID = g_pNetCore->ConnectTo("127.0.0.1", 30283);
+		OnConnected(serverID);
+		_isConnecting = true;
+		return serverID;
+	}
+	return GetSessionID();
+}
+
 void Dummy::UpdateLastSyncTick()
 {
 	// 지금은 무시. 
@@ -48,14 +60,45 @@ void Dummy::UpdateLastSyncTick()
 void Dummy::OnFrame()
 {
 	if (!_isConnecting) {
-		SessionID serverID = g_pNetCore->ConnectTo("127.0.0.1", 30283);
-		OnConnected(serverID);
-		_isConnecting = true;
 		return;
 	}
 
 	ObjectID objID = GetTankID();
 	if (objID.equals(INVALID_OBJECT_ID)) {
+		return;
+	}
+
+	DetermineInput();
+
+	UINT64 edgeTrigger = _virtualInputEvent ^ _prevInputEvent;
+	if (edgeTrigger) {
+		// 변화가 있다는건 Reaction이 생겼다는 뜻.
+		_prevReactionTick = g_currentGameTick;
+	}
+	UINT64 pressedKeys = edgeTrigger & _virtualInputEvent;
+	UINT64 releasedKeys = edgeTrigger & (~_virtualInputEvent);
+
+	HandleKeyboardEvents(pressedKeys, releasedKeys, _virtualInputEvent);
+	if (pressedKeys && !edgeTrigger) {
+		if (_prevSyncTick + MOVING_SYNC_INTERVAL < g_currentGameTick) {
+			Tank* pTank = GetTank();
+			GamePacket::SendMoving(pTank->GetTransformPtr(), GetSessionID());
+			_prevSyncTick = g_currentGameTick;
+		}
+	}
+
+	if (pressedKeys == 0) {
+		_prevSyncTick = MAXULONGLONG;
+	}
+	_prevInputEvent = _virtualInputEvent;
+	_virtualInputEvent = 0;
+}
+
+void Dummy::DetermineInput()
+{
+	if (_prevReactionTick + DUMMY_REACTION_SPEED > g_currentGameTick) {
+		// Reaction이 없으므로 변화 없음. 
+		_virtualInputEvent = _prevInputEvent;
 		return;
 	}
 
@@ -65,32 +108,10 @@ void Dummy::OnFrame()
 		// 한 프레임 정지, 새로운 방향 설정
 		printf("Reset Destination\n");
 		_destinationCoord = GetRandomPlanePosition();
-	}
-	else {
-		// forward가 destination으로 충분히 향하고 있다면 전진만, 아니면 회전만 함. 
-		DetermineInput();
+		_virtualInputEvent = 0;
+		return;
 	}
 	
-	UINT64 edgeTrigger = _virtualInputEvent ^ _prevInputEvent;
-	if (edgeTrigger) {
-		// 사람의 반응속도 이상을 할 수 없으므로..
-		if (_prevTick + DUMMY_REACTION_SPEED > g_currentGameTick) {
-			return;
-		}
-		_prevTick = g_currentGameTick;
-	}
-	UINT64 pressedKeys = edgeTrigger & _virtualInputEvent;
-	UINT64 releasedKeys = edgeTrigger & (~_virtualInputEvent);
-
-	HandleKeyboardEvents(pressedKeys, releasedKeys, _virtualInputEvent);
-
-	_prevInputEvent = _virtualInputEvent;
-	_virtualInputEvent = 0;
-}
-
-void Dummy::DetermineInput()
-{
-	Tank* pTank = GetTank();
 	Vector3 tankPosition = pTank->GetPosition();
 	Vector3 forwardDirection = pTank->GetForwardDirection();
 
