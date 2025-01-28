@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -21,9 +21,10 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{478d7ef5-d5d9-4b7e-9917-621868a7643f}</ProjectGuid>
-    <RootNamespace>Math</RootNamespace>
+    <ProjectGuid>{0561ca64-59f6-43c4-b090-daf9eb31237e}</ProjectGuid>
+    <RootNamespace>Tank</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>Dummy</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -40,7 +41,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -70,6 +71,11 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <IncludePath>
+    </IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -105,10 +111,16 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\NetCore\;$(SolutionDir)..\DataStruct\;$(SolutionDir)..\Collision\;$(SolutionDir)..\Math\</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>TankPch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(SolutionDir)..\NetCore\x64\Debug\NetCore.lib;$(SolutionDir)..\DataStruct\x64\Debug\DataStruct.lib;$(SolutionDir)..\Collision\x64\Debug\Collision.lib;$(SolutionDir)..\Math\x64\Debug\Math.lib;$(CoreLibraryDependencies);$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+      <PerUserRedirection>false</PerUserRedirection>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(OutDir)*.*" "$(SolutionDir)..\bin\Debug"</Command>
@@ -131,12 +143,45 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="GameMath.h" />
-    <ClInclude Include="MyAssert.h" />
+    <ClCompile Include="AllocObjectManager.cpp" />
+    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="ConsoleRenderer.cpp" />
+    <ClCompile Include="DotObject.cpp" />
+    <ClCompile Include="Dummy.cpp" />
+    <ClCompile Include="DummyManager.cpp" />
+    <ClCompile Include="Game.cpp" />
+    <ClCompile Include="GameEvent.cpp" />
+    <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="GameStruct.cpp" />
+    <ClCompile Include="Global.cpp" />
+    <ClCompile Include="KeyboardEventListener.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Obstacle.cpp" />
+    <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Projectile.cpp" />
+    <ClCompile Include="StaticData.cpp" />
+    <ClCompile Include="Tank.cpp" />
+    <ClCompile Include="TankAliases.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="GameMath.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClInclude Include="AllocObjectManager.h" />
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="ConsoleRenderer.h" />
+    <ClInclude Include="DotObject.h" />
+    <ClInclude Include="Dummy.h" />
+    <ClInclude Include="DummyManager.h" />
+    <ClInclude Include="Game.h" />
+    <ClInclude Include="GameEvent.h" />
+    <ClInclude Include="GameObject.h" />
+    <ClInclude Include="GameStruct.h" />
+    <ClInclude Include="Global.h" />
+    <ClInclude Include="KeyboardEventListener.h" />
+    <ClInclude Include="Obstacle.h" />
+    <ClInclude Include="Player.h" />
+    <ClInclude Include="Projectile.h" />
+    <ClInclude Include="StaticData.h" />
+    <ClInclude Include="TankPch.h" />
+    <ClInclude Include="Tank.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

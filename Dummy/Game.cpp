@@ -16,12 +16,13 @@
 
 #include "Camera.h"
 
+#include "DummyManager.h"
+
 static void s_ApplyKeyboardEvents(ULONGLONG tickDiff);
 static void s_ApplyObjectLogic(ULONGLONG tickDiff);
 static void s_SyncOwnTankTransform();
 static void s_HandleNetEvents();
 static void s_CollideObjects();
-static BOOL s_IsShootable();
 static void s_CleanupDestroyedObjects(ULONGLONG curTick);
 
 
@@ -37,6 +38,7 @@ void Game::Initialize()
 	KeyboardEventListener::Initiate();
 
 	g_objectManager.Initiate();
+
 	ConsoleRenderer::Initiate(&g_objectManager);
 	ConsoleRenderer::TurnOnShowDebugInfo();
 
@@ -49,6 +51,8 @@ void Game::Initialize()
 	CreateCollisionManager(&g_pCollisionManager);
 
 	g_pCamera = DNew GameCamera;
+	g_pDummyManager = DNew DummyManager();
+	g_pDummyManager->Initiate();
 }
 
 void Game::CleanUp()
@@ -65,18 +69,22 @@ void Game::CleanUp()
 	ConsoleRenderer::Terminate();
 	KeyboardEventListener::Terminate();
 	g_objectManager.Terminate();
-	delete g_pPlayer;
+	g_pDummyManager->Shutdown();
+	delete g_pDummyManager;
 	delete g_pCamera;
 }
 
 void Game::Start()
 {
-	g_pPlayer = DNew Player(g_userName, g_password);
-	SessionID serverID = g_pNetCore->ConnectTo("127.0.0.1", 30283);
-	g_pPlayer->OnConnected(serverID);
+	//g_pPlayer = DNew Player(g_userName, g_password);
+	//SessionID serverID = g_pNetCore->ConnectTo("127.0.0.1", 30283);
+	//g_pPlayer->OnConnected(serverID);
 
-	// Send Login
-	GamePacket::SendLogin(g_userName, g_password);
+	//// Send Login
+	//GamePacket::SendLogin(g_userName, g_password);
+
+	
+	
 
 	g_previousGameTick = GetTickCount64();
 
@@ -85,8 +93,11 @@ void Game::Start()
 		ULONGLONG gameTickDiff = g_currentGameTick - g_previousGameTick;
 		
 		if (gameTickDiff > TICK_PER_GAME_FRAME) {
+			
 			// Apply Net Events
 			s_HandleNetEvents();
+
+			g_pDummyManager->OnFrame();
 
 			// Get Keyboard Inputs
 			s_ApplyKeyboardEvents(gameTickDiff);
@@ -102,7 +113,7 @@ void Game::Start()
 			g_previousGameTick = g_currentGameTick;
 		}
 		// Draw Call
-		ConsoleRenderer::Render();
+		//ConsoleRenderer::Render();
 	}
 }
 
@@ -131,9 +142,9 @@ void s_ApplyKeyboardEvents(ULONGLONG tickDiff)
 		return;
 	}
 
-	if (g_pPlayer != nullptr) {
-		g_pPlayer->HandleKeyboardEvents(pressedFlag, releasedFlag, heldFlag);
-	}	
+	//if (g_pPlayer != nullptr) {
+	//	g_pPlayer->HandleKeyboardEvents(pressedFlag, releasedFlag, heldFlag);
+	//}	
 }
 
 void s_ApplyObjectLogic(ULONGLONG tickDiff)
@@ -196,24 +207,6 @@ void s_CollideObjects()
 		pGameObject->OnHit(g_currentGameTick);
 	}
 }
-
-//BOOL s_IsShootable()
-//{
-//	static ULONGLONG lastShoot = 0;
-//	const static ULONGLONG SHOOT_COOL_DOWN = 250;
-//
-//	if (g_pPlayerTank == nullptr) {
-//		return false;
-//	}
-//
-//	if (g_previousGameTick - lastShoot > SHOOT_COOL_DOWN) {
-//		s_bIsShootable = true;
-//		lastShoot = g_previousGameTick;
-//		return true;
-//	}
-//
-//	return false;
-//}
 
 void s_CleanupDestroyedObjects(ULONGLONG curTick)
 {

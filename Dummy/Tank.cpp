@@ -1,20 +1,27 @@
 #include "Tank.h"
+#include "StaticData.h"
 #include "Global.h"
 #include "GameEvent.h"
 #include "Collider.h"
-#include "CollisionManager.h"
-#include "PlayerManager.h"
-#include "ObjectManager.h"
+#include "ICollisionManager.h"
+#include "AllocObjectManager.h"
+#include "Camera.h"
+#include "Player.h"
 
 const float POSITION_VELOCITY_WEIGHT = 0.5f;
 const float ROTATION_VELOCITY_WEIGHT = 0.25f;
 const float Tank::COLLIDER_RADIUS = 1.0f;
+const ULONGLONG Tank::MACHINE_GUN_DELAY = 250;
 
-Tank::Tank(ObjectID id, UserDBIndex ownerId)
-	: GameObject(id, ownerId, true)
+Tank::Tank(ObjectID id, UserDBIndex ownerID)
+	: GameObject(id, ownerID, true)
 {
-	ResetHP();
 	_forwardDirection = { .0f, -1.0f, .0f };
+	
+	_model = g_pTankModel;
+	_colliderSize = 1;
+
+	ResetHP();
 }
 
 Tank::~Tank()
@@ -23,12 +30,14 @@ Tank::~Tank()
 
 void Tank::Initiate(ObjectID id)
 {
-	ResetHP();
 	_id = id;
 	_isActivatable = true;
 	_forwardDirection = { .0f, -1.0f, .0f };
 	_transform = { 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f };
+	_model = g_pTankModel;
+	_colliderSize = 1;
 	_hitTick = 0;
+	ResetHP();
 }
 
 void Tank::Terminate()
@@ -36,29 +45,42 @@ void Tank::Terminate()
 	_id = INVALID_OBJECT_ID;
 	_forwardDirection = { 0, };
 	_transform = { 0, };
+	_model = { nullptr, 0 };
+	_colliderSize = 0;
 }
 
-void Tank::StartMove(EMOVEMENT movement)
+void Tank::SetMovementState(bool forward, bool backward, bool left, bool right)
+{
+	_isMovingFoward = forward;
+	_isMovingBackward = backward;
+	_isRotatingLeft = left;
+	_isRotatingRight = right;
+}
+
+
+void Tank::StartMove(EMovement movement)
 {
 	switch (movement) {
-	case EMOVEMENT::FORWARD:
+	case EMovement::FORWARD:
 		_isMovingFoward = true;
 		break;
-	case EMOVEMENT::BACKWARD:
+	case EMovement::BACKWARD:
 		_isMovingBackward = true;
 		break;
 	default:
 		__debugbreak();
 	}
+
+	
 }
 
-void Tank::EndMove(EMOVEMENT movement)
+void Tank::EndMove(EMovement movement)
 {
 	switch (movement) {
-	case EMOVEMENT::FORWARD:
+	case EMovement::FORWARD:
 		_isMovingFoward = false;
 		break;
-	case EMOVEMENT::BACKWARD:
+	case EMovement::BACKWARD:
 		_isMovingBackward = false;
 		break;
 	default:
@@ -66,13 +88,29 @@ void Tank::EndMove(EMOVEMENT movement)
 	}
 }
 
-void Tank::StartRotate(EROTATION rotation)
+void Tank::EndMove(EMovement movement, const Transform* pTransform)
+{
+	switch (movement) {
+	case EMovement::FORWARD:
+		_isMovingFoward = false;
+		memcpy(&_transform, pTransform, sizeof(Transform));
+		break;
+	case EMovement::BACKWARD:
+		_isMovingBackward = false;
+		memcpy(&_transform, pTransform, sizeof(Transform));
+		break;
+	default:
+		__debugbreak();
+	}
+}
+
+void Tank::StartRotate(ERotation rotation)
 {
 	switch (rotation) {
-	case EROTATION::LEFT:
+	case ERotation::LEFT:
 		_isRotatingLeft = true;
 		break;
-	case EROTATION::RIGHT:
+	case ERotation::RIGHT:
 		_isRotatingRight = true;
 		break;
 	default:
@@ -80,13 +118,29 @@ void Tank::StartRotate(EROTATION rotation)
 	}
 }
 
-void Tank::EndRotate(EROTATION rotation)
+void Tank::EndRotate(ERotation rotation)
 {
 	switch (rotation) {
-	case EROTATION::LEFT:
+	case ERotation::LEFT:
 		_isRotatingLeft = false;
 		break;
-	case EROTATION::RIGHT:
+	case ERotation::RIGHT:
+		_isRotatingRight = false;
+		break;
+	default:
+		__debugbreak();
+	}
+}
+
+void Tank::EndRotate(ERotation rotation, const Transform* pTransform)
+{
+	switch (rotation) {
+	case ERotation::LEFT:
+		memcpy(&_transform, pTransform, sizeof(Transform));
+		_isRotatingLeft = false;
+		break;
+	case ERotation::RIGHT:
+		memcpy(&_transform, pTransform, sizeof(Transform));
 		_isRotatingRight = false;
 		break;
 	default:
@@ -96,16 +150,17 @@ void Tank::EndRotate(EROTATION rotation)
 
 void Tank::MoveForward(ULONGLONG tickDiff)
 {
+	_forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
 	_transform.Position.x = _transform.Position.x + _forwardDirection.x * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
 	_transform.Position.y = _transform.Position.y + _forwardDirection.y * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
 	_transform.Position.z = _transform.Position.z + _forwardDirection.z * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
 	_dirty = true;
-
 	OnUpdateTransform();
 }
 
 void Tank::MoveBackward(ULONGLONG tickDiff)
 {
+	_forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
 	_transform.Position.x = _transform.Position.x - _forwardDirection.x * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
 	_transform.Position.y = _transform.Position.y - _forwardDirection.y * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
 	_transform.Position.z = _transform.Position.z - _forwardDirection.z * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
@@ -119,8 +174,7 @@ void Tank::RotateRight(ULONGLONG tickDiff)
 	float radian = tickDiff * angularVelocity * ROTATION_VELOCITY_WEIGHT;
 
 	_transform.Rotation = Quaternion::RotateZP(radian, _transform.Rotation);
-	_forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
-
+	
 	_dirty = true;
 	OnUpdateTransform();
 }
@@ -131,7 +185,6 @@ void Tank::RotateLeft(ULONGLONG tickDiff)
 	float radian = tickDiff * angularVelocity * ROTATION_VELOCITY_WEIGHT;
 
 	_transform.Rotation = Quaternion::RotateZM(radian, _transform.Rotation);
-	_forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
 
 	_dirty = true;
 	OnUpdateTransform();
@@ -142,7 +195,7 @@ void Tank::GetTurretInfo(Vector3* out_position, Vector3* out_direction) const
 	Vector3 position = _transform.Position;
 	Quaternion rotation = _transform.Rotation;
 
-	Vector3 v = { 0, -1.f, 0 };
+	Vector3 v = _model.vertices[0].v;
 	v = Vector3::Rotate(v, rotation);
 	v.x += position.x;
 	v.y += position.y;
@@ -154,38 +207,34 @@ void Tank::GetTurretInfo(Vector3* out_position, Vector3* out_direction) const
 	memcpy(out_direction, &forwardDirection, sizeof(Vector3));
 }
 
+void Tank::GetTurretInfo(Transform* out_transform) const
+{
+	Quaternion rotation = _transform.Rotation;
+
+	Vector3 v = _model.vertices[0].v;
+	v = Vector3::Rotate(v, rotation);
+	v.x += _transform.Position.x;
+	v.y += _transform.Position.y;
+	v.z += _transform.Position.z;
+
+	out_transform->Position = v;
+	out_transform->Rotation = _transform.Rotation;
+}
+
+bool Tank::CanFireMachineGun() const
+{
+	return _lastMachineGunFiringTick + MACHINE_GUN_DELAY <= g_currentGameTick;
+}
+
+void Tank::OnFiringMachineGun(ULONGLONG currentTick)
+{
+	_lastMachineGunFiringTick = currentTick;
+	// Send Fire
+}
+
 void Tank::ResetHP()
 {
 	_hp = 5;
-}
-
-void Tank::OnFrame(ULONGLONG tickDiff)
-{
-	if (IsAlive()) {
-		memcpy(&_prevTransform, &_transform, sizeof(Transform));
-
-		if (_isMovingFoward) {
-			MoveForward(tickDiff);
-		}
-		if (_isMovingBackward) {
-			MoveBackward(tickDiff);
-		}
-		if (_isRotatingLeft) {
-			RotateLeft(tickDiff);
-		}
-		if (_isRotatingRight) {
-			RotateRight(tickDiff);
-		}
-
-		return;
-	}
-
-	if (g_currentGameTick - _hitTick > TICK_TANK_RESPAWN_INTERVAL) {
-		OnRespawn();
-		GamePacket::BroadcastRespawnTank(_id);
-	}
-	
-	return;
 }
 
 BOOL Tank::IsDestroyed(ULONGLONG currentTick) const
@@ -193,10 +242,36 @@ BOOL Tank::IsDestroyed(ULONGLONG currentTick) const
 	return !_isActivatable && (!_isAlive || _hitTick != 0);
 }
 
+void Tank::OnFrame(ULONGLONG tickDiff)
+{
+	if (!IsAlive()) {
+		return;
+	}
+	memcpy(&_prevTransform, &_transform, sizeof(Transform));
+
+	if (_isMovingFoward) {
+		MoveForward(tickDiff);
+	}
+	if (_isMovingBackward) {
+		MoveBackward(tickDiff);
+	}
+	if (_isRotatingLeft) {
+		RotateLeft(tickDiff);
+	}
+	if (_isRotatingRight) {
+		RotateRight(tickDiff);
+	}
+
+	if (_flagFiringMachineGun) {
+		OnFiringMachineGun(g_currentGameTick);
+	}
+
+
+	return;
+}
+
 void Tank::OnHit(ULONGLONG currentTick)
 {
-	printf("[JUNLOG]onhit tank\n");
-
 	ColliderID colliderIDs[MAX_SIMULTANEOUS_COLLISIONS];
 	UINT16 countColliders = _pCollider->GetCollidingIDs(colliderIDs);
 	for (UINT16 i = 0; i < countColliders; ++i) {
@@ -205,31 +280,18 @@ void Tank::OnHit(ULONGLONG currentTick)
 		GameObject* pOtherObj = g_objectManager.GetObjectPtrOrNull(otherObjID);
 		switch (otherObjID.type) {
 		case GAME_OBJECT_TYPE_PROJECTILE:
-			// hit
-			if (_hp > 0) {
-				if (--_hp == 0) {
-					_pCollider->Deactivate();
-					_hitTick = currentTick;
-					_isAlive = false;
-					_isMovingFoward = false;
-					_isMovingBackward = false;
-					_isRotatingLeft = false;
-					_isRotatingRight = false;
-					g_playerManager.IncreaseDeathCount(_ownerIndex);
-				}
-				g_playerManager.IncreaseHitCount(_ownerIndex);
-				GamePacket::BroadcastTankHit(_id, otherObjID, pOtherObj->GetOwnerId(), _ownerIndex);
-			}
+			// Do Nothing yet..
 			break;
 		case GAME_OBJECT_TYPE_TANK:
 			memcpy(&_transform, &_prevTransform, sizeof(Transform));
 			_pCollider->UpdateCenterPosition(&_transform.Position);
-			
 			break;
 		case GAME_OBJECT_TYPE_OBSTACLE:
+			// Do Nothing yet..
 			break;
 		}
 	}
+
 }
 
 void Tank::OnUpdateTransform()
@@ -245,24 +307,24 @@ void Tank::OnRespawn()
 	ResetHP();
 }
 
-BOOL Tank::IsTransformCloseEnough(const Transform* other)
+void Tank::OnHitByProjectile(ULONGLONG currentTick)
 {
-	const float TOLERANCE_POSITION_SQUARE = 0.5f; // x, y, z의 차이가 각 1.0 미만인 경우를 간단하게 판단
-	const float TOLERANCE_ROTATION = 0.13f; // 15도 미만
-
-	float posDistanceSq = Vector3::DistanceSquared(_transform.Position, other->Position);
-	float rotDisctance = Quaternion::AngularDistance(_transform.Rotation, other->Rotation);
-
-	if (posDistanceSq < TOLERANCE_POSITION_SQUARE && rotDisctance < TOLERANCE_ROTATION) {
-		printf("Accept Client's Transform, Diff: [%f, %f]\n", posDistanceSq, rotDisctance);
-		return true;
-	}
-	else {
-		printf("Accept Server's Transform, Diff: [%f, %f]\n", posDistanceSq, rotDisctance);
-		return false;
+	if (_hp > 0) {
+		if (--_hp == 0) {
+			_hitTick = currentTick;
+			_isAlive = false;
+			_isMovingFoward = false;
+			_isMovingBackward = false;
+			_isRotatingLeft = false;
+			_isRotatingRight = false;
+			_pCollider->Deactivate();
+		}
 	}
 }
 
-
-
+Vector3 Tank::GetForwardDirection()
+{
+	_forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
+	return _forwardDirection;
+}
 
