@@ -36,6 +36,12 @@
     <ClInclude Include="JStack.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="JNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="JMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LinearQueue.cpp">
@@ -51,6 +57,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PointerTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="JMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -132,14 +132,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="DataStructPch.h" />
+    <ClInclude Include="JMap.h" />
     <ClInclude Include="JStack.h" />
     <ClInclude Include="LinearQueue.h" />
+    <ClInclude Include="JNode.h" />
     <ClInclude Include="PointerList.h" />
     <ClInclude Include="PointerMap.h" />
     <ClInclude Include="PointerQueue.h" />
     <ClInclude Include="PointerTable.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="JMap.cpp" />
     <ClCompile Include="LinearQueue.cpp" />
     <ClCompile Include="PointerList.cpp" />
     <ClCompile Include="PointerMap.cpp" />
