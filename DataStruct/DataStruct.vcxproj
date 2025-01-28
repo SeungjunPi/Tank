@@ -144,6 +144,7 @@
   <ItemGroup>
     <ClCompile Include="JMap.cpp" />
     <ClCompile Include="LinearQueue.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="PointerList.cpp" />
     <ClCompile Include="PointerMap.cpp" />
     <ClCompile Include="PointerQueue.cpp" />

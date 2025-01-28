@@ -16,6 +16,7 @@ public:
 
 	// key의 크기와 무관함
 	JNode* GetBegin();
+	JNode* GetEnd();
 	void* Get(UINT32 key);
 	void Emplace(UINT32 key, void* ptr);
 	void* Pop(UINT32 key);
@@ -35,5 +36,6 @@ private:
 	JNode* GetExtraNodePtr();
 	void ReturnExtraNodePtr(JNode* pNode);
 
+	void RemoveMiddleNode(JNode* pNode);
 	
 };
