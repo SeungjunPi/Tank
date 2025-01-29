@@ -61,6 +61,26 @@ float Quaternion::AngularDistance(Quaternion q1, Quaternion q2)
     return 2.0f * acosf(fabs(dotProduct));
 }
 
+Vector3 Vector3::operator*(const float scalar)
+{
+    return Vector3{x * scalar, y * scalar, z * scalar};
+}
+
+Vector3 Vector3::operator+(const Vector3& another)
+{
+    return Vector3{ x + another.x, y + another.y, z + another.z };
+}
+
+Vector3 Vector3::operator+(const Vector3&& another)
+{
+    return Vector3{ x + another.x, y + another.y, z + another.z };
+}
+
+Vector3 Vector3::operator-(const Vector3& another)
+{
+    return Vector3{ x - another.x, y - another.y, z - another.z }; 
+}
+
 Vector3 Vector3::Rotate(Vector3 v, Quaternion rotQuat)
 {
     Quaternion quaternionV;
@@ -168,6 +188,11 @@ float Vector3::DistanceSquared(Vector3 v, Vector3 w)
     float y = v.y - w.y;
     float z = v.z - w.z;
     return x * x + y * y + z * z;
+}
+
+float Vector3::DotProduct(Vector3 v, Vector3 w)
+{
+    return v.x * w.x + v.y * w.y + v.z * w.z;
 }
 
 const float Vector2::TRUNCATION = 1E-02;

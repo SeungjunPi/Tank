@@ -5,7 +5,6 @@
 #include "GameMath.h"
 
 const ColliderID INVALID_COLLIDER_ID = 0xffff;
-const UINT16 MAX_SIMULTANEOUS_COLLISIONS = 3;
 
 class CollisionManager;
 class GameObject;
@@ -19,33 +18,38 @@ public:
 	~Collider() = default;
 
  	ColliderID GetID() const { return _id; }
-	GameObject* GetAttachedObjectPtr() const { return _pObject; }
-	Vector3 GetPosition() const { return _center; }
-
+	Vector3 GetCenter() const { return _center; }
 	void UpdateCenterPosition(const Vector3* position);
+	void Update(const Vector3* position, const Vector3* velocity);
 
-	// 최소한 MAX_SIMULTANEOUS_COLLISIONS 개수 이상의 공간을 out에 확보할 것을 권장. 
-	UINT16 GetCollidingIDs(ColliderID* out);
+	GameObject* GetAttachedObjectPtr() const { return _pObject; }
 
-	void ClearCollisionInfo();
+	BOOL IsCollided() const { return _collisionKindnessFlag == 0; }
+	UINT32 GetCollisionKindnessFlag() const { return _collisionKindnessFlag; }
 
+	Vector3 GetNextMovement() const { return _nextMovement; }
+	
+	void ResetCollisionFlag();
+
+	BOOL IsActive() { return _isActive; }
 	void Activate() { _isActive = TRUE; }
 	void Deactivate() { _isActive = FALSE; }
 	
 private:
+	ColliderID _id = INVALID_COLLIDER_ID;
+
 	Vector3 _center;
 	float _radius = 0.0f;
-
-	ColliderID _id = INVALID_COLLIDER_ID;
+	Vector3 _velocity;
+	Vector3 _nextMovement;
+	float _mass = 0.f;
+	UINT32 _kindness = 0;
+	UINT32 _collisionKindnessFlag = 0;	
+	
 	GameObject* _pObject = nullptr;
-	ColliderID _collidingIDs[MAX_SIMULTANEOUS_COLLISIONS];
-	UINT16 _countColliding = 0;
-
 	BOOL _isActive = FALSE;
 
-	void AddCollidingID(ColliderID otherColliderID);
-
-	void Initiate(float radius, GameObject* pObj);
+	void Initiate(float radius, GameObject* pObj, const Vector3* center, const Vector3* velocity, float mass, UINT32 kindness);
 
 	// 반환하기 위해 내부를 모두 초기화하는 용도로 사용
 	void Clear();
