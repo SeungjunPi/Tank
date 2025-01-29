@@ -49,7 +49,7 @@ private:
 	GameObject* _pObject = nullptr;
 	BOOL _isActive = FALSE;
 
-	void Initiate(float radius, GameObject* pObj, const Vector3* center, const Vector3* velocity, float mass, UINT32 kindness);
+	void Initiate(float radius, GameObject* pObj, const Vector3* center, float mass, UINT32 kindness);
 
 	// 반환하기 위해 내부를 모두 초기화하는 용도로 사용
 	void Clear();

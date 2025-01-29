@@ -5,10 +5,12 @@
 #include "CollisionManager.h"
 #include "PlayerManager.h"
 #include "ObjectManager.h"
+#include "StaticData.h"
 
 const float POSITION_VELOCITY_WEIGHT = 0.5f;
 const float ROTATION_VELOCITY_WEIGHT = 0.25f;
 const float Tank::COLLIDER_RADIUS = 1.0f;
+const float Tank::COLLIDER_MASS = 10.0f;
 
 Tank::Tank(ObjectID id, UserDBIndex ownerId)
 	: GameObject(id, ownerId, true)
@@ -162,21 +164,24 @@ void Tank::ResetHP()
 void Tank::OnFrame(ULONGLONG tickDiff)
 {
 	if (IsAlive()) {
-		memcpy(&_prevTransform, &_transform, sizeof(Transform));
-
-		if (_isMovingFoward) {
-			MoveForward(tickDiff);
+		if (_pCollider->IsCollided()) {
+			memcpy(&_prevTransform, &_transform, sizeof(Transform));
+			OnHit(g_currentGameTick);
 		}
-		if (_isMovingBackward) {
-			MoveBackward(tickDiff);
+		else {
+			if (_isMovingFoward) {
+				MoveForward(tickDiff);
+			}
+			if (_isMovingBackward) {
+				MoveBackward(tickDiff);
+			}
+			if (_isRotatingLeft) {
+				RotateLeft(tickDiff);
+			}
+			if (_isRotatingRight) {
+				RotateRight(tickDiff);
+			}
 		}
-		if (_isRotatingLeft) {
-			RotateLeft(tickDiff);
-		}
-		if (_isRotatingRight) {
-			RotateRight(tickDiff);
-		}
-
 		return;
 	}
 
@@ -195,46 +200,37 @@ BOOL Tank::IsDestroyed(ULONGLONG currentTick) const
 
 void Tank::OnHit(ULONGLONG currentTick)
 {
-	printf("[JUNLOG]onhit tank\n");
-
-	ColliderID colliderIDs[MAX_SIMULTANEOUS_COLLISIONS];
-	UINT16 countColliders = _pCollider->GetCollidingIDs(colliderIDs);
-	for (UINT16 i = 0; i < countColliders; ++i) {
-		Collider* pOtherCollider = g_pCollisionManager->GetAttachedColliderPtr(colliderIDs[i]);
-		ObjectID otherObjID = pOtherCollider->GetAttachedObjectPtr()->GetID();
-		GameObject* pOtherObj = g_objectManager.GetObjectPtrOrNull(otherObjID);
-		switch (otherObjID.type) {
-		case GAME_OBJECT_TYPE_PROJECTILE:
-			// hit
-			if (_hp > 0) {
-				if (--_hp == 0) {
-					_pCollider->Deactivate();
-					_hitTick = currentTick;
-					_isAlive = false;
-					_isMovingFoward = false;
-					_isMovingBackward = false;
-					_isRotatingLeft = false;
-					_isRotatingRight = false;
-					g_playerManager.IncreaseDeathCount(_ownerIndex);
-				}
-				g_playerManager.IncreaseHitCount(_ownerIndex);
-				GamePacket::BroadcastTankHit(_id, otherObjID, pOtherObj->GetOwnerId(), _ownerIndex);
+	UINT32 collisionFlag = _pCollider->GetCollisionKindnessFlag();
+	if (collisionFlag & COLLIDER_KINDNESS_PROJECTILE) {
+		if (_hp > 0) {
+			if (--_hp == 0) {
+				_pCollider->Deactivate();
+				_hitTick = currentTick;
+				_isAlive = false;
+				_isMovingFoward = false;
+				_isMovingBackward = false;
+				_isRotatingLeft = false;
+				_isRotatingRight = false;
+				g_playerManager.IncreaseDeathCount(_ownerIndex);
 			}
-			break;
-		case GAME_OBJECT_TYPE_TANK:
-			memcpy(&_transform, &_prevTransform, sizeof(Transform));
-			_pCollider->UpdateCenterPosition(&_transform.Position);
-			
-			break;
-		case GAME_OBJECT_TYPE_OBSTACLE:
-			break;
+			g_playerManager.IncreaseHitCount(_ownerIndex);
+			GamePacket::BroadcastTankHit(_id, otherObjID, pOtherObj->GetOwnerId(), _ownerIndex);
 		}
+
+		return;
+	}
+
+	if (collisionFlag & COLLIDER_KINDNESS_TANK) {
+		Vector3 nextMovement = _pCollider->GetNextMovement();
+		_transform.Position = nextMovement;
+		_pCollider->UpdateCenterPosition(&_transform.Position);
 	}
 }
 
 void Tank::OnUpdateTransform()
 {
-	_pCollider->UpdateCenterPosition(&_transform.Position);
+	Vector3 movementVector = _forwardDirection * POSITION_VELOCITY_WEIGHT;
+	_pCollider->Update(&_transform.Position, &movementVector);
 }
 
 void Tank::OnRespawn()

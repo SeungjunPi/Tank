@@ -20,9 +20,10 @@ void Collider::ResetCollisionFlag()
 	_collisionKindnessFlag = 0;
 }
 
-void Collider::Initiate(float radius, GameObject* pObj, const Vector3* center, const Vector3* velocity, float mass, UINT32 kindness)
+void Collider::Initiate(float radius, GameObject* pObj, const Vector3* center, float mass, UINT32 kindness)
 {
-	Update(center, velocity);
+	UpdateCenterPosition(center);
+	_velocity = { 0, };
 	_radius = radius;
 	_mass = mass;
 	_pObject = pObj;

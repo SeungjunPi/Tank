@@ -16,8 +16,10 @@ int main()
 	Vector3 v2{ 1.0f, 1.0f, 0.0f };
 	Vector3 v2Velocity{ 0.f, 0.f, 0.f };
 
-	pC1 = pCollisionManager->GetNewColliderPtr(2.0, nullptr, &v1, &v1Velocity, 1.0f, 0b1);
-	pC2 = pCollisionManager->GetNewColliderPtr(1.0, nullptr, &v2, &v2Velocity, 2.0f, 0b10);
+	pC1 = pCollisionManager->GetNewColliderPtr(2.0, nullptr, &v1, 1.0f, 0b1);
+	pC1->Update(&v1, &v1Velocity);
+	pC2 = pCollisionManager->GetNewColliderPtr(1.0, nullptr, &v2, 2.0f, 0b10);
+	pC2->Update(&v2, &v2Velocity);
 
 	pCollisionManager->DetectCollision();
 

@@ -23,11 +23,11 @@ CollisionManager::~CollisionManager()
 	delete[] _usedIDs;
 }
 
-Collider* CollisionManager::GetNewColliderPtr(float radius, GameObject* pObj, const Vector3* center, const Vector3* velocity, float mass, UINT32 kindness)
+Collider* CollisionManager::GetNewColliderPtr(float radius, GameObject* pObj, const Vector3* center, float mass, UINT32 kindness)
 {
 	ColliderID id = GetUnusedID();
 	Collider* pCollider = _colliders + id;
-	pCollider->Initiate(radius, pObj, center, velocity, mass, kindness);
+	pCollider->Initiate(radius, pObj, center, mass, kindness);
 	_usedIDs[_countActiveColliders] = id;
 	++_countActiveColliders;
 	

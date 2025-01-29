@@ -17,7 +17,7 @@ public:
 	virtual ~ICollisionManager() = default;
 
 	// Kindess는 Flag로써 다른 Collider와 충돌 시 해당 Collider의 Kindness를 BitMasking으로써 저장한다. Kindness를 Bit로 사용하지 않으면 구분할 수 없게 될 수 없으므로 주의.
-	virtual Collider* GetNewColliderPtr(float radius, GameObject* pObj, const Vector3* center, const Vector3* velocity, float mass, UINT32 kindness) = 0;
+	virtual Collider* GetNewColliderPtr(float radius, GameObject* pObj, const Vector3* center, float mass, UINT32 kindness) = 0;
 	virtual Collider* GetAttachedColliderPtr(ColliderID id) = 0;
 	virtual void ReturnCollider(Collider* pColloder) = 0;
 

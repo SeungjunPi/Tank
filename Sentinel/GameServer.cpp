@@ -17,7 +17,7 @@ static BOOL s_isRunning = false;
 
 
 static void s_ApplyObjectLogic(ULONGLONG tickDiff);
-static void s_CollideObjects(ULONGLONG curTick);
+static void s_DetectCollision(ULONGLONG curTick);
 static void s_CleanupDestroyedObjects(ULONGLONG curTick);
 static void s_OnSessionEvent(UINT32 sessionID, ESessionEvent sessionEvent);
 static void s_ProcessDBQueryResults();
@@ -75,15 +75,13 @@ void GameServer::Start()
 		g_currentGameTick = currentTick;
 		ULONGLONG gameTickDiff = currentTick - g_previousGameTick;
 
-		// Physics(Detect Collision)
+		
+		
+		
 
-		// Input
-
-		// Game Logic(DB, Apply Collision, )
-
-		// Destroy Game Objects
-
-
+		//////////////////////////////////////////////////////////////
+		// Input Event (DB Result, Session Event, User act, etc..)
+		//////////////////////////////////////////////////////////////
 		// Handle NetCore Session Events
 		NetSessionEventQueue* pNetSessionEventQueue = g_pNetCore->StartHandleSessionEvents();
 		ESessionEvent sessionEvent = pNetSessionEventQueue->GetNetSessionEvent(&senderID);
@@ -106,19 +104,25 @@ void GameServer::Start()
 		// DB 
 		s_ProcessDBQueryResults();
 
-		// Erase Destroyed Objects
-		s_CleanupDestroyedObjects(currentTick);
-		
+		//////////////////////////////////////////////////////////////
+		// Physics(Detect Collision)
+		//////////////////////////////////////////////////////////////
+		s_DetectCollision(currentTick);
 
-		// Apply Object Logics
+		//////////////////////////////////////////////////////////////
+		// Game Logic(DB, Apply Collision, )
+		//////////////////////////////////////////////////////////////
 		s_ApplyObjectLogic(gameTickDiff);
+		
+		//////////////////////////////////////////////////////////////
+		// Destroy Game Objects
+		//////////////////////////////////////////////////////////////
+		s_CleanupDestroyedObjects(currentTick);
 
-		// Collide Objects
-		s_CollideObjects(currentTick);
 
-			
+
+
 		g_previousGameTick = currentTick;
-
 		{
 			// Todo: WaitForSingleObject
 			ULONGLONG tick = GetTickCount64();
@@ -353,16 +357,7 @@ void s_ApplyObjectLogic(ULONGLONG tickDiff)
 }
 
 
-void s_CollideObjects(ULONGLONG currentTick)
+void s_DetectCollision(ULONGLONG currentTick)
 {
-	ColliderID* pColliderIDs = nullptr;
-	UINT32 countCollidedObjects = g_pCollisionManager->DetectCollision(&pColliderIDs);
-	for (UINT32 i = 0; i < countCollidedObjects; ++i) {
-		Collider* pCollider = g_pCollisionManager->GetAttachedColliderPtr(pColliderIDs[i]);
-		if (pCollider == nullptr) {
-			continue;
-		}
-		GameObject* pGameObject = pCollider->GetAttachedObjectPtr();
-		pGameObject->OnHit(currentTick);
-	}
+	g_pCollisionManager->DetectCollision();
 }

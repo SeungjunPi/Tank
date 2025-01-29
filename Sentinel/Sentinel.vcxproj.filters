@@ -81,9 +81,6 @@
     <ClCompile Include="ObjectManager.cpp">
       <Filter>Game Object</Filter>
     </ClCompile>
-    <ClCompile Include="ICollisionManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameServer.h">
@@ -141,6 +138,9 @@
       <Filter>Game Event</Filter>
     </ClInclude>
     <ClInclude Include="Global.h">
+      <Filter>Static Data</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticData.h">
       <Filter>Static Data</Filter>
     </ClInclude>
   </ItemGroup>

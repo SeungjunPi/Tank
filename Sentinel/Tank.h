@@ -8,6 +8,7 @@ class Tank: public GameObject
 {
 public:
 	static const float COLLIDER_RADIUS;
+	static const float COLLIDER_MASS;
 
 	Tank(ObjectID id, UserDBIndex ownerId);
 	Tank() = default;

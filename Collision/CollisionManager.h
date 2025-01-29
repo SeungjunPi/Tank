@@ -11,7 +11,7 @@ public:
 	CollisionManager();
 	virtual ~CollisionManager() override;
 
-	virtual Collider* GetNewColliderPtr(float radius, GameObject* pObj, const Vector3* center, const Vector3* velocity, float mass, UINT32 kindness) override;
+	virtual Collider* GetNewColliderPtr(float radius, GameObject* pObj, const Vector3* center, float mass, UINT32 kindness) override;
 	virtual Collider* GetAttachedColliderPtr(ColliderID id) override;
 	virtual void ReturnCollider(Collider* pColloder) override;
 
