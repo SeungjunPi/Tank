@@ -20,8 +20,8 @@ static void s_ApplyKeyboardEvents(ULONGLONG tickDiff);
 static void s_ApplyObjectLogic(ULONGLONG tickDiff);
 static void s_SyncOwnTankTransform();
 static void s_HandleNetEvents();
-static void s_CollideObjects();
-static BOOL s_IsShootable();
+static void s_DetectCollision();
+// static BOOL s_IsShootable();
 static void s_CleanupDestroyedObjects(ULONGLONG curTick);
 
 
@@ -85,19 +85,29 @@ void Game::Start()
 		ULONGLONG gameTickDiff = g_currentGameTick - g_previousGameTick;
 		
 		if (gameTickDiff > TICK_PER_GAME_FRAME) {
-			// Apply Net Events
+			//////////////////////////////////////////////////////////////
+			// Input Event (Keyboard, NetEvent, etc..)
+			//////////////////////////////////////////////////////////////
+			// Handle NetCore Messages
 			s_HandleNetEvents();
 
-			// Get Keyboard Inputs
+			// Handle Keyboard Events
 			s_ApplyKeyboardEvents(gameTickDiff);
 
-			s_CleanupDestroyedObjects(g_currentGameTick);
+			//////////////////////////////////////////////////////////////
+			// Physics(Detect Collision)
+			//////////////////////////////////////////////////////////////
+			s_DetectCollision();
 
-			// Apply Game Logic(Terminate Game Objects, etc...)
+			//////////////////////////////////////////////////////////////
+			// Game Logic(DB, Apply Collision, )
+			//////////////////////////////////////////////////////////////
 			s_ApplyObjectLogic(gameTickDiff);
 
-			// Apply Physics(Boundary Yank, Hit, etc...)
-			s_CollideObjects();
+			//////////////////////////////////////////////////////////////
+			// Destroy Game Objects
+			//////////////////////////////////////////////////////////////
+			s_CleanupDestroyedObjects(g_currentGameTick);
 
 			g_previousGameTick = g_currentGameTick;
 		}
@@ -182,9 +192,10 @@ void s_HandleNetEvents()
 	g_pNetCore->EndHandleReceivedMessages();
 }
 
-void s_CollideObjects()
+void s_DetectCollision()
 {
-	ColliderID* pColliderIDs = nullptr;
+	g_pCollisionManager->DetectCollision();
+	/*ColliderID* pColliderIDs = nullptr;
 	UINT32 countCollidedObjects = g_pCollisionManager->DetectCollision(&pColliderIDs);
 	for (UINT32 i = 0; i < countCollidedObjects; ++i) {
 		Collider* pCollider = g_pCollisionManager->GetAttachedColliderPtr(pColliderIDs[i]);
@@ -194,7 +205,7 @@ void s_CollideObjects()
 
 		GameObject* pGameObject = pCollider->GetAttachedObjectPtr();
 		pGameObject->OnHit(g_currentGameTick);
-	}
+	}*/
 }
 
 //BOOL s_IsShootable()

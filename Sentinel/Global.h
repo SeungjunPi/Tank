@@ -18,6 +18,7 @@ extern UINT32* g_sessionIds;
 
 extern ULONGLONG g_currentGameTick;
 extern ULONGLONG g_previousGameTick;
+extern ULONGLONG g_diffGameTick;
 
 extern IJunDB* g_pJunDB;
 extern ICollisionManager* g_pCollisionManager;

@@ -26,6 +26,7 @@ enum EGameEventCode
 	GAME_EVENT_CODE_SC_MOVING = 0x02010302,
 	GAME_EVENT_CODE_CS_SHOOT = 0x02010401,
 	GAME_EVENT_CODE_SC_SHOOT = 0x02010402,
+	GAME_EVENT_CODE_SC_OBJECT_HIT = 0x02010501,
 	GAME_EVENT_CODE_SC_TANK_HIT = 0x02010502,
 	GAME_EVENT_CODE_SC_CREATE_OBSTACLE = 0x02010102,
 	GAME_EVENT_CODE_SC_DELETE_OBSTACLE = 0x02010202,
@@ -158,6 +159,13 @@ struct PACKET_SC_TANK_HIT
 	UserDBIndex target;
 };
 
+struct PACKET_SC_OBJECT_HIT
+{
+	ObjectID objectID;
+	UserDBIndex ownerID;
+	UINT32 kindnessFlag;
+};
+
 struct PACKET_SC_CREATE_OBSTACLE
 {
 	ObjectID obstacleId;
@@ -206,6 +214,8 @@ private:
 	static void HandleSnapshot(BYTE* pGameEvent, UINT32 senderId);
 
 	static void HandleShoot(BYTE* pGameEvent, UINT32 senderId);
+
+	static void HandleObjectHit(BYTE* pGameEvent, UINT32 senderID);
 	
 	static void HandleTankHit(BYTE* pGameEvent, UINT32 senderId);
 

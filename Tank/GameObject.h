@@ -72,7 +72,6 @@ protected:
 	UserDBIndex _ownerID = 0;
 
 	Model _model;
-	float _colliderSize = 0;
 	BOOL _dirty = false;
 	BOOL _isAlive = true;
 

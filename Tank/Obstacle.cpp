@@ -7,7 +7,6 @@ void Obstacle::Initiate(ObjectID id, Transform* pInitTransform)
 	memcpy(&_transform, pInitTransform, sizeof(Transform));
 	_id = id;
 	_model = g_pObstacleModel;
-	_colliderSize = 1;
 	_hitTick = 0;
 }
 

@@ -5,6 +5,7 @@
 #include "ObjectManager.h"
 #include "PlayerManager.h"
 #include "StaticData.h"
+#include "GameEvent.h"
 
 const float Projectile::COLLIDER_RADIUS = 1.f;
 const float Projectile::COLLIDER_MASS = 0.1f;
@@ -65,6 +66,7 @@ void Projectile::OnHit(ULONGLONG currentTick)
 		g_playerManager.IncreaseHitCount(_ownerIndex);
 		_hitTick = currentTick;
 		_pCollider->Deactivate();
+		GamePacket::BroadcastHit(_id, _ownerIndex, collisionFlag);
 		printf("Projectile [%u(%u)] hit Tank\n", _id.key, _ownerIndex);
 		return;
 	}

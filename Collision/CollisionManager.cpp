@@ -6,7 +6,11 @@
 #include <time.h>
 #include <cmath>
 
+const float SAME_POSITION_THRESHOLD = 1E-04f;
+
+
 CollisionManager::CollisionManager()
+	: _collisionPairs(sizeof(CollisionPair), MAX_NUM_COLLIDERS * 10)
 {
 	_colliders = DNew Collider[MAX_NUM_COLLIDERS];
 	for (UINT16 i = 0; i < MAX_NUM_COLLIDERS; ++i) {
@@ -23,11 +27,11 @@ CollisionManager::~CollisionManager()
 	delete[] _usedIDs;
 }
 
-Collider* CollisionManager::GetNewColliderPtr(float radius, GameObject* pObj, const Vector3* center, float mass, UINT32 kindness)
+Collider* CollisionManager::GetNewColliderPtr(float radius, GameObject* pObj, const Vector3* center, const Vector3* direction, float mass, UINT32 kindness)
 {
 	ColliderID id = GetUnusedID();
 	Collider* pCollider = _colliders + id;
-	pCollider->Initiate(radius, pObj, center, mass, kindness);
+	pCollider->Initiate(radius, pObj, center, direction, mass, kindness);
 	_usedIDs[_countActiveColliders] = id;
 	++_countActiveColliders;
 	
@@ -44,6 +48,12 @@ Collider* CollisionManager::GetAttachedColliderPtr(ColliderID id)
 	return nullptr;
 }
 
+JStack* CollisionManager::GetCollisionPairs()
+{
+
+	return nullptr;
+}
+
 void CollisionManager::ReturnCollider(Collider* pCollider)
 {
 	ColliderID key = pCollider->GetID();
@@ -54,6 +64,7 @@ void CollisionManager::ReturnCollider(Collider* pCollider)
 void CollisionManager::DetectCollision()
 {
 	ResetAllColliders();
+	_collisionPairs.Clear();
 
 	for (size_t i = 0; i < _countActiveColliders; ++i) {
 		for (size_t j = i + 1; j < _countActiveColliders; ++j) {
@@ -62,13 +73,17 @@ void CollisionManager::DetectCollision()
 			ColliderID anotherID = _usedIDs[j];
 			Collider* pColliderAnother = _colliders + anotherID;
 
-			if (!CheckCollision(pColliderOne, pColliderAnother)) {
-				continue;
-			}
+			if (CheckCollision(pColliderOne, pColliderAnother)) {
+				CollisionPair pair{ pColliderOne->_pObject, pColliderAnother->_pObject };
+				_collisionPairs.Push(&pair);
+				pColliderOne->_collisionKindnessFlag = 0x01;
+				pColliderAnother->_collisionKindnessFlag = 0x01;
 
-			pColliderOne->_collisionKindnessFlag |= pColliderAnother->_kindness;
-			pColliderAnother->_collisionKindnessFlag |= pColliderOne->_kindness;
-			CalculateElasticCollisionNextMovements(pColliderOne, pColliderAnother);
+				//pcolliderone->_collisionkindnessflag |= pcollideranother->_kindness;
+				//pcollideranother->_collisionkindnessflag |= pcolliderone->_kindness;
+				//resolvepenetration(pcolliderone, pcollideranother);
+				//calculateelasticcollisionnextmovements(pcolliderone, pcollideranother);
+			}
 		}
 	}
 }
@@ -98,28 +113,13 @@ BOOL CollisionManager::CheckCollision(Collider* one, Collider* another)
 void CollisionManager::CalculateElasticCollisionNextMovements(Collider* a, Collider* b)
 {
 	Vector3 n = a->_center - b->_center;
-	const float samePositionThreashold = 1E-05;
-	if (Vector3::Norm(n) < samePositionThreashold) {
-		a->_collisionKindnessFlag |= 0x01 << 31; // kindness 확장시 변경 필요
-		b->_collisionKindnessFlag |= 0x01 << 31; // kindness 확장시 변경 필요
-
-		// 임시적으로 평면상의 위치를 밀어냄. 
-		float rad = (float)rand() / RAND_MAX * 2.0f * M_PI;
-		Vector3 randomVector = { cosf(rad), sinf(rad), 0 };
-
-		float aWeight = (a->_radius + b->_radius) * b->_mass / (a->_mass + b->_mass);
-		float bWeight = (a->_radius + b->_radius) * a->_mass / (a->_mass + b->_mass);
-
-		a->_nextMovement = randomVector * aWeight;
-		b->_nextMovement = randomVector * -bWeight;
-
+	if (Vector3::Norm(n) < SAME_POSITION_THRESHOLD) {
 		return;
 	}
-	
 	Vector3::Normalize(&n, n);
 
-	Vector3 v = a->_velocity;
-	Vector3 w = b->_velocity;
+	Vector3 v = a->_movementDirection * a->_movementSpeed;
+	Vector3 w = b->_movementDirection * b->_movementSpeed;
 
 	Vector3 v_n = n * Vector3::DotProduct(n, v);
 	Vector3 v_t = v - v_n;
@@ -132,6 +132,32 @@ void CollisionManager::CalculateElasticCollisionNextMovements(Collider* a, Colli
 	
 	a->_nextMovement = v_np + v_t;
 	b->_nextMovement = w_np + w_t;
+
+	
+}
+
+void CollisionManager::ResolvePenetration(Collider* c1, Collider* c2)
+{
+	Vector3 n = c1->_center - c2->_center;
+	float distance = Vector3::Norm(n);
+	if (distance < SAME_POSITION_THRESHOLD) {
+		// TODO: 아래 필요한지 검토
+		c1->_collisionKindnessFlag |= 0x01 << 31; // kindness 확장시 변경 필요
+		c2->_collisionKindnessFlag |= 0x01 << 31; // kindness 확장시 변경 필요
+
+		n = { 1.0f, 0.f, 0.f };
+	}
+	float penetrationDepth = (c1->_radius + c2->_radius) - distance;
+
+	if (penetrationDepth > 0.0f) {
+		Vector3::Normalize(&n, n);
+
+		float weight1 = c2->_mass / (c1->_mass + c2->_mass);
+		float weight2 = c1->_mass / (c1->_mass + c2->_mass);
+		
+		c1->_center = c1->_center + n * (penetrationDepth * weight1);
+		c2->_center = c2->_center - n * (penetrationDepth * weight2);
+	}
 }
 
 void CollisionManager::PopUsedIDs(ColliderID id)

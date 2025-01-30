@@ -58,12 +58,28 @@ Quaternion Quaternion::RotateZM90(Quaternion v)
 float Quaternion::AngularDistance(Quaternion q1, Quaternion q2)
 {
     float dotProduct = q1.w * q2.w + q1.x * q2.x + q1.y * q2.y + q1.z * q2.z;
+
+    if (dotProduct < 0.0f) {
+        dotProduct = -dotProduct;
+    }
+
+    dotProduct = fmaxf(fminf(dotProduct, 1.0f), 0.0f);
     return 2.0f * acosf(fabs(dotProduct));
 }
 
 Vector3 Vector3::operator*(const float scalar)
 {
     return Vector3{x * scalar, y * scalar, z * scalar};
+}
+
+Vector3 Vector3::operator+(const float scalar)
+{
+    return Vector3{ x + scalar, y + scalar, z + scalar };
+}
+
+Vector3 Vector3::operator-(const float scalar)
+{
+    return Vector3{ x - scalar, y - scalar, z - scalar };
 }
 
 Vector3 Vector3::operator+(const Vector3& another)

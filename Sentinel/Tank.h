@@ -29,6 +29,8 @@ public:
 
 	void OnFrame(ULONGLONG tickDiff) override;
 
+	virtual Vector3 GetMovementVector() override;
+
 	virtual BOOL IsDestroyed(ULONGLONG currentTick) const;
 
 	virtual void OnHit(ULONGLONG currentTick) override;
@@ -42,14 +44,10 @@ protected:
 	virtual BOOL IsTransformCloseEnough(const Transform* other) override;
 
 private:
-	Vector3 _forwardDirection;
-	
 	bool _isMovingFoward = false;
 	bool _isMovingBackward = false;
 	bool _isRotatingLeft = false;
 	bool _isRotatingRight = false;
-
-	Transform _prevTransform = { 0, };
 
 	void MoveForward(ULONGLONG tickDiff);
 	void MoveBackward(ULONGLONG tickDiff);

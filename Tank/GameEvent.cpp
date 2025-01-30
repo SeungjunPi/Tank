@@ -5,6 +5,7 @@
 #include "AllocObjectManager.h"
 #include "Game.h"
 #include "Player.h"
+#include "CommonData.h"
 
 BOOL GamePacket::Validate(BYTE* pGameEvent, UINT32 senderId)
 {
@@ -45,6 +46,8 @@ void GamePacket::HandlePacket(BYTE* pGameEvent, UINT32 senderId)
 	case GAME_EVENT_CODE_SC_RESPAWN_TANK:
 		HandleRespawnTank(pGameEvent, senderId);
 		break;
+	case GAME_EVENT_CODE_SC_OBJECT_HIT:
+		HandleObjectHit(pGameEvent, senderId);
 	default:
 		__debugbreak();
 		break;
@@ -89,7 +92,7 @@ void GamePacket::HandleStartMove(BYTE* pGameEvent, UINT32 senderId)
 {
 	PACKET_SC_START_MOVE* pScStartMove = (PACKET_SC_START_MOVE*)(pGameEvent + sizeof(EGameEventCode));
 	if (pScStartMove->objectId.equals(g_pPlayer->GetTankID())) {
-		g_lastOwnTankSyncTick = g_currentGameTick;
+		g_pPlayer->UpdateSyncTick();
 	}
 	else {
 		if (pScStartMove->movementFlag & FLAG_MOVE_FORWARD) {
@@ -113,7 +116,7 @@ void GamePacket::HandleEndMove(BYTE* pGameEvent, UINT32 senderId)
 	
 	if (pScEndMove->objectId.equals(g_pPlayer->GetTankID())) {
 		// TODO: Log "Adjusted based on ther server's transform\n"
-		g_lastOwnTankSyncTick = g_currentGameTick;
+		g_pPlayer->UpdateSyncTick();
 	}
 
 	if (pScEndMove->movementFlag & FLAG_MOVE_FORWARD) {
@@ -137,9 +140,7 @@ void GamePacket::HandleMoving(BYTE* pGameEvent, UINT32 senderId)
 	if (pScMoving->objectId.equals(g_pPlayer->GetTankID())) {
 		// update if transforms are diffrent
 	}
-	else {
-		g_objectManager.UpdateObjectTransform(pScMoving->objectId, &pScMoving->transform);
-	}
+	g_objectManager.UpdateObjectTransform(pScMoving->objectId, &pScMoving->transform);
 }
 
 void GamePacket::HandleSnapshot(BYTE* pGameEvent, UINT32 senderId)
@@ -183,6 +184,37 @@ void GamePacket::HandleShoot(BYTE* pGameEvent, UINT32 senderId)
 	pScShoot->transform;
 
 	g_objectManager.CreateProjectile(pScShoot->objectId, &pScShoot->transform, pScShoot->ownerId);
+}
+
+void GamePacket::HandleObjectHit(BYTE* pGameEvent, UINT32 senderID)
+{
+	PACKET_SC_OBJECT_HIT* pScObjectHit = (PACKET_SC_OBJECT_HIT*)(pGameEvent + sizeof(EGameEventCode));
+	ObjectID objectID = pScObjectHit->objectID;
+
+	GameObject* pObj = g_objectManager.GetObjectPtrOrNull(objectID);
+	switch (objectID.type) {
+	case GAME_OBJECT_TYPE_TANK:
+	{
+		Tank* pTank = (Tank*)pObj;
+		if (pScObjectHit->kindnessFlag & COLLIDER_KINDNESS_PROJECTILE) {
+			pTank->OnHitByProjectile(g_currentGameTick);
+		}
+	}
+		break;
+	case GAME_OBJECT_TYPE_PROJECTILE:
+	{
+		Projectile* pProjectile = (Projectile*)pObj;
+		if (pScObjectHit->kindnessFlag & COLLIDER_KINDNESS_TANK) {
+			pProjectile->OnHitTank(g_currentGameTick);
+		}
+	}
+		break;
+	case GAME_OBJECT_TYPE_OBSTACLE:
+		__debugbreak();
+		break;
+	default:
+		__debugbreak();
+	}
 }
 
 void GamePacket::HandleTankHit(BYTE* pGameEvent, UINT32 senderId)

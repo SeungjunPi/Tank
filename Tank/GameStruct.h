@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "TankPch.h"
 #include "GameMath.h"
@@ -44,3 +44,5 @@ enum EMovementEventFlag : UINT64
 	MOVEMENT_EVENT_FLAG_RIGHT = 0b00001000,
 	MOVEMENT_EVENT_FLAG_FIRE = 0b00100000
 };
+
+const UINT64 MOVEMENT_FLAGS = 0b1111;

@@ -86,6 +86,7 @@ BOOL GameObject::UpdateFrom(const GameObject* pOther)
 void GameObject::UpdateTransform(const Transform* pTransform)
 {
 	memcpy(&_transform, pTransform, sizeof(Transform));
+	OnUpdateTransform();
 }
 
 void GameObject::SetPosition(Vector3 position)

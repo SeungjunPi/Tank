@@ -34,6 +34,8 @@ struct Vector3
 	float z = 0.f;
 
 	Vector3 operator*(const float scalar);
+	Vector3 operator+(const float scalar);
+	Vector3 operator-(const float scalar);
 	Vector3 operator+(const Vector3& another);
 	Vector3 operator+(const Vector3&& another);
 	Vector3 operator-(const Vector3& another);

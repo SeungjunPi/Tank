@@ -17,7 +17,7 @@ static BOOL s_isRunning = false;
 
 
 static void s_ApplyObjectLogic(ULONGLONG tickDiff);
-static void s_DetectCollision(ULONGLONG curTick);
+static void s_ApplyPhysics(ULONGLONG curTick);
 static void s_CleanupDestroyedObjects(ULONGLONG curTick);
 static void s_OnSessionEvent(UINT32 sessionID, ESessionEvent sessionEvent);
 static void s_ProcessDBQueryResults();
@@ -70,14 +70,13 @@ void GameServer::Start()
 
 	
 	while (s_isRunning) {
-		// Handle Keyboard Events
 		ULONGLONG currentTick = GetTickCount64();
 		g_currentGameTick = currentTick;
+		g_diffGameTick = g_currentGameTick - g_previousGameTick;
+		
+		
 		ULONGLONG gameTickDiff = currentTick - g_previousGameTick;
 
-		
-		
-		
 
 		//////////////////////////////////////////////////////////////
 		// Input Event (DB Result, Session Event, User act, etc..)
@@ -105,14 +104,15 @@ void GameServer::Start()
 		s_ProcessDBQueryResults();
 
 		//////////////////////////////////////////////////////////////
-		// Physics(Detect Collision)
-		//////////////////////////////////////////////////////////////
-		s_DetectCollision(currentTick);
-
-		//////////////////////////////////////////////////////////////
 		// Game Logic(DB, Apply Collision, )
 		//////////////////////////////////////////////////////////////
 		s_ApplyObjectLogic(gameTickDiff);
+
+
+		//////////////////////////////////////////////////////////////
+		// Physics(Detect Collision)
+		//////////////////////////////////////////////////////////////
+		s_ApplyPhysics(currentTick);
 		
 		//////////////////////////////////////////////////////////////
 		// Destroy Game Objects
@@ -341,8 +341,8 @@ void s_ApplyObjectLogic(ULONGLONG tickDiff)
 	UINT32 keys[1024];
 	UINT32 countKeys;
 
-	int objectKindEnumMax = (int)GAME_OBJECT_TYPE_OBSTACLE;
-	for (int i = 0; i <= objectKindEnumMax; ++i) {
+	int objectKindEnumMax = (int)GAME_OBJECT_TYPE_MAX;
+	for (int i = 0; i < objectKindEnumMax; ++i) {
 		EGameObjectType type = (EGameObjectType)i;
 		g_objectManager.GetKeys(type, keys, &countKeys);
 		for (UINT32 i = 0; i < countKeys; ++i) {
@@ -357,7 +357,9 @@ void s_ApplyObjectLogic(ULONGLONG tickDiff)
 }
 
 
-void s_DetectCollision(ULONGLONG currentTick)
+void s_ApplyPhysics(ULONGLONG currentTick)
 {
 	g_pCollisionManager->DetectCollision();
+
+	// ApplyPhysics (Movement, etc..)
 }

@@ -163,6 +163,7 @@
   <ItemGroup>
     <ClInclude Include="AllocObjectManager.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="CommonData.h" />
     <ClInclude Include="ConsoleRenderer.h" />
     <ClInclude Include="DotObject.h" />
     <ClInclude Include="Game.h" />

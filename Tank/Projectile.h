@@ -7,6 +7,7 @@ class Projectile : public GameObject
 {
 public:
 	static const float COLLIDER_RADIUS;
+	static const float COLLIDER_MASS;
 	Projectile() = default;
 	~Projectile() = default;
 

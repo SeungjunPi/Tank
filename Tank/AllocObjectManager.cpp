@@ -2,6 +2,7 @@
 #include "GameObject.h"
 #include "Global.h"
 #include "ICollisionManager.h"
+#include "CommonData.h"
 
 static const int MAX_NUM_OBJECT = 4096;
 
@@ -48,8 +49,9 @@ void AllocObjectManager::Terminate()
 Tank* AllocObjectManager::CreateTank(ObjectID objectID, UserDBIndex ownerIndex)
 {
 	Tank* pTank = DNew Tank(objectID, ownerIndex);
+	const Transform* pTankTransform = pTank->GetTransformPtr();
 
-	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(Tank::COLLIDER_RADIUS, pTank);
+	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(Tank::COLLIDER_RADIUS, pTank, &pTankTransform->Position, Tank::COLLIDER_MASS, COLLIDER_KINDNESS_TANK);
 	pTank->AttachCollider(pCollider);
 
 	bool res = _tankTable.Insert(objectID.key, pTank);
@@ -62,7 +64,8 @@ Tank* AllocObjectManager::CreateTank(ObjectID objectID, UserDBIndex ownerIndex)
 Projectile* AllocObjectManager::CreateProjectile(ObjectID objectID, Transform* pInitTransform, UserDBIndex ownerIndex)
 {
 	Projectile* pProjectile = DNew Projectile();
-	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(Projectile::COLLIDER_RADIUS, pProjectile);
+	const Transform* pProjectileTransform = pProjectile->GetTransformPtr();
+	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(Projectile::COLLIDER_RADIUS, pProjectile, &pProjectileTransform->Position, Projectile::COLLIDER_MASS, COLLIDER_KINDNESS_PROJECTILE);
 	pProjectile->AttachCollider(pCollider);
 	pProjectile->Initiate(objectID, pInitTransform, ownerIndex);
 	_projectileTable.Insert(objectID.key, pProjectile);

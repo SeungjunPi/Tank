@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "GameObject.h"
 
@@ -10,6 +10,7 @@ class Tank : public GameObject
 public:
 	static const float COLLIDER_RADIUS;
 	static const ULONGLONG MACHINE_GUN_DELAY;
+	static const float COLLIDER_MASS;
 
 	Tank(ObjectID id, UserDBIndex ownerID);
 	Tank() = default;
@@ -56,7 +57,6 @@ public:
 	
 
 private:
-	Vector3 _forwardDirection;
 	UserDBIndex _ownerId = 0;
 
 	Transform _prevTransform = { 0, };

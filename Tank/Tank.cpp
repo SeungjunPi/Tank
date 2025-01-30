@@ -10,16 +10,14 @@
 
 const float POSITION_VELOCITY_WEIGHT = 0.5f;
 const float ROTATION_VELOCITY_WEIGHT = 0.25f;
-const float Tank::COLLIDER_RADIUS = 1.0f;
+const float Tank::COLLIDER_RADIUS = 2.0f;
 const ULONGLONG Tank::MACHINE_GUN_DELAY = 250;
+const float Tank::COLLIDER_MASS = 10.0f;
 
 Tank::Tank(ObjectID id, UserDBIndex ownerID)
 	: GameObject(id, ownerID, true)
-{
-	_forwardDirection = { .0f, -1.0f, .0f };
-	
+{	
 	_model = g_pTankModel;
-	_colliderSize = 1;
 
 	ResetHP();
 }
@@ -32,10 +30,8 @@ void Tank::Initiate(ObjectID id)
 {
 	_id = id;
 	_isActivatable = true;
-	_forwardDirection = { .0f, -1.0f, .0f };
 	_transform = { 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f };
 	_model = g_pTankModel;
-	_colliderSize = 1;
 	_hitTick = 0;
 	ResetHP();
 }
@@ -43,10 +39,8 @@ void Tank::Initiate(ObjectID id)
 void Tank::Terminate()
 {
 	_id = INVALID_OBJECT_ID;
-	_forwardDirection = { 0, };
 	_transform = { 0, };
 	_model = { nullptr, 0 };
-	_colliderSize = 0;
 }
 
 void Tank::SetMovementState(bool forward, bool backward, bool left, bool right)
@@ -102,6 +96,7 @@ void Tank::EndMove(EMovement movement, const Transform* pTransform)
 	default:
 		__debugbreak();
 	}
+	OnUpdateTransform();
 }
 
 void Tank::StartRotate(ERotation rotation)
@@ -146,24 +141,26 @@ void Tank::EndRotate(ERotation rotation, const Transform* pTransform)
 	default:
 		__debugbreak();
 	}
+	OnUpdateTransform();
 }
 
 void Tank::MoveForward(ULONGLONG tickDiff)
 {
-	_forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
-	_transform.Position.x = _transform.Position.x + _forwardDirection.x * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
-	_transform.Position.y = _transform.Position.y + _forwardDirection.y * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
-	_transform.Position.z = _transform.Position.z + _forwardDirection.z * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
+	
+	Vector3 forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
+	_transform.Position.x = _transform.Position.x + forwardDirection.x * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
+	_transform.Position.y = _transform.Position.y + forwardDirection.y * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
+	_transform.Position.z = _transform.Position.z + forwardDirection.z * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
 	_dirty = true;
 	OnUpdateTransform();
 }
 
 void Tank::MoveBackward(ULONGLONG tickDiff)
 {
-	_forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
-	_transform.Position.x = _transform.Position.x - _forwardDirection.x * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
-	_transform.Position.y = _transform.Position.y - _forwardDirection.y * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
-	_transform.Position.z = _transform.Position.z - _forwardDirection.z * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
+	Vector3 forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
+	_transform.Position.x = _transform.Position.x - forwardDirection.x * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
+	_transform.Position.y = _transform.Position.y - forwardDirection.y * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
+	_transform.Position.z = _transform.Position.z - forwardDirection.z * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
 	_dirty = true;
 	OnUpdateTransform();
 }
@@ -247,56 +244,56 @@ void Tank::OnFrame(ULONGLONG tickDiff)
 	if (!IsAlive()) {
 		return;
 	}
-	memcpy(&_prevTransform, &_transform, sizeof(Transform));
 
-	if (_isMovingFoward) {
-		MoveForward(tickDiff);
+	if (_ownerID == g_pPlayer->GetUserID()) {
+		// check 
 	}
-	if (_isMovingBackward) {
-		MoveBackward(tickDiff);
+	
+	if (_pCollider->IsCollided()) {
+		OnHit(g_currentGameTick);
 	}
-	if (_isRotatingLeft) {
-		RotateLeft(tickDiff);
-	}
-	if (_isRotatingRight) {
-		RotateRight(tickDiff);
+	else {
+		if (_isMovingFoward) {
+			MoveForward(tickDiff);
+		}
+		if (_isMovingBackward) {
+			MoveBackward(tickDiff);
+		}
+		if (_isRotatingLeft) {
+			RotateLeft(tickDiff);
+		}
+		if (_isRotatingRight) {
+			RotateRight(tickDiff);
+		}
 	}
 
 	if (_flagFiringMachineGun) {
-		OnFiringMachineGun(g_currentGameTick);
+		OnFiringMachineGun(g_currentGameTick); // 충돌과 무관하게 발사
 	}
-
-
 	return;
 }
 
 void Tank::OnHit(ULONGLONG currentTick)
 {
-	ColliderID colliderIDs[MAX_SIMULTANEOUS_COLLISIONS];
-	UINT16 countColliders = _pCollider->GetCollidingIDs(colliderIDs);
-	for (UINT16 i = 0; i < countColliders; ++i) {
-		Collider* pOtherCollider = g_pCollisionManager->GetAttachedColliderPtr(colliderIDs[i]);
-		ObjectID otherObjID = pOtherCollider->GetAttachedObjectPtr()->GetID();
-		GameObject* pOtherObj = g_objectManager.GetObjectPtrOrNull(otherObjID);
-		switch (otherObjID.type) {
-		case GAME_OBJECT_TYPE_PROJECTILE:
-			// Do Nothing yet..
-			break;
-		case GAME_OBJECT_TYPE_TANK:
-			memcpy(&_transform, &_prevTransform, sizeof(Transform));
-			_pCollider->UpdateCenterPosition(&_transform.Position);
-			break;
-		case GAME_OBJECT_TYPE_OBSTACLE:
-			// Do Nothing yet..
-			break;
-		}
+	UINT32 collisionFlag = _pCollider->GetCollisionKindnessFlag();
+	if (collisionFlag & COLLIDER_KINDNESS_PROJECTILE) {
+		// run animation? or gen particle?
 	}
 
+	if (collisionFlag & (COLLIDER_KINDNESS_TANK || COLLIDER_KINDNESS_SAME_POSITION)) {
+		
+	}
+
+	Vector3 nextMovement = _pCollider->GetNextMovement();
+	_transform.Position = nextMovement;
+	OnUpdateTransform();
 }
 
 void Tank::OnUpdateTransform()
 {
-	_pCollider->UpdateCenterPosition(&_transform.Position);
+	//printf("pos: [%f, %f, %f]\n", _transform.Position.x, _transform.Position.y, _transform.Position.z);
+	Vector3 movementVector = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation) * POSITION_VELOCITY_WEIGHT;
+	_pCollider->Update(&_transform.Position, &movementVector);
 	if (g_pPlayer->GetUserID() == _ownerID) {
 		g_pCamera->UpdateTransf(&_transform);
 	}

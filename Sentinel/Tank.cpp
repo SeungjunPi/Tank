@@ -9,14 +9,13 @@
 
 const float POSITION_VELOCITY_WEIGHT = 0.5f;
 const float ROTATION_VELOCITY_WEIGHT = 0.25f;
-const float Tank::COLLIDER_RADIUS = 1.0f;
+const float Tank::COLLIDER_RADIUS = 2.0f;
 const float Tank::COLLIDER_MASS = 10.0f;
 
 Tank::Tank(ObjectID id, UserDBIndex ownerId)
 	: GameObject(id, ownerId, true)
 {
 	ResetHP();
-	_forwardDirection = { .0f, -1.0f, .0f };
 }
 
 Tank::~Tank()
@@ -28,7 +27,6 @@ void Tank::Initiate(ObjectID id)
 	ResetHP();
 	_id = id;
 	_isActivatable = true;
-	_forwardDirection = { .0f, -1.0f, .0f };
 	_transform = { 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f };
 	_hitTick = 0;
 }
@@ -36,7 +34,6 @@ void Tank::Initiate(ObjectID id)
 void Tank::Terminate()
 {
 	_id = INVALID_OBJECT_ID;
-	_forwardDirection = { 0, };
 	_transform = { 0, };
 }
 
@@ -98,9 +95,11 @@ void Tank::EndRotate(EROTATION rotation)
 
 void Tank::MoveForward(ULONGLONG tickDiff)
 {
-	_transform.Position.x = _transform.Position.x + _forwardDirection.x * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
-	_transform.Position.y = _transform.Position.y + _forwardDirection.y * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
-	_transform.Position.z = _transform.Position.z + _forwardDirection.z * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
+	//printf("pos: [%f, %f, %f]\n", _transform.Position.x, _transform.Position.y, _transform.Position.z);
+	Vector3 forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
+	_transform.Position.x = _transform.Position.x + forwardDirection.x * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
+	_transform.Position.y = _transform.Position.y + forwardDirection.y * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
+	_transform.Position.z = _transform.Position.z + forwardDirection.z * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
 	_dirty = true;
 
 	OnUpdateTransform();
@@ -108,20 +107,20 @@ void Tank::MoveForward(ULONGLONG tickDiff)
 
 void Tank::MoveBackward(ULONGLONG tickDiff)
 {
-	_transform.Position.x = _transform.Position.x - _forwardDirection.x * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
-	_transform.Position.y = _transform.Position.y - _forwardDirection.y * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
-	_transform.Position.z = _transform.Position.z - _forwardDirection.z * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
+	Vector3 forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
+	_transform.Position.x = _transform.Position.x - forwardDirection.x * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
+	_transform.Position.y = _transform.Position.y - forwardDirection.y * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
+	_transform.Position.z = _transform.Position.z - forwardDirection.z * (tickDiff / 1000.f * 60.f) * POSITION_VELOCITY_WEIGHT;
 	_dirty = true;
 	OnUpdateTransform();
 }
 
 void Tank::RotateRight(ULONGLONG tickDiff)
 {
-	const float angularVelocity = 3.14159265358979323846f / 1000.f * 60.f / 32.f;
-	float radian = tickDiff * angularVelocity * ROTATION_VELOCITY_WEIGHT;
+	const float angularSpeed = 3.14159265358979323846f / 1000.f * 60.f / 32.f;
+	float radian = tickDiff * angularSpeed * ROTATION_VELOCITY_WEIGHT;
 
 	_transform.Rotation = Quaternion::RotateZP(radian, _transform.Rotation);
-	_forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
 
 	_dirty = true;
 	OnUpdateTransform();
@@ -133,7 +132,6 @@ void Tank::RotateLeft(ULONGLONG tickDiff)
 	float radian = tickDiff * angularVelocity * ROTATION_VELOCITY_WEIGHT;
 
 	_transform.Rotation = Quaternion::RotateZM(radian, _transform.Rotation);
-	_forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
 
 	_dirty = true;
 	OnUpdateTransform();
@@ -165,7 +163,6 @@ void Tank::OnFrame(ULONGLONG tickDiff)
 {
 	if (IsAlive()) {
 		if (_pCollider->IsCollided()) {
-			memcpy(&_prevTransform, &_transform, sizeof(Transform));
 			OnHit(g_currentGameTick);
 		}
 		else {
@@ -193,6 +190,20 @@ void Tank::OnFrame(ULONGLONG tickDiff)
 	return;
 }
 
+Vector3 Tank::GetMovementVector()
+{
+	if (!(_isMovingFoward ^ _isMovingBackward)) {
+		return { 0, 0, 0 };
+	}
+	
+	Vector3 movement = GameObject::GetMovementVector();
+	if (_isMovingBackward) {
+		return movement * -1;
+	}
+
+	return movement;
+}
+
 BOOL Tank::IsDestroyed(ULONGLONG currentTick) const
 {
 	return !_isActivatable && (!_isAlive || _hitTick != 0);
@@ -212,24 +223,23 @@ void Tank::OnHit(ULONGLONG currentTick)
 				_isRotatingLeft = false;
 				_isRotatingRight = false;
 				g_playerManager.IncreaseDeathCount(_ownerIndex);
+				
+				// TODO: Find shooter and increase kill count.
 			}
-			g_playerManager.IncreaseHitCount(_ownerIndex);
-			GamePacket::BroadcastTankHit(_id, otherObjID, pOtherObj->GetOwnerId(), _ownerIndex);
+			GamePacket::BroadcastHit(_id, _ownerIndex, collisionFlag);
 		}
-
-		return;
 	}
 
-	if (collisionFlag & COLLIDER_KINDNESS_TANK) {
-		Vector3 nextMovement = _pCollider->GetNextMovement();
-		_transform.Position = nextMovement;
-		_pCollider->UpdateCenterPosition(&_transform.Position);
+	if (collisionFlag & (COLLIDER_KINDNESS_TANK | COLLIDER_KINDNESS_SAME_POSITION)) {
 	}
+	Vector3 nextMovement = _pCollider->GetNextMovement();
+	_transform.Position = nextMovement;
+	_pCollider->UpdateCenterPosition(&_transform.Position);
 }
 
 void Tank::OnUpdateTransform()
 {
-	Vector3 movementVector = _forwardDirection * POSITION_VELOCITY_WEIGHT;
+	Vector3 movementVector = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation) * POSITION_VELOCITY_WEIGHT;
 	_pCollider->Update(&_transform.Position, &movementVector);
 }
 

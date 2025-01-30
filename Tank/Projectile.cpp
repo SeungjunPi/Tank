@@ -1,4 +1,4 @@
-#include "TankPch.h"
+﻿#include "TankPch.h"
 
 #include "Projectile.h"
 #include "Global.h"
@@ -6,9 +6,11 @@
 #include "Collider.h"
 #include "AllocObjectManager.h"
 #include "ICollisionManager.h"
+#include "Player.h"
 
 const float POSITION_VELOCITY_WEIGHT = 1.5f;
 const float Projectile::COLLIDER_RADIUS = 1.0f;
+const float Projectile::COLLIDER_MASS = 0.1f;
 
 void Projectile::Initiate(ObjectID id, Transform* transform, UserDBIndex ownerID)
 {
@@ -22,7 +24,6 @@ void Projectile::Initiate(ObjectID id, Transform* transform, UserDBIndex ownerID
 	_transform.Position.z += _forwardDirection.z * 1.2f;
 
 	_model = g_pProjectileModel;
-	_colliderSize = 1.0f;
 	_dirty = true;
 	_genTick = g_previousGameTick;
 
@@ -41,7 +42,13 @@ void Projectile::OnFrame(ULONGLONG tickDiff)
 		return;
 	}
 
+	if (_pCollider->IsCollided()) {
+		OnHit(g_currentGameTick);
+	}
+	else {
+	}	
 	Move(tickDiff);
+	
 }
 
 BOOL Projectile::IsDestroyed(ULONGLONG currentTick) const
@@ -73,23 +80,6 @@ void Projectile::Move(ULONGLONG tickDiff)
 void Projectile::OnHit(ULONGLONG currentTick)
 {
 	// Do Nothing yet..
-	ColliderID colliderIDs[MAX_SIMULTANEOUS_COLLISIONS];
-	UINT16 countColliders = _pCollider->GetCollidingIDs(colliderIDs);
-	for (UINT16 i = 0; i < countColliders; ++i) {
-		Collider* pOtherCollider = g_pCollisionManager->GetAttachedColliderPtr(colliderIDs[i]);
-		ObjectID otherObjID = pOtherCollider->GetAttachedObjectPtr()->GetID();
-		GameObject* pOtherObj = g_objectManager.GetObjectPtrOrNull(otherObjID);
-		switch (otherObjID.type) {
-		case GAME_OBJECT_TYPE_PROJECTILE:
-			// TODO: do something..?
-			break;
-		case GAME_OBJECT_TYPE_TANK:
-			// TODO: do something..?
-			break;
-		case GAME_OBJECT_TYPE_OBSTACLE:
-			break;
-		}
-	}
 }
 
 void Projectile::OnUpdateTransform()
@@ -101,6 +91,10 @@ void Projectile::OnHitTank(ULONGLONG currentTick)
 {
 	if (_hitTick != 0) {
 		__debugbreak();
+	}
+
+	if (g_pPlayer->GetUserID() == _ownerID) {
+		g_pPlayer->IncreaseHit();
 	}
 
 	_hitTick = currentTick;

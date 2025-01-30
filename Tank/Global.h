@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "TankPch.h"
 
@@ -24,8 +24,6 @@ const ULONGLONG TICK_OWN_TANK_SYNC = TICK_PER_GAME_FRAME * 30; // once at 10 fra
 extern ULONGLONG g_previousGameTick;
 extern ULONGLONG g_currentGameTick;
 extern DWORD g_currentFPS;
-
-extern ULONGLONG g_lastOwnTankSyncTick;
 
 extern NetCore* g_pNetCore;
 

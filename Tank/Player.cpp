@@ -74,41 +74,42 @@ void Player::HandleKeyboardEvents(UINT64 pressedKeys, UINT64 releasedKeys, UINT6
 		return;
 	}
 
-	if (pressedKeys & KEYBOARD_INPUT_FLAG_UP) {
+	CheckAndSyncInputState(pressedKeys, releasedKeys, heldKeys);
+
+	if (heldKeys & KEYBOARD_INPUT_FLAG_UP) {
 		_pTank->StartMove(EMovement::FORWARD);
 	}
 
-	if (pressedKeys & KEYBOARD_INPUT_FLAG_DOWN) {
+	if (heldKeys & KEYBOARD_INPUT_FLAG_DOWN) {
 		_pTank->StartMove(EMovement::BACKWARD);
 	}
-	if (pressedKeys & KEYBOARD_INPUT_FLAG_LEFT) {
+	if (heldKeys & KEYBOARD_INPUT_FLAG_LEFT) {
 		_pTank->StartRotate(ERotation::LEFT);
 	}
 				
-	if (pressedKeys & KEYBOARD_INPUT_FLAG_RIGHT) {
+	if (heldKeys & KEYBOARD_INPUT_FLAG_RIGHT) {
 		_pTank->StartRotate(ERotation::RIGHT);
 	}
 
 	if (pressedKeys & 0xFF) {
 		char moveFlag = pressedKeys & 0xFF;
 		GamePacket::SendStartMove(_pTank->GetTransformPtr(), moveFlag);
-		//g_lastOwnTankSyncTick = g_currentGameTick;
 	}
 
 
-	if (releasedKeys & KEYBOARD_INPUT_FLAG_UP) {
+	if (~heldKeys & KEYBOARD_INPUT_FLAG_UP) {
 		_pTank->EndMove(EMovement::FORWARD);
 	}
 
-	if (releasedKeys & KEYBOARD_INPUT_FLAG_DOWN) {
+	if (~heldKeys & KEYBOARD_INPUT_FLAG_DOWN) {
 		_pTank->EndMove(EMovement::BACKWARD);
 	}
 
-	if (releasedKeys & KEYBOARD_INPUT_FLAG_LEFT) {
+	if (~heldKeys & KEYBOARD_INPUT_FLAG_LEFT) {
 		_pTank->EndRotate(ERotation::LEFT);
 	}
 
-	if (releasedKeys & KEYBOARD_INPUT_FLAG_RIGHT) {
+	if (~heldKeys & KEYBOARD_INPUT_FLAG_RIGHT) {
 		_pTank->EndRotate(ERotation::RIGHT);
 	}
 
@@ -129,6 +130,25 @@ void Player::HandleKeyboardEvents(UINT64 pressedKeys, UINT64 releasedKeys, UINT6
 	
 }
 
+void Player::CheckAndSyncInputState(UINT64 pressedKeys, UINT64 releasedKeys, UINT64 heldKeys)
+{
+	if (heldKeys == 0) {
+		return;
+	}
+
+	if (((pressedKeys | releasedKeys) & MOVEMENT_FLAGS) != 0) {
+		UpdateSyncTick();
+		return;
+	}
+
+	if (_lastSyncTick + TICK_OWN_TANK_SYNC > g_currentGameTick) {
+		return;
+	}
+
+	GamePacket::SendMoving(_pTank->GetTransformPtr());
+	UpdateSyncTick();
+}
+
 INT Player::IncreaseHit()
 {
 	g_score.hit = ++_score.hit;
@@ -145,5 +165,10 @@ INT Player::IncreaseDeath()
 {
 	g_score.death = ++_score.death;
 	return _score.death;
+}
+
+void Player::UpdateSyncTick()
+{
+	_lastSyncTick = g_currentGameTick;
 }
 

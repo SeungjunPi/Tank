@@ -144,6 +144,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="JMap.cpp" />
+    <ClCompile Include="JStack.cpp" />
     <ClCompile Include="LinearQueue.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PointerList.cpp" />

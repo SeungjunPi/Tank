@@ -144,6 +144,7 @@
     <ClCompile Include="JunDB.cpp" />
     <ClCompile Include="LiteWString.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
+    <ClCompile Include="Physics.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayerManager.cpp" />
     <ClCompile Include="Projectile.cpp" />
@@ -152,6 +153,7 @@
     <ClCompile Include="UserIdentifierManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CommonData.h" />
     <ClInclude Include="CQueue.h" />
     <ClInclude Include="DBStruct.h" />
     <ClInclude Include="DummyObject.h" />
@@ -164,6 +166,7 @@
     <ClInclude Include="JunDB.h" />
     <ClInclude Include="LiteWString.h" />
     <ClInclude Include="ObjectManager.h" />
+    <ClInclude Include="Physics.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerManager.h" />
     <ClInclude Include="Projectile.h" />
