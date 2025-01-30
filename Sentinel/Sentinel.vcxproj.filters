@@ -152,8 +152,5 @@
     <ClInclude Include="Physics.h">
       <Filter>Physics</Filter>
     </ClInclude>
-    <ClInclude Include="CommonData.h">
-      <Filter>Static Data</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

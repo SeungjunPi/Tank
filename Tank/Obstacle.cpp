@@ -1,4 +1,4 @@
-
+﻿
 #include "Obstacle.h"
 #include "StaticData.h"
 
@@ -15,7 +15,7 @@ void Obstacle::Terminate()
 	_id = INVALID_OBJECT_ID;
 }
 
-void Obstacle::OnHit(ULONGLONG currentTick)
+void Obstacle::OnHitWith(ULONGLONG currentTick, GameObject* pOther)
 {
 	if (_hitTick == 0) {
 		_hitTick = currentTick;

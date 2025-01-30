@@ -37,8 +37,8 @@ void GamePacket::HandlePacket(BYTE* pGameEvent, UINT32 senderId)
 	case GAME_EVENT_CODE_SC_MOVING:
 		HandleMoving(pGameEvent, senderId);
 		break;
-	case GAME_EVENT_CODE_SC_SHOOT:
-		HandleShoot(pGameEvent, senderId);
+	case GAME_EVENT_CODE_SC_FIRE_MACHINE_GUN:
+		HandleFireMachineGun(pGameEvent, senderId);
 		break;
 	case GAME_EVENT_CODE_SC_TANK_HIT:
 		HandleTankHit(pGameEvent, senderId);
@@ -90,57 +90,42 @@ void GamePacket::HandleDeleteTank(BYTE* pGameEvent, UINT32 senderId)
 
 void GamePacket::HandleStartMove(BYTE* pGameEvent, UINT32 senderId)
 {
+	printf("Start Moving\n");
 	PACKET_SC_START_MOVE* pScStartMove = (PACKET_SC_START_MOVE*)(pGameEvent + sizeof(EGameEventCode));
+
 	if (pScStartMove->objectId.equals(g_pPlayer->GetTankID())) {
-		g_pPlayer->UpdateSyncTick();
+		// hmm..
 	}
 	else {
-		if (pScStartMove->movementFlag & FLAG_MOVE_FORWARD) {
-			g_objectManager.StartTankMove(pScStartMove->objectId, EMovement::FORWARD);
-		}
-		if (pScStartMove->movementFlag & FLAG_MOVE_BACKWARD) {
-			g_objectManager.StartTankMove(pScStartMove->objectId, EMovement::BACKWARD);
-		}
-		if (pScStartMove->movementFlag & FLAG_ROTATE_LEFT) {
-			g_objectManager.StartTankRotate(pScStartMove->objectId, ERotation::LEFT);
-		}
-		if (pScStartMove->movementFlag & FLAG_ROTATE_RIGHT) {
-			g_objectManager.StartTankRotate(pScStartMove->objectId, ERotation::RIGHT);
-		}
+		g_objectManager.SetObjectInputStateByServer(pScStartMove->objectId, pScStartMove->inputState);
+		g_objectManager.UpdateObjectTransformFromServer(pScStartMove->objectId, &pScStartMove->transform);
 	}
 }
 
 void GamePacket::HandleEndMove(BYTE* pGameEvent, UINT32 senderId)
 {
+	printf("End Moving\n");
 	PACKET_SC_END_MOVE* pScEndMove = (PACKET_SC_END_MOVE*)(pGameEvent + sizeof(EGameEventCode));
 	
 	if (pScEndMove->objectId.equals(g_pPlayer->GetTankID())) {
-		// TODO: Log "Adjusted based on ther server's transform\n"
-		g_pPlayer->UpdateSyncTick();
+		// overrided..
 	}
 
-	if (pScEndMove->movementFlag & FLAG_MOVE_FORWARD) {
-		g_objectManager.EndTankMove(pScEndMove->objectId, EMovement::FORWARD, &pScEndMove->transform);
-	}
-	if (pScEndMove->movementFlag & FLAG_MOVE_BACKWARD) {
-		g_objectManager.EndTankMove(pScEndMove->objectId, EMovement::BACKWARD, &pScEndMove->transform);
-	}
-	if (pScEndMove->movementFlag & FLAG_ROTATE_LEFT) {
-		g_objectManager.EndTankRotate(pScEndMove->objectId, ERotation::LEFT, &pScEndMove->transform);
-	}
-	if (pScEndMove->movementFlag & FLAG_ROTATE_RIGHT) {
-		g_objectManager.EndTankRotate(pScEndMove->objectId, ERotation::RIGHT, &pScEndMove->transform);
-	}
+	g_objectManager.SetObjectInputStateByServer(pScEndMove->objectId, PLAYER_INPUT_NONE);
+	g_objectManager.UpdateObjectTransformFromServer(pScEndMove->objectId, &pScEndMove->transform);
 }
 
 void GamePacket::HandleMoving(BYTE* pGameEvent, UINT32 senderId)
 {
+	printf("Moving\n");
 	PACKET_SC_MOVING* pScMoving = (PACKET_SC_MOVING*)(pGameEvent + sizeof(EGameEventCode));
 	
 	if (pScMoving->objectId.equals(g_pPlayer->GetTankID())) {
 		// update if transforms are diffrent
 	}
-	g_objectManager.UpdateObjectTransform(pScMoving->objectId, &pScMoving->transform);
+
+	g_objectManager.SetObjectInputStateByServer(pScMoving->objectId, pScMoving->inputState);
+	g_objectManager.UpdateObjectTransformFromServer(pScMoving->objectId, &pScMoving->transform);
 }
 
 void GamePacket::HandleSnapshot(BYTE* pGameEvent, UINT32 senderId)
@@ -157,13 +142,13 @@ void GamePacket::HandleSnapshot(BYTE* pGameEvent, UINT32 senderId)
 		case GAME_OBJECT_TYPE_TANK:
 		{
 			Tank* pTank = g_objectManager.CreateTank(pObjInfo->objectId, pObjInfo->ownerId);
-			pTank->UpdateTransform(&pObjInfo->transform);
+			pTank->SetTransformByServer(&pObjInfo->transform);
 			break;
 		}
 		case GAME_OBJECT_TYPE_PROJECTILE:
 		{
 			Projectile* pProjectile = g_objectManager.CreateProjectile(pObjInfo->objectId, &pObjInfo->transform, pObjInfo->ownerId);
-			pProjectile->UpdateTransform(&pObjInfo->transform);
+			pProjectile->SetTransformByServer(&pObjInfo->transform);
 			break;
 		}
 		case GAME_OBJECT_TYPE_OBSTACLE:
@@ -176,7 +161,7 @@ void GamePacket::HandleSnapshot(BYTE* pGameEvent, UINT32 senderId)
 	}	
 }
 
-void GamePacket::HandleShoot(BYTE* pGameEvent, UINT32 senderId)
+void GamePacket::HandleFireMachineGun(BYTE* pGameEvent, UINT32 senderId)
 {
 	PACKET_SC_SHOOT* pScShoot= (PACKET_SC_SHOOT*)(pGameEvent + sizeof(EGameEventCode));
 	pScShoot->objectId;
@@ -197,7 +182,7 @@ void GamePacket::HandleObjectHit(BYTE* pGameEvent, UINT32 senderID)
 	{
 		Tank* pTank = (Tank*)pObj;
 		if (pScObjectHit->kindnessFlag & COLLIDER_KINDNESS_PROJECTILE) {
-			pTank->OnHitByProjectile(g_currentGameTick);
+			// pTank->OnHitByProjectile(g_currentGameTick);
 		}
 	}
 		break;
@@ -230,7 +215,7 @@ void GamePacket::HandleTankHit(BYTE* pGameEvent, UINT32 senderId)
 		g_pPlayer->IncreaseKill();
 	}
 
-	pTank->OnHitByProjectile(g_currentGameTick);
+	// pTank->OnHitByProjectile(g_currentGameTick);
 
 	Projectile* pProjectile = (Projectile*)g_objectManager.GetObjectPtrOrNull(pScTankHit->projectileId);
 	pProjectile->OnHitTank(g_currentGameTick);
@@ -271,7 +256,7 @@ void GamePacket::SendLogin(const std::wstring& wID, const std::wstring& wPw)
 	g_pNetCore->SendMessageTo(g_pPlayer->GetSessionID(), pRawPacket, contentsMsgSize);
 }
 
-void GamePacket::SendStartMove(const Transform* pTankTransform, char moveFlag)
+void GamePacket::SendStartMove(const Transform* pTankTransform, PlayerInputState inputState)
 {
 	const UINT32 contentsMsgSize = sizeof(PACKET_CS_START_MOVE) + sizeof(EGameEventCode);
 	BYTE pRawPacket[contentsMsgSize] = { 0, };
@@ -279,11 +264,11 @@ void GamePacket::SendStartMove(const Transform* pTankTransform, char moveFlag)
 	PACKET_CS_START_MOVE* pContentsMsgBody = (PACKET_CS_START_MOVE*)(pRawPacket + sizeof(EGameEventCode));
 
 	*pEvCode = GAME_EVENT_CODE_CS_START_MOVE;
-	pContentsMsgBody->movementFlag = moveFlag;
+	pContentsMsgBody->inputState = inputState;
 	g_pNetCore->SendMessageTo(g_pPlayer->GetSessionID(), pRawPacket, contentsMsgSize);
 }
 
-void GamePacket::SendEndMove(const Transform* pTankTransform, char moveFlag)
+void GamePacket::SendEndMove(const Transform* pTankTransform)
 {
 	const UINT32 contentsMsgSize = sizeof(PACKET_CS_END_MOVE) + sizeof(EGameEventCode);
 	BYTE pRawPacket[contentsMsgSize] = { 0, };
@@ -292,11 +277,10 @@ void GamePacket::SendEndMove(const Transform* pTankTransform, char moveFlag)
 
 	*pEvCode = GAME_EVENT_CODE_CS_END_MOVE;
 	memcpy(&pContentsMsgBody->transform, pTankTransform, sizeof(Transform));
-	pContentsMsgBody->movementFlag = moveFlag;
 	g_pNetCore->SendMessageTo(g_pPlayer->GetSessionID(), pRawPacket, contentsMsgSize);
 }
 
-void GamePacket::SendMoving(const Transform* pTankTransform)
+void GamePacket::SendMoving(const Transform* pTankTransform, PlayerInputState moveFlag)
 {
 	const UINT32 contentsMsgSize = sizeof(PACKET_CS_MOVING) + sizeof(EGameEventCode);
 	BYTE pRawPacket[contentsMsgSize] = { 0, };
@@ -305,6 +289,7 @@ void GamePacket::SendMoving(const Transform* pTankTransform)
 
 	*pEvCode = GAME_EVENT_CODE_CS_MOVING;
 	memcpy(&pContentsMsgBody->transform, pTankTransform, sizeof(Transform));
+	pContentsMsgBody->inputState = moveFlag;
 	g_pNetCore->SendMessageTo(g_pPlayer->GetSessionID(), pRawPacket, contentsMsgSize);
 }
 
@@ -315,7 +300,7 @@ void GamePacket::SendFireMachineGun(const Transform* pTurretTransform)
 	EGameEventCode* pEvCode = (EGameEventCode*)pRawPacket;
 	PACKET_CS_SHOOT* pContentsMsgBody = (PACKET_CS_SHOOT*)(pRawPacket + sizeof(EGameEventCode));
 
-	*pEvCode = GAME_EVENT_CODE_CS_SHOOT;
+	*pEvCode = GAME_EVENT_CODE_CS_FIRE_MACHINE_GUN;
 	memcpy(&pContentsMsgBody->transform, pTurretTransform, sizeof(Transform));
 	g_pNetCore->SendMessageTo(g_pPlayer->GetSessionID(), pRawPacket, contentsMsgSize);
 }

@@ -136,52 +136,12 @@ Tank* ObjectManager::GetTankByOwnerId(UserDBIndex ownerId)
 	return pTank;
 }
 
-void ObjectManager::StartTankMove(UserDBIndex ownerId, EMOVEMENT movement)
-{
-	Tank* pTank = (Tank*)_tankTableByOwner.Get(ownerId);
-	if (pTank == nullptr) {
-		return;
-	}
-
-	pTank->StartMove(movement);
-}
-
-void ObjectManager::EndTankMove(UserDBIndex ownerId, EMOVEMENT movement)
-{
-	Tank* pTank = (Tank*)_tankTableByOwner.Get(ownerId);
-	if (pTank == nullptr) {
-		return;
-	}
-
-	pTank->EndMove(movement);
-}
-
-void ObjectManager::StartTankRotate(UserDBIndex ownerId, EROTATION rotation)
-{
-	Tank* pTank = (Tank*)_tankTableByOwner.Get(ownerId);
-	if (pTank == nullptr) {
-		return;
-	}
-
-	pTank->StartRotate(rotation);
-}
-
-void ObjectManager::EndTankRotate(UserDBIndex ownerId, EROTATION rotation)
-{
-	Tank* pTank = (Tank*)_tankTableByOwner.Get(ownerId);
-	if (pTank == nullptr) {
-		return;
-	}
-
-	pTank->EndRotate(rotation);
-}
-
 void ObjectManager::UpdateTankTransformByObjectID(ObjectID objectId, const Transform* pTransform)
 {
 	Tank* pTank = (Tank*)_tankTable.Get(objectId.key);
 	assert(pTank != nullptr);
 
-	pTank->UpdateTransform(pTransform);
+	pTank->UpdateTransformForce(pTransform);
 }
 
 void ObjectManager::UpdateTankTransformByOwnerID(UserDBIndex ownerId, const Transform* pTransform)
@@ -191,7 +151,7 @@ void ObjectManager::UpdateTankTransformByOwnerID(UserDBIndex ownerId, const Tran
 		return;
 	}
 
-	pTank->UpdateTransform(pTransform);
+	pTank->UpdateTransformForce(pTransform);
 }
 
 UINT32 ObjectManager::GetCountObjects() const
@@ -211,8 +171,8 @@ void ObjectManager::CopySnapshot(PACKET_OBJECT_INFO* dst)
 	for (UINT32 i = 0; i < numCounts; ++i) {
 		int key = keys[i];
 		Tank* pTank = (Tank*)_tankTable.Get(key);
-
-		pObjInfo->type = GAME_OBJECT_TYPE_TANK;
+		
+		pObjInfo->kind = GAME_OBJECT_TYPE_TANK;
 		pObjInfo->objectId = pTank->GetID();
 		pObjInfo->ownerId = pTank->GetOwnerId();
 		memcpy(&pObjInfo->transform, pTank->GetTransformPtr(), sizeof(Transform));
@@ -268,25 +228,42 @@ void ObjectManager::GetKeys(EGameObjectType objectKind, UINT32* out_keys, UINT32
 	}
 }
 
-GameObject* ObjectManager::GetObjectPtrOrNull(ObjectID objectID)
+GameObject* ObjectManager::GetObjectPtrOrNull(EGameObjectType objectKind, ObjectKey objectKey)
 {
 	GameObject* pGameObject = nullptr;
 
-	switch (objectID.type) {
+	switch (objectKind) {
 	case GAME_OBJECT_TYPE_TANK:
-		pGameObject = (GameObject*)_tankTable.Get(objectID.key);
+		pGameObject = (GameObject*)_tankTable.Get(objectKey);
 		break;
 	case GAME_OBJECT_TYPE_PROJECTILE:
-		pGameObject = (GameObject*)_projectileTable.Get(objectID.key);
+		pGameObject = (GameObject*)_projectileTable.Get(objectKey);
 		break;
 	case GAME_OBJECT_TYPE_OBSTACLE:
-		pGameObject = (GameObject*)_obstacleTable.Get(objectID.key);
+		pGameObject = (GameObject*)_obstacleTable.Get(objectKey);
 		break;
 	default:
 		pGameObject = nullptr;
 		__debugbreak();
 		break;
 	}
-
 	return pGameObject;
+}
+
+GameObject* ObjectManager::GetObjectPtrOrNull(ObjectID objectID)
+{
+	return GetObjectPtrOrNull(objectID.type, objectID.key);
+}
+
+void ObjectManager::SetObjectInputState(ObjectID objectID, PlayerInputState inputState)
+{
+	if (objectID.type != GAME_OBJECT_TYPE_TANK) {
+		__debugbreak();
+	}
+
+	Tank* pTank = (Tank*)_tankTable.Get(objectID.key);
+	if (pTank == nullptr) {
+		return;
+	}
+	pTank->UpdatePlayerInputState(inputState);
 }

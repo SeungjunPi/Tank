@@ -46,27 +46,11 @@ Vector3 GameObject::GetPosition() const
 	return _transform.Position;
 }
 
-BOOL GameObject::UpdateFrom(const GameObject* pOther)
-{
-	if (_id.equals(pOther->_id)) {
-		__debugbreak();
-		return false;
-	}
-
-	memcpy(&_transform, &pOther->_transform, sizeof(Transform));
-	return true;
-}
-
-void GameObject::UpdateTransform(const Transform* pTransform)
-{
-	memcpy(&_transform, pTransform, sizeof(Transform));
-}
-
 BOOL GameObject::UpdateTransformIfValid(const Transform* pTransform)
 {
 	BOOL isClosed = IsTransformCloseEnough(pTransform);
 	if (isClosed) {
-		UpdateTransform(pTransform);
+		memcpy(&_transform, pTransform, sizeof(Transform));
 		return true;
 	}
 	
@@ -74,11 +58,13 @@ BOOL GameObject::UpdateTransformIfValid(const Transform* pTransform)
 	
 }
 
-void GameObject::SetPosition(Vector3 position)
+void GameObject::Tick(ULONGLONG tickDiff)
 {
-	_transform.Position.x = position.x;
-	_transform.Position.y = position.y;
-	_transform.Position.z = position.z;
+	if (!IsAlive()) {
+		return;
+	}
+
+	ApplyNextMovement(tickDiff);
 }
 
 UserDBIndex GameObject::GetOwnerId() const
@@ -86,13 +72,14 @@ UserDBIndex GameObject::GetOwnerId() const
 	return _ownerIndex;
 }
 
-void GameObject::OnRespawn()
+void GameObject::Respawn()
 {
 	if (!_isActivatable) {
 		__debugbreak();
 	}
 	_isAlive = true;
 	_transform = { 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f };
+	_hitTick = 0;
 }
 
 BOOL GameObject::IsDestroyed(ULONGLONG currentTick) const
@@ -114,24 +101,15 @@ void GameObject::SyncTransformWithCollider()
 	}
 }
 
-Vector3 GameObject::GetMovementVector(ULONGLONG tickDiff)
+void GameObject::ApplyNextMovement(ULONGLONG tickDiff)
 {
-	return _movementDirection * _movementSpeed * tickDiff;
-}
+	_transform.Position = _nextPosition;
+	_transform.Rotation = Quaternion::RotateZP(_nextRotationAngle, _transform.Rotation);
 
-Quaternion GameObject::GetDeltaRotation(ULONGLONG tickDiff)
-{
-	// 기본 회전
-	return Quaternion::RotateZP(_rotationSpeed * tickDiff, _rotationDirection);
-}
+	//printf("P[%f, %f, %f], R[%f, %f, %f, %f]\n", _transform.Position.x, _transform.Position.y, _transform.Position.z, _transform.Rotation.w, _transform.Rotation.x, _transform.Rotation.y, _transform.Rotation.z);
 
-void GameObject::UpdateTransform(ULONGLONG tickDiff)
-{
-	Vector3 movement = GetMovementVector(tickDiff);
-	_transform.Position = _transform.Position + movement;
-
-	Quaternion quat = GetDeltaRotation(tickDiff);
-	_transform.Rotation = Quaternion::Product(_transform.Rotation, quat);
+	OnUpdateTransform();
+	SyncTransformWithCollider();
 }
 
 BOOL GameObject::IsTransformCloseEnough(const Transform* other)

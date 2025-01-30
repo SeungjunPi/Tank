@@ -1,6 +1,9 @@
 #pragma once
 
 #include "GameObject.h"
+#include "CommonData.h"
+
+
 
 class Collider;
 
@@ -11,42 +14,36 @@ public:
 	Tank() = default;
 	~Tank();
 
-
-
-	void StartMove(EMOVEMENT movement);
-	void EndMove(EMOVEMENT movement);
-
-	void StartRotate(EROTATION rotation);
-	void EndRotate(EROTATION rotation);
-
 	void GetTurretInfo(Vector3* out_position, Vector3* out_direction) const;
 
 	void ResetHP();
 
-	void OnFrame(ULONGLONG tickDiff) override;
+	void UpdateTransformForce(const Transform* transf);
+	void UpdatePlayerInputState(PlayerInputState inputState);
 
-	virtual Vector3 GetMovementVector(ULONGLONG tickDiff) override;
-	virtual Quaternion GetDeltaRotation(ULONGLONG tickDiff) override;
+	virtual void PreProcessMovementState() override;
+	virtual void Tick(ULONGLONG tickDiff) override;
 
 	virtual BOOL IsDestroyed(ULONGLONG currentTick) const;
 
 	virtual void OnHitWith(ULONGLONG currentTick, GameObject* other) override;
-
-	virtual void OnRespawn() override;
-
-	
+	virtual void OnUpdateTransform() override;
+	virtual void Respawn() override;
 
 protected:
 	virtual BOOL IsTransformCloseEnough(const Transform* other) override;
 
 private:
-	bool _isMovingFoward = false;
-	bool _isMovingBackward = false;
-	bool _isRotatingLeft = false;
-	bool _isRotatingRight = false;
+	PlayerInputState _crntInputState = PLAYER_INPUT_NONE;
+	PlayerInputState _prevInputState = PLAYER_INPUT_NONE;
+
+	ULONGLONG _lastTransformSyncTick = 0;
+	ULONGLONG _lastMachineGunFiringTick = 0;
+	
 
 	int _hp = 0;
 
-
-	ULONGLONG _lastMachineGunFireTick = 0;
+	BOOL TryFireMachineGun(ULONGLONG currentTick);
+	void ProcessInput();
+	
 };

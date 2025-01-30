@@ -50,8 +50,7 @@ Collider* CollisionManager::GetAttachedColliderPtr(ColliderID id)
 
 JStack* CollisionManager::GetCollisionPairs()
 {
-
-	return nullptr;
+	return &_collisionPairs;
 }
 
 void CollisionManager::ReturnCollider(Collider* pCollider)

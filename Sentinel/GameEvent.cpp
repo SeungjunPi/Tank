@@ -31,8 +31,8 @@ void GamePacket::HandlePacket(BYTE* pGameEvent, SessionID senderId)
 	case GAME_EVENT_CODE_CS_MOVING:
 		HandleMoving(pGameEvent, senderId);
 		break;
-	case GAME_EVENT_CODE_CS_SHOOT:
-		HandleShoot(pGameEvent, senderId);
+	case GAME_EVENT_CODE_CS_FIRE_MACHINE_GUN:
+		HandleFireMachineGun(pGameEvent, senderId);
 		break;
 	default:
 		__debugbreak();
@@ -196,21 +196,7 @@ void GamePacket::HandleStartMove(BYTE* pGameEvent, SessionID senderId)
 		return;
 	}
 
-	if (pCsStartMove->movementFlag & FLAG_MOVE_FORWARD) {
-		g_objectManager.StartTankMove(userIndex, EMOVEMENT::FORWARD);
-	}
-
-	if (pCsStartMove->movementFlag & FLAG_MOVE_BACKWARD) {
-		g_objectManager.StartTankMove(userIndex, EMOVEMENT::BACKWARD);
-	}
-
-	if (pCsStartMove->movementFlag & FLAG_ROTATE_LEFT) {
-		g_objectManager.StartTankRotate(userIndex, EROTATION::LEFT);
-	}
-
-	if (pCsStartMove->movementFlag & FLAG_ROTATE_RIGHT) {
-		g_objectManager.StartTankRotate(userIndex, EROTATION::RIGHT);
-	}
+	g_objectManager.SetObjectInputState(pTank->GetID(), pCsStartMove->inputState);
 
 	const size_t PACKET_SIZE = sizeof(PACKET_SC_START_MOVE) + sizeof(EGameEventCode);
 	BYTE pRawPacket[PACKET_SIZE] = { 0, };
@@ -219,11 +205,11 @@ void GamePacket::HandleStartMove(BYTE* pGameEvent, SessionID senderId)
 
 	PACKET_SC_START_MOVE* pScStartMove = (PACKET_SC_START_MOVE*)(pRawPacket + sizeof(EGameEventCode));
 	pScStartMove->objectId = pTank->GetID();
-	pScStartMove->movementFlag = pCsStartMove->movementFlag;
+	pScStartMove->inputState = pCsStartMove->inputState;
 	memcpy(&pScStartMove->transform, pTank->GetTransformPtr(), sizeof(Transform));
 
 	printf("StartMove: owner=%u\n", userIndex);
-	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
+	GameServer::BroadcastExcept(pRawPacket, PACKET_SIZE, senderId);
 }
 
 BOOL GamePacket::ValidateStartMove(BYTE* pGameEvent, SessionID senderId)
@@ -252,21 +238,7 @@ void GamePacket::HandleEndMove(BYTE* pGameEvent, SessionID senderId)
 		return;
 	}
 
-	if (pCsEndMove->movementFlag & FLAG_MOVE_FORWARD) {
-		g_objectManager.EndTankMove(userIndex, EMOVEMENT::FORWARD);
-	}
-
-	if (pCsEndMove->movementFlag & FLAG_MOVE_BACKWARD) {
-		g_objectManager.EndTankMove(userIndex, EMOVEMENT::BACKWARD);
-	}
-
-	if (pCsEndMove->movementFlag & FLAG_ROTATE_LEFT) {
-		g_objectManager.EndTankRotate(userIndex, EROTATION::LEFT);
-	}
-
-	if (pCsEndMove->movementFlag & FLAG_ROTATE_RIGHT) {
-		g_objectManager.EndTankRotate(userIndex, EROTATION::RIGHT);
-	}
+	g_objectManager.SetObjectInputState(pTank->GetID(), PLAYER_INPUT_NONE);
 
 	BOOL isChanged = pTank->UpdateTransformIfValid(&pCsEndMove->transform);
 
@@ -278,8 +250,6 @@ void GamePacket::HandleEndMove(BYTE* pGameEvent, SessionID senderId)
 	PACKET_SC_END_MOVE* pScEndMove = (PACKET_SC_END_MOVE*)(pRawPacket + sizeof(EGameEventCode));
 	pScEndMove->objectId = pTank->GetID();
 	memcpy(&pScEndMove->transform, pTank->GetTransformPtr(), sizeof(Transform));
-
-	pScEndMove->movementFlag = pCsEndMove->movementFlag;
 
 	if (isChanged) {
 		// 유저의 위치 정보를 그대로 사용하므로, 해당 유저에게는 재전송할 필요 없음
@@ -316,6 +286,7 @@ void GamePacket::HandleMoving(BYTE* pGameEvent, SessionID senderId)
 		return;
 	}
 
+	pTank->UpdatePlayerInputState(pCsMoving->inputState);
 	BOOL isChanged = pTank->UpdateTransformIfValid(&pCsMoving->transform);
 
 	const size_t PACKET_SIZE = sizeof(PACKET_SC_MOVING) + sizeof(EGameEventCode);
@@ -345,9 +316,9 @@ BOOL GamePacket::ValidateMoving(BYTE* pGameEvent, SessionID senderId)
 	return true;
 }
 
-void GamePacket::HandleShoot(BYTE* pGameEvent, SessionID senderId)
+void GamePacket::HandleFireMachineGun(BYTE* pGameEvent, SessionID senderId)
 {
-	bool isValid = ValidateShoot(pGameEvent, senderId);
+	bool isValid = ValidateFireMachineGun(pGameEvent, senderId);
 	if (!isValid) {
 		printf("Invalid Shoot packet from %u\n", senderId);
 		return;
@@ -359,10 +330,10 @@ void GamePacket::HandleShoot(BYTE* pGameEvent, SessionID senderId)
 		__debugbreak();
 	}
 	
-	if (!pPlayer->TryFireMachineGun()) {
+	/*if (!pPlayer->TryFireMachineGun()) {
 		printf("Fire Failed[owner=%u, Too many]\n", pPlayer->GetUserIndex());
 		return;
-	}
+	}*/
 
 	UserDBIndex userIndex = pPlayer->GetUserIndex();
 	Projectile* pProjectile = g_objectManager.CreateProjectile(userIndex, &pCsShoot->transform);
@@ -371,7 +342,7 @@ void GamePacket::HandleShoot(BYTE* pGameEvent, SessionID senderId)
 	BYTE pRawPacket[PACKET_SIZE] = { 0, };
 
 	EGameEventCode* pEvCode = (EGameEventCode*)pRawPacket;
-	*pEvCode = GAME_EVENT_CODE_SC_SHOOT;
+	*pEvCode = GAME_EVENT_CODE_SC_FIRE_MACHINE_GUN;
 	PACKET_SC_SHOOT* pScShoot= (PACKET_SC_SHOOT*)(pRawPacket + sizeof(EGameEventCode));
 	pScShoot->objectId = pProjectile->GetID();
 	pScShoot->ownerId = userIndex;
@@ -382,7 +353,7 @@ void GamePacket::HandleShoot(BYTE* pGameEvent, SessionID senderId)
 	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
 }
 
-BOOL GamePacket::ValidateShoot(BYTE* pGameEvent, SessionID senderId)
+BOOL GamePacket::ValidateFireMachineGun(BYTE* pGameEvent, SessionID senderId)
 {
 	return true;
 }

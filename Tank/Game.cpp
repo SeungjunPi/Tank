@@ -13,15 +13,13 @@
 #include "ICollisionManager.h"
 #include "Collider.h"
 #include "Player.h"
-
 #include "Camera.h"
+#include "Physics.h"
 
 static void s_ApplyKeyboardEvents(ULONGLONG tickDiff);
+static void s_PreProcessNextMovements();
 static void s_ApplyObjectLogic(ULONGLONG tickDiff);
-static void s_SyncOwnTankTransform();
 static void s_HandleNetEvents();
-static void s_DetectCollision();
-// static BOOL s_IsShootable();
 static void s_CleanupDestroyedObjects(ULONGLONG curTick);
 
 
@@ -47,8 +45,8 @@ void Game::Initialize()
 	}
 
 	CreateCollisionManager(&g_pCollisionManager);
-
 	g_pCamera = DNew GameCamera;
+	g_pPhysics = DNew Physics;
 }
 
 void Game::CleanUp()
@@ -65,6 +63,7 @@ void Game::CleanUp()
 	ConsoleRenderer::Terminate();
 	KeyboardEventListener::Terminate();
 	g_objectManager.Terminate();
+	delete g_pPhysics;
 	delete g_pPlayer;
 	delete g_pCamera;
 }
@@ -82,31 +81,25 @@ void Game::Start()
 
 	while (s_isRunning) {
 		g_currentGameTick = GetTickCount64();
+		g_gameTickDiff = g_currentGameTick - g_previousGameTick;
 		ULONGLONG gameTickDiff = g_currentGameTick - g_previousGameTick;
 		
 		if (gameTickDiff > TICK_PER_GAME_FRAME) {
-			//////////////////////////////////////////////////////////////
 			// Input Event (Keyboard, NetEvent, etc..)
-			//////////////////////////////////////////////////////////////
-			// Handle NetCore Messages
+			//// Handle NetCore Messages
 			s_HandleNetEvents();
-
-			// Handle Keyboard Events
+			//// Handle Keyboard Events
 			s_ApplyKeyboardEvents(gameTickDiff);
 
-			//////////////////////////////////////////////////////////////
+			// PreProcessNextMovement
+			s_PreProcessNextMovements();
+
 			// Physics(Detect Collision)
-			//////////////////////////////////////////////////////////////
-			s_DetectCollision();
-
-			//////////////////////////////////////////////////////////////
+			g_pPhysics->ProcessNextMovement(gameTickDiff);
+			
 			// Game Logic(DB, Apply Collision, )
-			//////////////////////////////////////////////////////////////
 			s_ApplyObjectLogic(gameTickDiff);
-
-			//////////////////////////////////////////////////////////////
 			// Destroy Game Objects
-			//////////////////////////////////////////////////////////////
 			s_CleanupDestroyedObjects(g_currentGameTick);
 
 			g_previousGameTick = g_currentGameTick;
@@ -146,6 +139,27 @@ void s_ApplyKeyboardEvents(ULONGLONG tickDiff)
 	}	
 }
 
+void s_PreProcessNextMovements()
+{
+	// 유저와 네트워크 입력에 따라 객체의 이동 상태 변경에 대응하기 위함
+	UINT32 keys[128];
+	UINT32 countKeys;
+
+	int objectKindEnumMax = (int)GAME_OBJECT_TYPE_OBSTACLE;
+	for (int i = 0; i <= objectKindEnumMax; ++i) {
+		EGameObjectType kind = (EGameObjectType)i;
+		g_objectManager.GetKeys(kind, keys, &countKeys);
+		for (int j = 0; j < countKeys; ++j) {
+			GameObject* pObject = g_objectManager.GetObjectPtrOrNull(kind, keys[j]);
+			if (pObject == NULL) {
+				__debugbreak();
+			}
+
+			pObject->PreProcessMovementState();
+		}
+	}
+}
+
 void s_ApplyObjectLogic(ULONGLONG tickDiff)
 {
 	UINT32 keys[128];
@@ -161,23 +175,19 @@ void s_ApplyObjectLogic(ULONGLONG tickDiff)
 				__debugbreak();
 			}
 
-			pObject->OnFrame(tickDiff);
+			pObject->Tick(tickDiff);
 		}
 	}
-}
 
-void s_SyncOwnTankTransform()
-{
-	/*if (g_pPlayer->GetTankID().equals(INVALID_OBJECT_ID)) {
-		return;
+
+	JStack* collisionPairs = g_pCollisionManager->GetCollisionPairs();
+	UINT32 size = collisionPairs->GetCount();
+	CollisionPair* pair = (CollisionPair*)collisionPairs->First();
+	for (UINT32 i = 0; i < size; ++i) {
+		pair->a->OnHitWith(g_currentGameTick, pair->b);
+		pair->b->OnHitWith(g_currentGameTick, pair->a);
+		++pair;
 	}
-
-	if (g_currentGameTick - g_lastOwnTankSyncTick < TICK_OWN_TANK_SYNC) {
-		return;
-	}
-
-	g_lastOwnTankSyncTick = g_currentGameTick;
-	GamePacket::SendMoving(g_pPlayerTank->GetTransformPtr());*/
 }
 
 void s_HandleNetEvents()
@@ -191,40 +201,6 @@ void s_HandleNetEvents()
 	}
 	g_pNetCore->EndHandleReceivedMessages();
 }
-
-void s_DetectCollision()
-{
-	g_pCollisionManager->DetectCollision();
-	/*ColliderID* pColliderIDs = nullptr;
-	UINT32 countCollidedObjects = g_pCollisionManager->DetectCollision(&pColliderIDs);
-	for (UINT32 i = 0; i < countCollidedObjects; ++i) {
-		Collider* pCollider = g_pCollisionManager->GetAttachedColliderPtr(pColliderIDs[i]);
-		if (pCollider == nullptr) {
-			continue;
-		}
-
-		GameObject* pGameObject = pCollider->GetAttachedObjectPtr();
-		pGameObject->OnHit(g_currentGameTick);
-	}*/
-}
-
-//BOOL s_IsShootable()
-//{
-//	static ULONGLONG lastShoot = 0;
-//	const static ULONGLONG SHOOT_COOL_DOWN = 250;
-//
-//	if (g_pPlayerTank == nullptr) {
-//		return false;
-//	}
-//
-//	if (g_previousGameTick - lastShoot > SHOOT_COOL_DOWN) {
-//		s_bIsShootable = true;
-//		lastShoot = g_previousGameTick;
-//		return true;
-//	}
-//
-//	return false;
-//}
 
 void s_CleanupDestroyedObjects(ULONGLONG curTick)
 {

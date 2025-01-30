@@ -16,6 +16,8 @@ public:
 
 	void Top(void* dst) const;
 	void Pop();
+
+	CHAR* First();
 	
 
 	// 내용을 모두 무시하고, 초기화

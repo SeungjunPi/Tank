@@ -1,11 +1,11 @@
-
+﻿
 #include "Physics.h"
 
 #include "ICollisionManager.h"
 #include "Collider.h"
 #include "GameObject.h"
 #include "Global.h"
-#include "ObjectManager.h"
+#include "AllocObjectManager.h"
 #include "CommonData.h"
 
 
@@ -43,7 +43,9 @@ void Physics::ProcessNextMovement(ULONGLONG tickDiff)
 				continue;
 			}
 
-			pObject->_nextPosition = pObject->_transform.Position + pObject->_translationDirection * pObject->_translationSpeed * tickDiff;
+			
+			float weight = (pObject->_translationSpeed * tickDiff);			
+			pObject->_nextPosition = pObject->_transform.Position + pObject->_translationDirection * weight;
 			pObject->_nextRotationAngle = pObject->_rotationAngle * tickDiff;
 		}
 	}
@@ -56,6 +58,7 @@ void Physics::CalculateElasticCollisionNextMovements(GameObject* a, GameObject* 
 		// Penetration
 		return;
 	}
+	printf("Collision!\n");
 	Vector3::Normalize(&n, n);
 
 	Vector3 v = a->_translationDirection * a->_translationSpeed * tickDiff;
@@ -74,11 +77,12 @@ void Physics::CalculateElasticCollisionNextMovements(GameObject* a, GameObject* 
 	a->_nextRotationAngle = a->_rotationAngle * tickDiff;
 	b->_nextPosition = b->_transform.Position + w_np + w_t;
 	b->_nextRotationAngle = b->_rotationAngle * tickDiff;
-
+	
 }
 
 void Physics::ResolvePenetration(GameObject* a, GameObject* b)
 {
+	printf("penetration!\n");
 	Vector3 n = a->_transform.Position - b->_transform.Position;
 	float distance = Vector3::Norm(n);
 	if (distance < SAME_POSITION_THRESHOLD) {

@@ -1,5 +1,6 @@
 #include "SentinelPch.h"
 
+
 #include "Collider.h"
 #include "GameEvent.h"
 #include "GameServer.h"
@@ -18,10 +19,10 @@ static BOOL s_isRunning = false;
 
 
 static void s_ApplyObjectLogic(ULONGLONG tickDiff);
-static void s_ApplyPhysics(ULONGLONG curTick);
 static void s_CleanupDestroyedObjects(ULONGLONG curTick);
 static void s_OnSessionEvent(UINT32 sessionID, ESessionEvent sessionEvent);
 static void s_ProcessDBQueryResults();
+static void s_PreProcessNextMovements();
 
 static void s_ProcessDBResultValidation(DBQueryValidation* pQueryValidation);
 static void s_ProcessDBResultLoadScore(DBQueryLoadStat* pQueryLoadStat); // 현재 이 함수는 Validation이 성공한 직후에만 불린다고 가정.
@@ -80,7 +81,7 @@ void GameServer::Start()
 		ULONGLONG gameTickDiff = currentTick - g_previousGameTick;
 
 
-		// Input Event (DB Result, Session Event, User act, etc..)////
+		// Input Event (DB Result, Session Event, User act, etc..)
 		//// Handle NetCore Session Events
 		NetSessionEventQueue* pNetSessionEventQueue = g_pNetCore->StartHandleSessionEvents();
 		ESessionEvent sessionEvent = pNetSessionEventQueue->GetNetSessionEvent(&senderID);
@@ -103,18 +104,18 @@ void GameServer::Start()
 		//// DB 
 		s_ProcessDBQueryResults();
 
+		// PreProcessNextMovement
+		s_PreProcessNextMovements();
+
+		// ApplyPhysics (Movement, etc..)
+		g_pPhysics->ProcessNextMovement(gameTickDiff);
 		
-		// Game Logic(DB, Apply Collision, )//////////////////////////
+		// Game Logic(DB, Apply Collision, )
 		s_ApplyObjectLogic(gameTickDiff);
-		//////////////////////////////////////////////////////////////
-
-		// Destroy Game Objects///////////////////////////////////////
+		
+		// Destroy Game Objects
 		s_CleanupDestroyedObjects(currentTick);
-		//////////////////////////////////////////////////////////////
-
-		// ApplyPhysics (Movement, etc..)/////////////////////////////
-		g_pPhysics->Update();
-		//////////////////////////////////////////////////////////////
+		
 		
 		g_previousGameTick = currentTick;
 		{
@@ -257,6 +258,26 @@ void s_ProcessDBQueryResults()
 	g_pJunDB->EndHandleResult();
 }
 
+void s_PreProcessNextMovements()
+{
+	UINT32 keys[128];
+	UINT32 countKeys;
+
+	int objectKindEnumMax = (int)GAME_OBJECT_TYPE_OBSTACLE;
+	for (int i = 0; i <= objectKindEnumMax; ++i) {
+		EGameObjectType kind = (EGameObjectType)i;
+		g_objectManager.GetKeys(kind, keys, &countKeys);
+		for (int j = 0; j < countKeys; ++j) {
+			GameObject* pObject = g_objectManager.GetObjectPtrOrNull(kind, keys[j]);
+			if (pObject == NULL) {
+				__debugbreak();
+			}
+
+			pObject->PreProcessMovementState();
+		}
+	}
+}
+
 void s_ProcessDBResultValidation(DBQueryValidation* pQueryValidation)
 {
 	DBResultUserValidation validationResult;
@@ -346,13 +367,16 @@ void s_ApplyObjectLogic(ULONGLONG tickDiff)
 				__debugbreak();
 			}
 
-			pObject->OnFrame(tickDiff);
+			pObject->Tick(tickDiff);
 		}
 	}
-}
 
-
-void s_ApplyPhysics(ULONGLONG currentTick)
-{
-	
+	JStack* collisionPairs = g_pCollisionManager->GetCollisionPairs();
+	UINT32 size = collisionPairs->GetCount();
+	CollisionPair* pair = (CollisionPair*)collisionPairs->First();
+	for (UINT32 i = 0; i < size; ++i) {
+		pair->a->OnHitWith(g_currentGameTick, pair->b);
+		pair->b->OnHitWith(g_currentGameTick, pair->a);
+		++pair;
+	}
 }

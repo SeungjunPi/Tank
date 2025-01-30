@@ -29,8 +29,6 @@ public:
 
 	void HandleKeyboardEvents(UINT64 pressedKeys, UINT64 releasedKeys, UINT64 heldKeys);
 
-	void CheckAndSyncInputState(UINT64 pressedKeys, UINT64 releasedKeys, UINT64 heldKeys);
-
 	UserDBIndex GetUserID() const { return _userID; }
 	SessionID GetSessionID() const { return _sessionID; }
 	
@@ -38,7 +36,7 @@ public:
 	INT IncreaseKill();
 	INT IncreaseDeath();
 
-	void UpdateSyncTick();
+	void LogTankPosition(const char* str);
 private:
 	std::wstring _name;
 	std::wstring _password;
@@ -48,7 +46,4 @@ private:
 
 	Tank* _pTank = nullptr;
 	Score _score;
-
-	ULONGLONG _lastSyncTick;
-
 };

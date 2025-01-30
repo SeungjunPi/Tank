@@ -10,6 +10,7 @@
 
 ULONGLONG g_previousGameTick = 0;
 ULONGLONG g_currentGameTick = 0;
+ULONGLONG g_gameTickDiff = 0;
 DWORD g_currentFPS = 0;
 
 NetCore* g_pNetCore;
@@ -26,6 +27,8 @@ std::wstring g_userName;
 std::wstring g_password;
 
 ICollisionManager* g_pCollisionManager;
+
+Physics* g_pPhysics;
 
 GameCamera* g_pCamera;
 

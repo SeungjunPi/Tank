@@ -51,7 +51,7 @@ Tank* AllocObjectManager::CreateTank(ObjectID objectID, UserDBIndex ownerIndex)
 	Tank* pTank = DNew Tank(objectID, ownerIndex);
 	const Transform* pTankTransform = pTank->GetTransformPtr();
 
-	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(Tank::COLLIDER_RADIUS, pTank, &pTankTransform->Position, Tank::COLLIDER_MASS, COLLIDER_KINDNESS_TANK);
+	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(TANK_COLLIDER_RADIUS, pTank, &pTankTransform->Position, COLLIDER_KINDNESS_TANK);
 	pTank->AttachCollider(pCollider);
 
 	bool res = _tankTable.Insert(objectID.key, pTank);
@@ -65,7 +65,7 @@ Projectile* AllocObjectManager::CreateProjectile(ObjectID objectID, Transform* p
 {
 	Projectile* pProjectile = DNew Projectile();
 	const Transform* pProjectileTransform = pProjectile->GetTransformPtr();
-	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(Projectile::COLLIDER_RADIUS, pProjectile, &pProjectileTransform->Position, Projectile::COLLIDER_MASS, COLLIDER_KINDNESS_PROJECTILE);
+	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(PROJECTILE_COLLIDER_RADIUS, pProjectile, &pProjectileTransform->Position, COLLIDER_KINDNESS_PROJECTILE);
 	pProjectile->AttachCollider(pCollider);
 	pProjectile->Initiate(objectID, pInitTransform, ownerIndex);
 	_projectileTable.Insert(objectID.key, pProjectile);
@@ -120,27 +120,10 @@ void AllocObjectManager::RemoveObject(ObjectID objectID)
 	RemoveObject(objectID.type, objectID.key);
 }
 
-void AllocObjectManager::UpdateObject(GameObject* obj)
+void AllocObjectManager::UpdateObjectTransformFromServer(ObjectID objId, const Transform* pTransform)
 {
-	if (obj == nullptr) {
-		__debugbreak();
-		return;
-	}
-
-	ObjectID objectID = obj->GetID();
-	GameObject* pGameObject = GetObjectPtrOrNull(objectID);
-
-	BOOL res = pGameObject->UpdateFrom(obj);
-	assert(res);
-}
-
-void AllocObjectManager::UpdateObjectTransform(ObjectID objId, const Transform* pTransform)
-{
-	GameObject* pGameObject = GetObjectPtrOrNull(objId);
-	if (pGameObject == nullptr) {
-		return;
-	}
-	pGameObject->UpdateTransform(pTransform);
+	GameObject* pObj = g_objectManager.GetObjectPtrOrNull(objId);
+	pObj->SetTransformByServer(pTransform);
 }
 
 void AllocObjectManager::GetTransformedModelOf(EGameObjectType objectKind, ObjectKey key, Vertex* out_vertices, UINT* out_numVectors)
@@ -240,42 +223,15 @@ int AllocObjectManager::GetCountObjects() const
 	return countObject;
 }
 
-void AllocObjectManager::StartTankMove(ObjectID objectId, EMovement movement)
+void AllocObjectManager::SetObjectInputStateByServer(ObjectID objectID, PlayerInputState inputState)
 {
-	Tank* pTank = (Tank*)_tankTable.Get(objectId.key);
+	if (objectID.type != GAME_OBJECT_TYPE_TANK) {
+		__debugbreak();
+	}
+
+	Tank* pTank = (Tank*)_tankTable.Get(objectID.key);
 	if (pTank == nullptr) {
 		return;
 	}
-
-	pTank->StartMove(movement);
-}
-
-void AllocObjectManager::EndTankMove(ObjectID objectId, EMovement movement, const Transform* pTransform)
-{
-	Tank* pTank = (Tank*)_tankTable.Get(objectId.key);
-	if (pTank == nullptr) {
-		return;
-	}
-
-	pTank->EndMove(movement, pTransform);
-}
-
-void AllocObjectManager::StartTankRotate(ObjectID objectId, ERotation rotation)
-{
-	Tank* pTank = (Tank*)_tankTable.Get(objectId.key);
-	if (pTank == nullptr) {
-		return;
-	}
-
-	pTank->StartRotate(rotation);
-}
-
-void AllocObjectManager::EndTankRotate(ObjectID objectId, ERotation rotation, const Transform* pTransform)
-{
-	Tank* pTank = (Tank*)_tankTable.Get(objectId.key);
-	if (pTank == nullptr) {
-		return;
-	}
-
-	pTank->EndRotate(rotation, pTransform);
+	pTank->UpdatePlayerInputStateFromServer(inputState);
 }

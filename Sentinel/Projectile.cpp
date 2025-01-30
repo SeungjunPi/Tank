@@ -18,10 +18,10 @@ void Projectile::Initiate(ObjectID id, Transform* transform, UserDBIndex ownerId
 	
 	_genTick = g_previousGameTick;
 
-	_movementSpeed = PROJECTILE_MOVEMENT_SPEED;
-	_rotationSpeed = 0.0f;
+	_translationSpeed = PROJECTILE_TRANSLATION_SPEED;
 	_mass = PROJECTILE_COLLIDER_MASS;
 	_radius = PROJECTILE_COLLIDER_RADIUS;
+	SyncTransformWithCollider();
 }
 
 void Projectile::Terminate()
@@ -29,7 +29,7 @@ void Projectile::Terminate()
 
 }
 
-void Projectile::OnFrame(ULONGLONG tickDiff)
+void Projectile::Tick(ULONGLONG tickDiff)
 {
 	if (IsTimeout() || _hitTick != 0) {
 		_isAlive = false;
@@ -40,6 +40,13 @@ void Projectile::OnFrame(ULONGLONG tickDiff)
 BOOL Projectile::IsDestroyed(ULONGLONG currentTick) const
 {
 	return !_isActivatable && (!_isAlive || _hitTick != 0);
+}
+
+void Projectile::PreProcessMovementState()
+{
+	_translationDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
+	_translationSpeed = PROJECTILE_TRANSLATION_SPEED;
+	_rotationAngle = 0.f;
 }
 
 void Projectile::OnHitWith(ULONGLONG currentTick, GameObject* other)
@@ -56,6 +63,10 @@ void Projectile::OnHitWith(ULONGLONG currentTick, GameObject* other)
 		printf("Projectile [%u(%u)] hit Tank\n", _id.key, _ownerIndex);
 		return;
 	}
+}
+
+void Projectile::OnUpdateTransform()
+{
 }
 
 BOOL Projectile::IsTimeout() const

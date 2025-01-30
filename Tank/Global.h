@@ -7,6 +7,7 @@ class AllocObjectManager;
 class ICollisionManager;
 class GameCamera;
 class Player;
+class Physics;
 
 struct Score
 {
@@ -23,6 +24,7 @@ const ULONGLONG TICK_OWN_TANK_SYNC = TICK_PER_GAME_FRAME * 30; // once at 10 fra
 
 extern ULONGLONG g_previousGameTick;
 extern ULONGLONG g_currentGameTick;
+extern ULONGLONG g_gameTickDiff;
 extern DWORD g_currentFPS;
 
 extern NetCore* g_pNetCore;
@@ -36,6 +38,7 @@ extern std::wstring g_userName;
 extern std::wstring g_password;
 
 extern ICollisionManager* g_pCollisionManager;
+extern Physics* g_pPhysics;
 
 extern GameCamera* g_pCamera;
 

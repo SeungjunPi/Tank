@@ -37,6 +37,11 @@ void JStack::Pop()
 	--_top;
 }
 
+CHAR* JStack::First()
+{
+	return _data;
+}
+
 void JStack::Clear()
 {
 	_top = 0;
