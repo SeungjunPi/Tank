@@ -1,6 +1,18 @@
 #include "GameMath.h"
 #include <math.h>
 
+void Quaternion::Normalize(Quaternion* out_normalized, Quaternion q)
+{
+    float norm = sqrtf(q.w * q.w + q.x * q.x + q.y * q.y + q.z * q.z);
+    if (norm == 0.0f) {
+        __debugbreak();
+    }
+    out_normalized->w = q.w / norm;
+    out_normalized->x = q.x / norm;
+    out_normalized->y = q.y / norm;
+    out_normalized->z = q.z / norm;
+}
+
 Quaternion Quaternion::Product(Quaternion a, Quaternion b)
 {
     Quaternion result = { 0, };
@@ -64,7 +76,7 @@ float Quaternion::AngularDistance(Quaternion q1, Quaternion q2)
     }
 
     dotProduct = fmaxf(fminf(dotProduct, 1.0f), 0.0f);
-    return 2.0f * acosf(fabs(dotProduct));
+    return 2.0f * acosf(fabsf(dotProduct));
 }
 
 Vector3 Vector3::operator*(const float scalar)
@@ -211,7 +223,7 @@ float Vector3::DotProduct(Vector3 v, Vector3 w)
     return v.x * w.x + v.y * w.y + v.z * w.z;
 }
 
-const float Vector2::TRUNCATION = 1E-02;
+const float Vector2::TRUNCATION = 1E-02f;
 
 float Vector2::SquareSum(Vector2 v)
 {

@@ -149,11 +149,11 @@
     <ClInclude Include="StaticData.h">
       <Filter>Static Data</Filter>
     </ClInclude>
-    <ClInclude Include="CommonData.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Physics.h">
       <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="CommonData.h">
+      <Filter>Static Data</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

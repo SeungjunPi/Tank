@@ -359,7 +359,7 @@ void GamePacket::HandleShoot(BYTE* pGameEvent, SessionID senderId)
 		__debugbreak();
 	}
 	
-	if (!pPlayer->FireMachineGunIfCan()) {
+	if (!pPlayer->TryFireMachineGun()) {
 		printf("Fire Failed[owner=%u, Too many]\n", pPlayer->GetUserIndex());
 		return;
 	}

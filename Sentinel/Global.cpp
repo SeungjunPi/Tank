@@ -20,3 +20,5 @@ ICollisionManager* g_pCollisionManager = nullptr;
 
 PlayerManager g_playerManager;
 ObjectManager g_objectManager;
+
+Physics* g_pPhysics = nullptr;

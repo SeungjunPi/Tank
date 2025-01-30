@@ -9,3 +9,24 @@ enum EColliderKindnessFlag: UINT32
 	COLLIDER_KINDNESS_OBSTACLE = 0b100,
 	COLLIDER_KINDNESS_SAME_POSITION = (0b1 << 31)
 };
+
+
+const float SAME_POSITION_THRESHOLD = 1E-04f;
+
+const float TANK_MOVEMENT_SPEED = 0.5f;
+const float TANK_ROTATION_SPEED = 3.14159265358979323846f / 1000.f * 60.f / 32.f * 0.25f;
+
+const float TANK_COLLIDER_RADIUS = 2.0f;
+const float TANK_COLLIDER_MASS = 10.f;
+const ULONGLONG TANK_MACHINE_GUN_DELAY = 250;
+
+const float PROJECTILE_COLLIDER_RADIUS = 1.f;
+const float PROJECTILE_COLLIDER_MASS = 0.1f;
+const float PROJECTILE_MOVEMENT_SPEED = 40.0f / 1000.0f;
+
+struct TankScore
+{
+	UINT16 hitCount = 0;
+	UINT16 killCount = 0;
+	UINT16 deathCount = 0;
+};

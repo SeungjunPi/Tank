@@ -56,10 +56,12 @@ struct Vector3
 
 struct Quaternion
 {
-	float w = 0.f;
+	float w = 1.f;
 	float x = 0.f;
 	float y = 0.f;
 	float z = 0.f;
+
+	static void Normalize(Quaternion* out_normalized, Quaternion q);
 
 	static Quaternion Product(Quaternion a, Quaternion b);
 	static Quaternion RotateZP(float radian, Quaternion v);

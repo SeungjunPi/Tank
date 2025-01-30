@@ -7,9 +7,6 @@ class Collider;
 class Projectile: public GameObject
 {
 public:
-	static const float COLLIDER_RADIUS;
-	static const float COLLIDER_MASS;
-	static const float SPEED_PER_MS;
 	Projectile() = default;
 	~Projectile() = default;
 
@@ -20,11 +17,9 @@ public:
 
 	BOOL IsDestroyed(ULONGLONG currentTick) const override;
 
-	virtual void OnHit(ULONGLONG currentTick) override;
-	virtual void OnUpdateTransform() override;
+	virtual void OnHitWith(ULONGLONG currentTick, GameObject* other) override;
 
 private:
-	Vector3 _forwardDirection = FORWARD_DIRECTION;
 	ULONGLONG _genTick = 0;
 
 	BOOL IsTimeout() const;

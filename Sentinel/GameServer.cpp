@@ -11,6 +11,7 @@
 #include "ObjectManager.h"
 #include "PlayerManager.h"
 #include "Tank.h"
+#include "Physics.h"
 
 
 static BOOL s_isRunning = false;
@@ -41,6 +42,7 @@ void GameServer::Initialize()
 
 	g_playerManager.Initiate(2048);
 	g_objectManager.Initiate();
+	g_pPhysics = DNew Physics;
 
 	g_sessionIds = DNew UINT32[2048];
 }
@@ -78,10 +80,8 @@ void GameServer::Start()
 		ULONGLONG gameTickDiff = currentTick - g_previousGameTick;
 
 
-		//////////////////////////////////////////////////////////////
-		// Input Event (DB Result, Session Event, User act, etc..)
-		//////////////////////////////////////////////////////////////
-		// Handle NetCore Session Events
+		// Input Event (DB Result, Session Event, User act, etc..)////
+		//// Handle NetCore Session Events
 		NetSessionEventQueue* pNetSessionEventQueue = g_pNetCore->StartHandleSessionEvents();
 		ESessionEvent sessionEvent = pNetSessionEventQueue->GetNetSessionEvent(&senderID);
 		while (sessionEvent != ESessionEvent::NONE) {
@@ -90,7 +90,7 @@ void GameServer::Start()
 		}
 		g_pNetCore->EndHandleSessionEvents();
 
-		// Handle NetCore Messages
+		//// Handle NetCore Messages
 		NetMessageQueue* msgs = g_pNetCore->StartHandleReceivedMessages();
 
 		NetMessage* pMsg = msgs->GetNetMessageOrNull(&senderID);
@@ -100,28 +100,22 @@ void GameServer::Start()
 		}
 		g_pNetCore->EndHandleReceivedMessages();
 
-		// DB 
+		//// DB 
 		s_ProcessDBQueryResults();
 
-		//////////////////////////////////////////////////////////////
-		// Game Logic(DB, Apply Collision, )
-		//////////////////////////////////////////////////////////////
-		s_ApplyObjectLogic(gameTickDiff);
-
-
-		//////////////////////////////////////////////////////////////
-		// Physics(Detect Collision)
-		//////////////////////////////////////////////////////////////
-		s_ApplyPhysics(currentTick);
 		
+		// Game Logic(DB, Apply Collision, )//////////////////////////
+		s_ApplyObjectLogic(gameTickDiff);
 		//////////////////////////////////////////////////////////////
-		// Destroy Game Objects
-		//////////////////////////////////////////////////////////////
+
+		// Destroy Game Objects///////////////////////////////////////
 		s_CleanupDestroyedObjects(currentTick);
+		//////////////////////////////////////////////////////////////
 
-
-
-
+		// ApplyPhysics (Movement, etc..)/////////////////////////////
+		g_pPhysics->Update();
+		//////////////////////////////////////////////////////////////
+		
 		g_previousGameTick = currentTick;
 		{
 			// Todo: WaitForSingleObject
@@ -148,6 +142,7 @@ void GameServer::End()
 
 void GameServer::CleanUp()
 {
+	delete g_pPhysics;
 	g_playerManager.Terminate();
 	g_objectManager.Terminate();
 	delete[] g_sessionIds;
@@ -359,7 +354,5 @@ void s_ApplyObjectLogic(ULONGLONG tickDiff)
 
 void s_ApplyPhysics(ULONGLONG currentTick)
 {
-	g_pCollisionManager->DetectCollision();
-
-	// ApplyPhysics (Movement, etc..)
+	
 }

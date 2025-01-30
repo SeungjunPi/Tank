@@ -1,5 +1,6 @@
 #include "Player.h"
 #include "Global.h"
+#include "Tank.h"
 
 Player::Player(SessionID sessionId, UserDBIndex userID)
 	: _sessionId(sessionId)
@@ -10,16 +11,6 @@ Player::Player(SessionID sessionId, UserDBIndex userID)
 SessionID Player::GetSessionID() const
 {
 	return _sessionId;
-}
-
-UINT32 Player::GetTankId() const
-{
-	return _tankId;
-}
-
-void Player::SetTankId(UINT32 tankId)
-{
-	_tankId = tankId;
 }
 
 TankScore Player::GetScore() const
@@ -42,12 +33,10 @@ void Player::IncreaseDeathCount()
 	++_deathCount;
 }
 
-bool Player::FireMachineGunIfCan()
+void Player::TryFireMachineGun()
 {
-	if (_lastMachineGunFireTick + MACHINE_GUN_DELAY < g_currentGameTick) {
-		_lastMachineGunFireTick = g_currentGameTick;
-		return true;
+	if (_pTank != nullptr) {
+		// Fire Machine Gun
 	}
-	return false;
 }
 

@@ -4,18 +4,9 @@ Collider::Collider()
 {
 }
 
-void Collider::Update(Vector3& centerPosition, Vector3& movementDirection, float movementSpeed)
+void Collider::UpdateCenter(const Vector3& position)
 {
-	_center = centerPosition;
-	_movementDirection = movementDirection;
-	_movementSpeed = movementSpeed;
-}
-
-void Collider::Update(const Vector3* center, const Vector3* movementDirection, float movementSpeed)
-{
-	memcpy(&_center, center, sizeof(Vector3));
-	memcpy(&_movementDirection, movementDirection, sizeof(Vector3));
-	_movementSpeed = movementSpeed;
+	_center = position;
 }
 
 void Collider::ResetCollisionFlag()
@@ -23,13 +14,12 @@ void Collider::ResetCollisionFlag()
 	_collisionKindnessFlag = 0;
 }
 
-void Collider::Initiate(float radius, GameObject* pObj, const Vector3* center, const Vector3* direction, float mass, UINT32 kindness)
+void Collider::Initiate(float radius, GameObject* pObj, const Vector3* center, UINT32 kindness)
 {
-	Update(center, direction, 0.0f);
 	_radius = radius;
-	_mass = mass;
 	_pObject = pObj;
 	_kindness = kindness;
+	UpdateCenter(*center);
 	Activate();
 }
 

@@ -8,6 +8,7 @@ class IJunDB;
 class ICollisionManager;
 class PlayerManager;
 class ObjectManager;
+class Physics;
 
 const ULONGLONG GAME_FPS = 60;
 const ULONGLONG TICK_PER_GAME_FRAME = 1000 / GAME_FPS;
@@ -24,4 +25,6 @@ extern IJunDB* g_pJunDB;
 extern ICollisionManager* g_pCollisionManager;
 extern PlayerManager g_playerManager;
 extern ObjectManager g_objectManager;
+
+extern Physics* g_pPhysics;
 

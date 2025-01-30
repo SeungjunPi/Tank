@@ -66,7 +66,7 @@ Tank* ObjectManager::CreateTank(UserDBIndex ownerIndex)
 
 	Tank* pTank = DNew Tank(objectId, ownerIndex);
 	const Transform* pTankTransform = pTank->GetTransformPtr();
-	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(Tank::COLLIDER_RADIUS, pTank, &pTankTransform->Position, Tank::COLLIDER_MASS, COLLIDER_KINDNESS_TANK);
+	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(TANK_COLLIDER_RADIUS, pTank, &pTankTransform->Position, COLLIDER_KINDNESS_TANK);
 	pTank->AttachCollider(pCollider);
 	bool res = _tankTable.Insert(objectId.key, pTank);
 	assert(res);
@@ -101,7 +101,7 @@ Projectile* ObjectManager::CreateProjectile(UserDBIndex ownerId, Transform* pTra
 
 	Projectile* pProjectile = DNew Projectile;
 	const Transform* pProjectileTransform = pProjectile->GetTransformPtr();
-	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(Projectile::COLLIDER_RADIUS, pProjectile, &pProjectileTransform->Position, Projectile::COLLIDER_MASS, COLLIDER_KINDNESS_PROJECTILE);;
+	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(PROJECTILE_COLLIDER_RADIUS, pProjectile, &pProjectileTransform->Position, COLLIDER_KINDNESS_PROJECTILE);
 	pProjectile->AttachCollider(pCollider);
 	pProjectile->Initiate(objectId, pTransform, ownerId);
 	

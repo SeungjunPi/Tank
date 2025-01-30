@@ -6,28 +6,22 @@
 #include "PlayerManager.h"
 #include "StaticData.h"
 #include "GameEvent.h"
+#include "CommonData.h"
 
-const float Projectile::COLLIDER_RADIUS = 1.f;
-const float Projectile::COLLIDER_MASS = 0.1f;
-const float Projectile::SPEED_PER_MS = 40.0f / 1000.0f;
 
 void Projectile::Initiate(ObjectID id, Transform* transform, UserDBIndex ownerId)
 {
 	assert(_pCollider != nullptr);
 	_id = id;
-	memcpy(&_transform, transform, sizeof(Transform));
-
-	_forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
-	_transform.Position.x += _forwardDirection.x * 1.2f;
-	_transform.Position.y += _forwardDirection.y * 1.2f;
-	_transform.Position.z += _forwardDirection.z * 1.2f;
-
-	_dirty = true;
-	_genTick = g_previousGameTick;
-	
 	_ownerIndex = ownerId;
+	memcpy(&_transform, transform, sizeof(Transform));
+	
+	_genTick = g_previousGameTick;
 
-	OnUpdateTransform();
+	_movementSpeed = PROJECTILE_MOVEMENT_SPEED;
+	_rotationSpeed = 0.0f;
+	_mass = PROJECTILE_COLLIDER_MASS;
+	_radius = PROJECTILE_COLLIDER_RADIUS;
 }
 
 void Projectile::Terminate()
@@ -41,13 +35,6 @@ void Projectile::OnFrame(ULONGLONG tickDiff)
 		_isAlive = false;
 		return;
 	}
-
-	if (_pCollider->IsCollided()) {
-		OnHit(g_currentGameTick);
-	}
-	else {
-		Move(tickDiff);
-	}
 }
 
 BOOL Projectile::IsDestroyed(ULONGLONG currentTick) const
@@ -55,33 +42,20 @@ BOOL Projectile::IsDestroyed(ULONGLONG currentTick) const
 	return !_isActivatable && (!_isAlive || _hitTick != 0);
 }
 
-void Projectile::OnHit(ULONGLONG currentTick)
+void Projectile::OnHitWith(ULONGLONG currentTick, GameObject* other)
 {
 	if (_hitTick != 0) {
 		__debugbreak();
 	}
 
-	UINT32 collisionFlag = _pCollider->GetCollisionKindnessFlag();
-	if (collisionFlag & COLLIDER_KINDNESS_TANK) {
+	ObjectID otherID = other->GetID();
+	if (otherID.type == GAME_OBJECT_TYPE_TANK) {
 		g_playerManager.IncreaseHitCount(_ownerIndex);
 		_hitTick = currentTick;
 		_pCollider->Deactivate();
-		GamePacket::BroadcastHit(_id, _ownerIndex, collisionFlag);
 		printf("Projectile [%u(%u)] hit Tank\n", _id.key, _ownerIndex);
 		return;
 	}
-
-	if (collisionFlag & COLLIDER_KINDNESS_PROJECTILE) {
-		// hit other projectile, ignore hit
-		Move(g_previousGameTick - g_currentGameTick);
-	}
-	
-}
-
-void Projectile::OnUpdateTransform()
-{
-	Vector3 movementVector = _forwardDirection * SPEED_PER_MS;
-	_pCollider->Update(&_transform.Position, &movementVector);
 }
 
 BOOL Projectile::IsTimeout() const
@@ -93,13 +67,4 @@ BOOL Projectile::IsTimeout() const
 	}
 
 	return false;
-}
-
-void Projectile::Move(ULONGLONG tickDiff)
-{
-	_transform.Position.x += _forwardDirection.x * SPEED_PER_MS * tickDiff;
-	_transform.Position.y += _forwardDirection.y * SPEED_PER_MS * tickDiff;
-	_transform.Position.z += _forwardDirection.z * SPEED_PER_MS * tickDiff;
-	_dirty = true;
-	OnUpdateTransform();
 }

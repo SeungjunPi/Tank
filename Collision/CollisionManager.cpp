@@ -27,11 +27,11 @@ CollisionManager::~CollisionManager()
 	delete[] _usedIDs;
 }
 
-Collider* CollisionManager::GetNewColliderPtr(float radius, GameObject* pObj, const Vector3* center, const Vector3* direction, float mass, UINT32 kindness)
+Collider* CollisionManager::GetNewColliderPtr(float radius, GameObject* pObj, const Vector3* center, UINT32 kindness)
 {
 	ColliderID id = GetUnusedID();
 	Collider* pCollider = _colliders + id;
-	pCollider->Initiate(radius, pObj, center, direction, mass, kindness);
+	pCollider->Initiate(radius, pObj, center, kindness);
 	_usedIDs[_countActiveColliders] = id;
 	++_countActiveColliders;
 	
@@ -78,11 +78,6 @@ void CollisionManager::DetectCollision()
 				_collisionPairs.Push(&pair);
 				pColliderOne->_collisionKindnessFlag = 0x01;
 				pColliderAnother->_collisionKindnessFlag = 0x01;
-
-				//pcolliderone->_collisionkindnessflag |= pcollideranother->_kindness;
-				//pcollideranother->_collisionkindnessflag |= pcolliderone->_kindness;
-				//resolvepenetration(pcolliderone, pcollideranother);
-				//calculateelasticcollisionnextmovements(pcolliderone, pcollideranother);
 			}
 		}
 	}
@@ -108,56 +103,6 @@ BOOL CollisionManager::CheckCollision(Collider* one, Collider* another)
 		return TRUE;
 	}
 	return FALSE;
-}
-
-void CollisionManager::CalculateElasticCollisionNextMovements(Collider* a, Collider* b)
-{
-	Vector3 n = a->_center - b->_center;
-	if (Vector3::Norm(n) < SAME_POSITION_THRESHOLD) {
-		return;
-	}
-	Vector3::Normalize(&n, n);
-
-	Vector3 v = a->_movementDirection * a->_movementSpeed;
-	Vector3 w = b->_movementDirection * b->_movementSpeed;
-
-	Vector3 v_n = n * Vector3::DotProduct(n, v);
-	Vector3 v_t = v - v_n;
-
-	Vector3 w_n = n * Vector3::DotProduct(n, w);
-	Vector3 w_t = w - w_n;
-
-	Vector3 v_np = (v_n * (a->_mass - b->_mass) + w_n * (2.0f * b->_mass)) * (1.0f / (a->_mass + b->_mass));
-	Vector3 w_np = (w_n * (b->_mass - a->_mass) + v_n * (2.0f * a->_mass)) * (1.0f / (a->_mass + b->_mass));
-	
-	a->_nextMovement = v_np + v_t;
-	b->_nextMovement = w_np + w_t;
-
-	
-}
-
-void CollisionManager::ResolvePenetration(Collider* c1, Collider* c2)
-{
-	Vector3 n = c1->_center - c2->_center;
-	float distance = Vector3::Norm(n);
-	if (distance < SAME_POSITION_THRESHOLD) {
-		// TODO: 아래 필요한지 검토
-		c1->_collisionKindnessFlag |= 0x01 << 31; // kindness 확장시 변경 필요
-		c2->_collisionKindnessFlag |= 0x01 << 31; // kindness 확장시 변경 필요
-
-		n = { 1.0f, 0.f, 0.f };
-	}
-	float penetrationDepth = (c1->_radius + c2->_radius) - distance;
-
-	if (penetrationDepth > 0.0f) {
-		Vector3::Normalize(&n, n);
-
-		float weight1 = c2->_mass / (c1->_mass + c2->_mass);
-		float weight2 = c1->_mass / (c1->_mass + c2->_mass);
-		
-		c1->_center = c1->_center + n * (penetrationDepth * weight1);
-		c2->_center = c2->_center - n * (penetrationDepth * weight2);
-	}
 }
 
 void CollisionManager::PopUsedIDs(ColliderID id)

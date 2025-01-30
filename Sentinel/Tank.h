@@ -7,15 +7,11 @@ class Collider;
 class Tank: public GameObject
 {
 public:
-	static const float COLLIDER_RADIUS;
-	static const float COLLIDER_MASS;
-
 	Tank(ObjectID id, UserDBIndex ownerId);
 	Tank() = default;
 	~Tank();
 
-	void Initiate(ObjectID id);
-	void Terminate();
+
 
 	void StartMove(EMOVEMENT movement);
 	void EndMove(EMOVEMENT movement);
@@ -29,12 +25,12 @@ public:
 
 	void OnFrame(ULONGLONG tickDiff) override;
 
-	virtual Vector3 GetMovementVector() override;
+	virtual Vector3 GetMovementVector(ULONGLONG tickDiff) override;
+	virtual Quaternion GetDeltaRotation(ULONGLONG tickDiff) override;
 
 	virtual BOOL IsDestroyed(ULONGLONG currentTick) const;
 
-	virtual void OnHit(ULONGLONG currentTick) override;
-	virtual void OnUpdateTransform() override;
+	virtual void OnHitWith(ULONGLONG currentTick, GameObject* other) override;
 
 	virtual void OnRespawn() override;
 
@@ -49,11 +45,8 @@ private:
 	bool _isRotatingLeft = false;
 	bool _isRotatingRight = false;
 
-	void MoveForward(ULONGLONG tickDiff);
-	void MoveBackward(ULONGLONG tickDiff);
-	void RotateRight(ULONGLONG tickDiff);
-	void RotateLeft(ULONGLONG tickDiff);
-
 	int _hp = 0;
 
+
+	ULONGLONG _lastMachineGunFireTick = 0;
 };
