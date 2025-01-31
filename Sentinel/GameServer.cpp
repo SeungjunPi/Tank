@@ -120,10 +120,13 @@ void GameServer::Start()
 		g_previousGameTick = currentTick;
 		{
 			// Todo: WaitForSingleObject
-			ULONGLONG tick = GetTickCount64();
+			ULONGLONG tick = GetTickCount64() + 1;
 			ULONGLONG tickDiff = tick - currentTick;
 			ULONGLONG sleepTick = tickDiff >= TICK_PER_GAME_FRAME ? 0 : TICK_PER_GAME_FRAME - tickDiff;
-			Sleep(sleepTick);
+			if (tickDiff < TICK_PER_GAME_FRAME) {
+				Sleep(TICK_PER_GAME_FRAME - tickDiff);	
+				continue;
+			}
 		}
 	}
 

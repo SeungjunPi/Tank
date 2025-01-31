@@ -12,6 +12,8 @@ Tank::Tank(ObjectID id, UserDBIndex ownerID)
 	: GameObject(id, ownerID, true)
 {	
 	_model = g_pTankModel;
+	_mass = TANK_COLLIDER_MASS;
+	_radius = TANK_COLLIDER_RADIUS;
 
 	ResetHP();
 }

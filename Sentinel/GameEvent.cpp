@@ -296,6 +296,7 @@ void GamePacket::HandleMoving(BYTE* pGameEvent, SessionID senderId)
 
 	PACKET_SC_MOVING* pScMoving = (PACKET_SC_MOVING*)(pRawPacket + sizeof(EGameEventCode));
 	pScMoving->objectId = pTank->GetID();
+	pScMoving->inputState = pCsMoving->inputState;
 	memcpy(&pScMoving->transform, &pCsMoving->transform, sizeof(Transform));
 	if (pScMoving->objectId.type != GAME_OBJECT_TYPE_TANK) {
 		__debugbreak();

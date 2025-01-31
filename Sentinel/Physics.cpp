@@ -81,19 +81,22 @@ void Physics::ResolvePenetration(GameObject* a, GameObject* b)
 {
 	Vector3 n = a->_transform.Position - b->_transform.Position;
 	float distance = Vector3::Norm(n);
+	float penetrationDepth = (a->_radius + b->_radius) - distance;
+	if (penetrationDepth <= 0.0f) {
+		return;
+	}
+
 	if (distance < SAME_POSITION_THRESHOLD) {
 		// 완전히 겹쳤을 시 
 		n = { 1.0f, 0.f, 0.f };
 	}
-	float penetrationDepth = (a->_radius + b->_radius) - distance;
 
-	if (penetrationDepth > 0.0f) {
-		Vector3::Normalize(&n, n);
+	Vector3::Normalize(&n, n);
 
-		float weight1 = b->_mass / (a->_mass + b->_mass);
-		float weight2 = a->_mass / (a->_mass + b->_mass);
+	float weight1 = b->_mass / (a->_mass + b->_mass);
+	float weight2 = a->_mass / (a->_mass + b->_mass);
 
-		a->_nextPosition = a->_transform.Position + n * (penetrationDepth * weight1);
-		b->_nextPosition = a->_transform.Position + n * (penetrationDepth * weight2) * -1.f;
-	}
+	a->_nextPosition = a->_transform.Position + n * (penetrationDepth * weight1);
+	b->_nextPosition = b->_transform.Position + n * (penetrationDepth * weight2) * -1.f;
+	
 }

@@ -13,7 +13,7 @@
 Tank::Tank(ObjectID id, UserDBIndex ownerId)
 	: GameObject(id, ownerId, true)
 {
-	_translationSpeed = TANK_TRANSLATION_SPEED;
+	
 	_mass = TANK_COLLIDER_MASS;
 	_radius = TANK_COLLIDER_RADIUS;
 
