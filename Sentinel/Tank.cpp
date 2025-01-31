@@ -49,11 +49,6 @@ void Tank::ResetHP()
 	_hp = 5;
 }
 
-void Tank::UpdateTransformForce(const Transform* transf)
-{
-	memcpy(&_transform, transf, sizeof(Transform));
-}
-
 void Tank::UpdatePlayerInputState(PlayerInputState inputState)
 {
 	// Hmmm........

@@ -90,7 +90,6 @@ void GamePacket::HandleDeleteTank(BYTE* pGameEvent, UINT32 senderId)
 
 void GamePacket::HandleStartMove(BYTE* pGameEvent, UINT32 senderId)
 {
-	printf("Start Moving\n");
 	PACKET_SC_START_MOVE* pScStartMove = (PACKET_SC_START_MOVE*)(pGameEvent + sizeof(EGameEventCode));
 
 	if (pScStartMove->objectId.equals(g_pPlayer->GetTankID())) {
@@ -103,8 +102,7 @@ void GamePacket::HandleStartMove(BYTE* pGameEvent, UINT32 senderId)
 }
 
 void GamePacket::HandleEndMove(BYTE* pGameEvent, UINT32 senderId)
-{
-	printf("End Moving\n");
+{	
 	PACKET_SC_END_MOVE* pScEndMove = (PACKET_SC_END_MOVE*)(pGameEvent + sizeof(EGameEventCode));
 	
 	if (pScEndMove->objectId.equals(g_pPlayer->GetTankID())) {
@@ -117,7 +115,6 @@ void GamePacket::HandleEndMove(BYTE* pGameEvent, UINT32 senderId)
 
 void GamePacket::HandleMoving(BYTE* pGameEvent, UINT32 senderId)
 {
-	printf("Moving\n");
 	PACKET_SC_MOVING* pScMoving = (PACKET_SC_MOVING*)(pGameEvent + sizeof(EGameEventCode));
 	
 	if (pScMoving->objectId.equals(g_pPlayer->GetTankID())) {

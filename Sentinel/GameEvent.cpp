@@ -196,7 +196,7 @@ void GamePacket::HandleStartMove(BYTE* pGameEvent, SessionID senderId)
 		return;
 	}
 
-	g_objectManager.SetObjectInputState(pTank->GetID(), pCsStartMove->inputState);
+	pTank->UpdatePlayerInputState(pCsStartMove->inputState);
 
 	const size_t PACKET_SIZE = sizeof(PACKET_SC_START_MOVE) + sizeof(EGameEventCode);
 	BYTE pRawPacket[PACKET_SIZE] = { 0, };
@@ -238,7 +238,7 @@ void GamePacket::HandleEndMove(BYTE* pGameEvent, SessionID senderId)
 		return;
 	}
 
-	g_objectManager.SetObjectInputState(pTank->GetID(), PLAYER_INPUT_NONE);
+	pTank->UpdatePlayerInputState(PLAYER_INPUT_NONE);
 
 	BOOL isChanged = pTank->UpdateTransformIfValid(&pCsEndMove->transform);
 
@@ -297,17 +297,19 @@ void GamePacket::HandleMoving(BYTE* pGameEvent, SessionID senderId)
 	PACKET_SC_MOVING* pScMoving = (PACKET_SC_MOVING*)(pRawPacket + sizeof(EGameEventCode));
 	pScMoving->objectId = pTank->GetID();
 	pScMoving->inputState = pCsMoving->inputState;
-	memcpy(&pScMoving->transform, &pCsMoving->transform, sizeof(Transform));
+	
 	if (pScMoving->objectId.type != GAME_OBJECT_TYPE_TANK) {
 		__debugbreak();
 	}
 
 	if (isChanged) {
-		printf("Moving, accepted: owner=%u\n", userIndex);
+		// printf("Moving, accepted: owner=%u\n", userIndex);
+		memcpy(&pScMoving->transform, &pCsMoving->transform, sizeof(Transform));
 		GameServer::BroadcastExcept(pRawPacket, PACKET_SIZE, senderId);
 	}
 	else {
-		printf("Moving, rejected: owner=%u\n", userIndex);
+		// printf("Moving, rejected: owner=%u\n", userIndex);
+		memcpy(&pScMoving->transform, pTank->GetTransformPtr(), sizeof(Transform));
 		GameServer::Broadcast(pRawPacket, PACKET_SIZE);
 	}
 }

@@ -136,24 +136,6 @@ Tank* ObjectManager::GetTankByOwnerId(UserDBIndex ownerId)
 	return pTank;
 }
 
-void ObjectManager::UpdateTankTransformByObjectID(ObjectID objectId, const Transform* pTransform)
-{
-	Tank* pTank = (Tank*)_tankTable.Get(objectId.key);
-	assert(pTank != nullptr);
-
-	pTank->UpdateTransformForce(pTransform);
-}
-
-void ObjectManager::UpdateTankTransformByOwnerID(UserDBIndex ownerId, const Transform* pTransform)
-{
-	Tank* pTank = (Tank*)_tankTableByOwner.Get(ownerId);
-	if (pTank == nullptr) {
-		return;
-	}
-
-	pTank->UpdateTransformForce(pTransform);
-}
-
 UINT32 ObjectManager::GetCountObjects() const
 {
 	UINT32 countTank = _tankTable.GetCount();

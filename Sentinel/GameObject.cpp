@@ -51,6 +51,7 @@ BOOL GameObject::UpdateTransformIfValid(const Transform* pTransform)
 	BOOL isClosed = IsTransformCloseEnough(pTransform);
 	if (isClosed) {
 		memcpy(&_transform, pTransform, sizeof(Transform));
+		SyncTransformWithCollider();
 		return true;
 	}
 	
@@ -106,7 +107,7 @@ void GameObject::ApplyNextMovement(ULONGLONG tickDiff)
 	_transform.Position = _nextPosition;
 	_transform.Rotation = Quaternion::RotateZP(_nextRotationAngle, _transform.Rotation);
 
-	printf("P[%f, %f, %f], R[%f, %f, %f, %f]\n", _transform.Position.x, _transform.Position.y, _transform.Position.z, _transform.Rotation.w, _transform.Rotation.x, _transform.Rotation.y, _transform.Rotation.z);
+	// printf("P[%f, %f, %f], R[%f, %f, %f, %f]\n", _transform.Position.x, _transform.Position.y, _transform.Position.z, _transform.Rotation.w, _transform.Rotation.x, _transform.Rotation.y, _transform.Rotation.z);
 
 	OnUpdateTransform();
 	SyncTransformWithCollider();

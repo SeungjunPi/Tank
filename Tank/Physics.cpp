@@ -58,7 +58,6 @@ void Physics::CalculateElasticCollisionNextMovements(GameObject* a, GameObject* 
 		// Penetration
 		return;
 	}
-	printf("Collision!\n");
 	Vector3::Normalize(&n, n);
 
 	Vector3 v = a->_translationDirection * a->_translationSpeed * tickDiff;
@@ -93,8 +92,6 @@ void Physics::ResolvePenetration(GameObject* a, GameObject* b)
 		// 완전히 겹쳤을 시 
 		n = { 1.0f, 0.f, 0.f };
 	}
-
-	printf("penetration!\n");
 
 	Vector3::Normalize(&n, n);
 

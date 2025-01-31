@@ -105,7 +105,7 @@ void Game::Start()
 			g_previousGameTick = g_currentGameTick;
 		}
 		// Draw Call
-		// ConsoleRenderer::Render();
+		ConsoleRenderer::Render();
 	}
 }
 

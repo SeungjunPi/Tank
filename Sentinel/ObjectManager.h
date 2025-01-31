@@ -28,9 +28,6 @@ public:
 	Tank* GetTankByObjectId(ObjectID objectId);
 	Tank* GetTankByOwnerId(UserDBIndex ownerId);
 
-	void UpdateTankTransformByObjectID(ObjectID objectID, const Transform* pTransform);
-	void UpdateTankTransformByOwnerID(UserDBIndex ownerId, const Transform* pTransform);
-
 	UINT32 GetCountObjects() const;
 	void CopySnapshot(PACKET_OBJECT_INFO* dst);
 

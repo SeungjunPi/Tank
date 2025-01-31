@@ -69,7 +69,7 @@ protected:
 	float _radius = 0.0f; // 크기 없음
 
 	Vector3 _nextPosition;
-	float _nextRotationAngle;
+	float _nextRotationAngle = 0.0f;
 
 	Collider* _pCollider = nullptr;
 	ULONGLONG _hitTick = 0;

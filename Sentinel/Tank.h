@@ -18,7 +18,6 @@ public:
 
 	void ResetHP();
 
-	void UpdateTransformForce(const Transform* transf);
 	void UpdatePlayerInputState(PlayerInputState inputState);
 
 	virtual void PreProcessMovementState() override;

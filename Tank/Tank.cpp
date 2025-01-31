@@ -134,7 +134,7 @@ void Tank::OnHitWith(ULONGLONG currentTick, GameObject* other)
 void Tank::OnUpdateTransform()
 {
 	if (g_pPlayer->GetUserID() == _ownerID) {
-		//g_pCamera->UpdateTransf(&_transform);
+		g_pCamera->UpdateTransf(&_transform);
 	}
 }
 
@@ -196,6 +196,7 @@ void Tank::ProcessInput()
 	if (_lastTransformSyncTick + TICK_OWN_TANK_SYNC < g_currentGameTick) {
 		GamePacket::SendMoving(&_transform, crntMoveState);
 		_lastTransformSyncTick = g_currentGameTick;
+		
 	}
 }
 

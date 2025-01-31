@@ -20,7 +20,7 @@ struct Score
 const ULONGLONG GAME_FPS = 60;
 const ULONGLONG TICK_PER_GAME_FRAME = 1000 / GAME_FPS; // 
 
-const ULONGLONG TICK_OWN_TANK_SYNC = TICK_PER_GAME_FRAME * 30; // once at 10 frames
+const ULONGLONG TICK_OWN_TANK_SYNC = TICK_PER_GAME_FRAME * 6; // once at 10 frames
 
 extern ULONGLONG g_previousGameTick;
 extern ULONGLONG g_currentGameTick;
