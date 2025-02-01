@@ -61,30 +61,22 @@ void Projectile::PreProcessMovementState()
 
 void Projectile::OnHitWith(ULONGLONG currentTick, GameObject* other)
 {
-	if (IsTimeout()) {
-		return;
-	}
+	
+}
 
+void Projectile::OnHitServer(ULONGLONG currentTick, GameObject* other)
+{
 	if (other->GetID().type == GAME_OBJECT_TYPE_TANK) {
-		OnHitTank(currentTick);
+		if (_hitTick != 0) {
+			__debugbreak();
+		}
+
+		_hitTick = currentTick;
+		_pCollider->Deactivate();
 	}
 }
 
 void Projectile::OnUpdateTransform()
 {
 	
-}
-
-void Projectile::OnHitTank(ULONGLONG currentTick)
-{
-	if (_hitTick != 0) {
-		__debugbreak();
-	}
-
-	if (g_pPlayer->GetUserID() == _ownerID) {
-		g_pPlayer->IncreaseHit();
-	}
-
-	_hitTick = currentTick;
-	_pCollider->Deactivate();
 }

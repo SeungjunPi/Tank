@@ -17,9 +17,10 @@ public:
 
 	virtual void PreProcessMovementState() override;
 	virtual void OnHitWith(ULONGLONG currentTick, GameObject* other) override;
+
+	virtual void OnHitServer(ULONGLONG currentTick, GameObject* other) override;
 	virtual void OnUpdateTransform() override;
 
-	void OnHitTank(ULONGLONG currentTick);
 private:
 	ULONGLONG _genTick = 0;
 

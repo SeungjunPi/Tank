@@ -87,7 +87,7 @@ void GamePacket::BroadcastDeleteTank(ObjectID tankId)
 
 void GamePacket::BroadcastTankHit(ObjectID tankId, ObjectID projectileId, UserDBIndex shooterId, UserDBIndex targetId)
 {
-	const size_t PACKET_SIZE = sizeof(EGameEventCode) + sizeof(PACKET_SC_TANK_HIT);
+	/*const size_t PACKET_SIZE = sizeof(EGameEventCode) + sizeof(PACKET_SC_TANK_HIT);
 	BYTE pRawPacket[PACKET_SIZE];
 	EGameEventCode* pEvCode = (EGameEventCode*)pRawPacket;
 	*pEvCode = GAME_EVENT_CODE_SC_TANK_HIT;
@@ -98,12 +98,12 @@ void GamePacket::BroadcastTankHit(ObjectID tankId, ObjectID projectileId, UserDB
 	pScTankHit->shooter = shooterId;
 	pScTankHit->target = targetId;
 
-	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
+	GameServer::Broadcast(pRawPacket, PACKET_SIZE);*/
 }
 
 void GamePacket::BroadcastHit(ObjectID objectID, UserDBIndex ownerID, UINT32 kindnessFlag)
 {
-	const size_t PACKET_SIZE = sizeof(EGameEventCode) + sizeof(PACKET_SC_OBJECT_HIT);
+	/*const size_t PACKET_SIZE = sizeof(EGameEventCode) + sizeof(PACKET_SC_OBJECT_HIT);
 	BYTE pRawPacket[PACKET_SIZE];
 	EGameEventCode* pEvCode = (EGameEventCode*)pRawPacket;
 	*pEvCode = GAME_EVENT_CODE_SC_OBJECT_HIT;
@@ -112,6 +112,21 @@ void GamePacket::BroadcastHit(ObjectID objectID, UserDBIndex ownerID, UINT32 kin
 	pScObjectHit->objectID = objectID;
 	pScObjectHit->ownerID = ownerID;
 	pScObjectHit->kindnessFlag = kindnessFlag;
+	GameServer::Broadcast(pRawPacket, PACKET_SIZE);*/
+}
+
+void GamePacket::BroadcastHit(ObjectID oneID, ObjectID anotherID)
+{
+	const size_t PACKET_SIZE = sizeof(EGameEventCode) + sizeof(PACKET_SC_OBJECT_HIT);
+	BYTE pRawPacket[PACKET_SIZE];
+
+	EGameEventCode* pEvCode = (EGameEventCode*)pRawPacket;
+	*pEvCode = GAME_EVENT_CODE_SC_OBJECT_HIT;
+
+	PACKET_SC_OBJECT_HIT* pScObjectHit = (PACKET_SC_OBJECT_HIT*)(pRawPacket + sizeof(EGameEventCode));
+	pScObjectHit->oneID = oneID;
+	pScObjectHit->anotherID = anotherID;
+
 	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
 }
 

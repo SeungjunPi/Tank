@@ -156,9 +156,8 @@ struct PACKET_SC_TANK_HIT
 
 struct PACKET_SC_OBJECT_HIT
 {
-	ObjectID objectID;
-	UserDBIndex ownerID;
-	UINT32 kindnessFlag;
+	ObjectID oneID;
+	ObjectID anotherID;
 };
 
 struct PACKET_SC_CREATE_OBSTACLE
@@ -211,7 +210,8 @@ private:
 	static void HandleFireMachineGun(BYTE* pGameEvent, UINT32 senderId);
 
 	static void HandleObjectHit(BYTE* pGameEvent, UINT32 senderID);
-	
+
+	// Deprecated
 	static void HandleTankHit(BYTE* pGameEvent, UINT32 senderId);
 
 	static void HandleCreateObstacle(BYTE* pGameEvent, UINT32 senderId);

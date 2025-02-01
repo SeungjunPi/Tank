@@ -50,8 +50,9 @@ public:
 
 	virtual BOOL IsDestroyed(ULONGLONG currentTick) const;
 
-	
 	virtual void OnRespawn();
+
+	virtual void OnHitServer(ULONGLONG currentTick, GameObject* other) = 0;
 	
 protected:
 	BOOL _isActivatable = false; // TODO: 탱크 외에도 이런게 없으면 탱크 처리 로직을 아예 분리하는 편이 나으므로, 고려해보기.

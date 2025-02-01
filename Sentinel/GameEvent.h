@@ -157,9 +157,8 @@ struct PACKET_SC_TANK_HIT
 
 struct PACKET_SC_OBJECT_HIT
 {
-	ObjectID objectID;
-	UserDBIndex ownerID;
-	UINT32 kindnessFlag;
+	ObjectID oneID;
+	ObjectID anotherID;
 };
 
 struct PACKET_SC_CREATE_OBSTACLE
@@ -188,8 +187,14 @@ public:
 
 	static void SendSnapshot(SessionID sessionId);
 	static void BroadcastDeleteTank(ObjectID tankId);
+
+	// Deprecated
 	static void BroadcastTankHit(ObjectID tankId, ObjectID projectileId, UserDBIndex shooterId, UserDBIndex targetId);
+
+	// Deprecated
 	static void BroadcastHit(ObjectID objectID, UserDBIndex ownerID, UINT32 kindnessFlag);
+	
+	static void BroadcastHit(ObjectID oneID, ObjectID anotherID);
 	static void BroadcastCreateObstacle(ObjectID obstacleId, Transform* pTransform);
 	static void BroadcastDeleteObstacle(ObjectID obstacleId, UserDBIndex shooterId);
 	static void BroadcastRespawnTank(ObjectID tankId);

@@ -116,7 +116,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(SolutionDir)..\NetCore\x64\Debug\NetCore.lib;$(SolutionDir)..\DataStruct\x64\Debug\DataStruct.lib;$(SolutionDir)..\Collision\x64\Debug\Collision.lib;$(SolutionDir)..\Math\x64\Debug\Math.lib;$(CoreLibraryDependencies);$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)..\bin\Debug\NetCore.lib;$(SolutionDir)..\bin\Debug\DataStruct.lib;$(SolutionDir)..\bin\Debug\Collision.lib;$(SolutionDir)..\bin\Debug\Math.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
       <PerUserRedirection>false</PerUserRedirection>

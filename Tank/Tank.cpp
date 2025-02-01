@@ -109,25 +109,7 @@ void Tank::Tick(ULONGLONG tickDiff)
 
 void Tank::OnHitWith(ULONGLONG currentTick, GameObject* other)
 {
-	ObjectID otherID = other->GetID();
-	if (otherID.type == GAME_OBJECT_TYPE_PROJECTILE) {
-		if (_hp > 0) {
-			if (--_hp == 0) {
-				_pCollider->Deactivate();
-				_hitTick = currentTick;
-				_isAlive = false;
-				_currentInputState = PLAYER_INPUT_NONE;
-
-				if (_id.equals(g_pPlayer->GetTankID())) {
-					g_pPlayer->IncreaseDeath();
-				}
-
-				if (other->GetID().equals(g_pPlayer->GetTankID())) {
-					g_pPlayer->IncreaseKill();
-				}
-			}
-		}
-	}
+	
 }
 
 void Tank::OnUpdateTransform()
@@ -143,6 +125,33 @@ void Tank::OnRespawn()
 	_hitTick = 0;
 	_pCollider->Activate();
 	ResetHP();
+}
+
+void Tank::OnHitServer(ULONGLONG currentTick, GameObject* other)
+{
+	ObjectID otherID = other->GetID();
+	if (otherID.type == GAME_OBJECT_TYPE_PROJECTILE) {
+		if (_hp > 0) {
+			if (--_hp == 0) {
+				_pCollider->Deactivate();
+				_hitTick = currentTick;
+				_isAlive = false;
+				_currentInputState = PLAYER_INPUT_NONE;
+
+				if (_id.equals(g_pPlayer->GetTankID())) {
+					g_pPlayer->IncreaseDeath();
+				}
+
+				if (other->GetOwnerID() == g_pPlayer->GetUserID()) {
+					g_pPlayer->IncreaseKill();
+				}
+			}
+
+			if (_id.equals(g_pPlayer->GetTankID())) {
+				g_pPlayer->IncreaseHit();
+			}
+		}
+	}
 }
 
 BOOL Tank::TryFireMachineGun(ULONGLONG currentTick)

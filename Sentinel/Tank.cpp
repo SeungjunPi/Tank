@@ -119,7 +119,7 @@ void Tank::OnHitWith(ULONGLONG currentTick, GameObject* other)
 				g_playerManager.IncreaseDeathCount(_ownerIndex);
 				g_playerManager.IncreaseKillCount(other->GetOwnerId());
 			}
-			GamePacket::BroadcastTankHit(_id, other->GetID(), other->GetOwnerId(), _ownerIndex);
+			GamePacket::BroadcastHit(_id, other->GetID());
 		}
 	}
 }

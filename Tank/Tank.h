@@ -27,6 +27,8 @@ public:
 	virtual void OnHitWith(ULONGLONG currentTick, GameObject* other) override;
 	virtual void OnUpdateTransform() override;
 	virtual void OnRespawn() override;
+
+	virtual void OnHitServer(ULONGLONG currentTick, GameObject* other) override;
 private:
 	PlayerInputState _currentInputState = PLAYER_INPUT_NONE;
 	PlayerInputState _previousInputState = PLAYER_INPUT_NONE;
