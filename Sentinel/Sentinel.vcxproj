@@ -111,7 +111,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(SolutionDir)..\bin\Debug\NetCore.dll;$(SolutionDir)..\bin\Debug\DataStruct.lib;$(SolutionDir)..\bin\Debug\Collision.lib;$(SolutionDir)..\bin\Debug\Math.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)..\bin\Debug\NetCore.lib;$(SolutionDir)..\bin\Debug\DataStruct.lib;$(SolutionDir)..\bin\Debug\Collision.lib;$(SolutionDir)..\bin\Debug\Math.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(OutDir)*.*" "$(SolutionDir)..\bin\Debug"</Command>

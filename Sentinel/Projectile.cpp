@@ -60,7 +60,6 @@ void Projectile::OnHitWith(ULONGLONG currentTick, GameObject* other)
 
 	ObjectID otherID = other->GetID();
 	if (otherID.type == GAME_OBJECT_TYPE_TANK) {
-		g_playerManager.IncreaseHitCount(_ownerIndex);
 		_hitTick = currentTick;
 		_pCollider->Deactivate();
 		printf("Projectile [%u(%u)] hit Tank\n", _id.key, _ownerIndex);

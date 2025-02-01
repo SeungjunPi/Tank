@@ -48,6 +48,7 @@ void GamePacket::HandlePacket(BYTE* pGameEvent, UINT32 senderId)
 		break;
 	case GAME_EVENT_CODE_SC_OBJECT_HIT:
 		HandleObjectHit(pGameEvent, senderId);
+		break;
 	default:
 		__debugbreak();
 		break;

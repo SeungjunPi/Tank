@@ -147,7 +147,7 @@ void Tank::OnHitServer(ULONGLONG currentTick, GameObject* other)
 				}
 			}
 
-			if (_id.equals(g_pPlayer->GetTankID())) {
+			if (other->GetOwnerID() == g_pPlayer->GetUserID()) {
 				g_pPlayer->IncreaseHit();
 			}
 		}
