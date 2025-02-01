@@ -24,7 +24,7 @@ Tank::~Tank()
 {
 }
 
-void Tank::GetTurretInfo(Vector3* out_position, Vector3* out_direction) const
+void Tank::GetTurretInfo(Transform* out_position, Vector3* out_direction) const
 {
 	Vector3 position = _transform.Position;
 	Quaternion rotation = _transform.Rotation;
@@ -34,7 +34,8 @@ void Tank::GetTurretInfo(Vector3* out_position, Vector3* out_direction) const
 	v.x += position.x;
 	v.y += position.y;
 	v.z += position.z;
-	*out_position = v;
+	out_position->Position = v;
+	out_position->Rotation = _transform.Rotation;
 
 	Vector3 direction = FORWARD_DIRECTION;
 	direction = direction * (_radius + PROJECTILE_COLLIDER_RADIUS) * 1.03125f;

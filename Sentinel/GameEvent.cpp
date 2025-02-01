@@ -332,11 +332,6 @@ void GamePacket::HandleFireMachineGun(BYTE* pGameEvent, SessionID senderId)
 	if (pPlayer == nullptr) {
 		__debugbreak();
 	}
-	
-	/*if (!pPlayer->TryFireMachineGun()) {
-		printf("Fire Failed[owner=%u, Too many]\n", pPlayer->GetUserIndex());
-		return;
-	}*/
 
 	UserDBIndex userIndex = pPlayer->GetUserIndex();
 	Projectile* pProjectile = g_objectManager.CreateProjectile(userIndex, &pCsShoot->transform);

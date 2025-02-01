@@ -160,11 +160,7 @@ void GamePacket::HandleSnapshot(BYTE* pGameEvent, UINT32 senderId)
 
 void GamePacket::HandleFireMachineGun(BYTE* pGameEvent, UINT32 senderId)
 {
-	PACKET_SC_SHOOT* pScShoot= (PACKET_SC_SHOOT*)(pGameEvent + sizeof(EGameEventCode));
-	pScShoot->objectId;
-	pScShoot->ownerId;
-	pScShoot->transform;
-
+	PACKET_SC_SHOOT* pScShoot = (PACKET_SC_SHOOT*)(pGameEvent + sizeof(EGameEventCode));
 	g_objectManager.CreateProjectile(pScShoot->objectId, &pScShoot->transform, pScShoot->ownerId);
 }
 

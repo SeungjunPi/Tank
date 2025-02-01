@@ -31,6 +31,7 @@ void Projectile::Tick(ULONGLONG tickDiff)
 	GameObject::Tick(tickDiff);
 	if (IsTimeout()) {
 		_isAlive = false;
+		_pCollider->Deactivate();
 		return;
 	}
 }

@@ -31,8 +31,10 @@ void Projectile::Terminate()
 
 void Projectile::Tick(ULONGLONG tickDiff)
 {
+	GameObject::Tick(tickDiff);
 	if (IsTimeout() || _hitTick != 0) {
 		_isAlive = false;
+		_pCollider->Deactivate();
 		return;
 	}
 }
@@ -51,6 +53,7 @@ void Projectile::PreProcessMovementState()
 
 void Projectile::OnHitWith(ULONGLONG currentTick, GameObject* other)
 {
+	printf("Projectile OnHit %llu\n", _hitTick);
 	if (_hitTick != 0) {
 		__debugbreak();
 	}

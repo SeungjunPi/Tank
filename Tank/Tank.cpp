@@ -1,4 +1,4 @@
-#include "Tank.h"
+﻿#include "Tank.h"
 #include "StaticData.h"
 #include "Global.h"
 #include "GameEvent.h"
@@ -22,7 +22,7 @@ Tank::~Tank()
 {
 }
 
-void Tank::GetTurretInfo(Vector3* out_position, Vector3* out_direction) const
+void Tank::GetTurretInfo(Transform* out_position, Vector3* out_direction) const
 {
 	Vector3 position = _transform.Position;
 	Quaternion rotation = _transform.Rotation;
@@ -32,12 +32,11 @@ void Tank::GetTurretInfo(Vector3* out_position, Vector3* out_direction) const
 	v.x += position.x;
 	v.y += position.y;
 	v.z += position.z;
-	*out_position = v;
+	out_position->Position = v;
+	out_position->Rotation = _transform.Rotation;
 
-	Vector3 direction = FORWARD_DIRECTION;
-	direction = direction * (_radius + PROJECTILE_COLLIDER_RADIUS) * 1.03125f;
 
-	const Vector3 forwardDirection = Vector3::Rotate(direction, rotation);
+	const Vector3 forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, rotation);
 
 	memcpy(out_direction, &forwardDirection, sizeof(Vector3));
 }
@@ -154,8 +153,10 @@ BOOL Tank::TryFireMachineGun(ULONGLONG currentTick)
 
 	Transform projectileTransform;
 	Vector3 direction;
-	GetTurretInfo(&projectileTransform.Position, &direction);
-	projectileTransform.Position = projectileTransform.Position + direction;
+	GetTurretInfo(&projectileTransform, &direction);
+
+	// 자신이 맞지 않기 위해 여유분을 1.0625만큼 줌
+	projectileTransform.Position = projectileTransform.Position + direction * _radius * 1.0625f; 
 	
 	GamePacket::SendFireMachineGun(&projectileTransform);
 	return true;

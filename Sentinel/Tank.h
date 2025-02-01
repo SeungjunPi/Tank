@@ -14,7 +14,7 @@ public:
 	Tank() = default;
 	~Tank();
 
-	void GetTurretInfo(Vector3* out_position, Vector3* out_direction) const;
+	void GetTurretInfo(Transform* out_position, Vector3* out_direction) const;
 
 	void ResetHP();
 
