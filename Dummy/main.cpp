@@ -18,32 +18,6 @@ int main()
 
 	Global::Initiate();
 
-	//printf_s("ID: ");
-	//char id[20];
-	//
-	//char* res = fgets(id, 16, stdin);
-	//if (res == NULL) {
-	//	feof(stdin);
-	//	ferror(stdin);
-	//}
-	//id[strnlen_s(id, 20) - 1] = '\0';
-	//
-
-	//char pw[20];
-	//printf_s("PW: ");
-	//char* r = fgets(pw, 16, stdin);
-	//if (r == NULL) {
-	//	feof(stdin);
-	//	ferror(stdin);
-	//}
-	//pw[strnlen_s(pw, 20) - 1] = '\0';
-
-	//USES_CONVERSION;
-	//g_userName = std::wstring(A2W(id));
-	//g_password = std::wstring(A2W(pw));
-
-
-
 	Game::Initialize();
 	
 	Game::Start();

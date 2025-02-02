@@ -22,12 +22,7 @@ static void s_ApplyObjectLogic(ULONGLONG tickDiff);
 static void s_HandleNetEvents();
 static void s_CleanupDestroyedObjects(ULONGLONG curTick);
 
-
-static bool s_bIsShootable = true;
-
 static BOOL s_isRunning;
-
-static BOOL s_isMoving;
 
 void Game::Initialize()
 {
@@ -53,7 +48,6 @@ void Game::CleanUp()
 {
 	s_isRunning = false;
 	// Todo: disconnect to server
-
 	
 	g_pNetCore->EndNetCore();
 
@@ -94,10 +88,10 @@ void Game::Start()
 			// PreProcessNextMovement
 			s_PreProcessNextMovements();
 
-			// Physics(Detect Collision)
+			// Physics(Detect Collision, Decide Next Movement))
 			g_pPhysics->ProcessNextMovement(gameTickDiff);
 			
-			// Game Logic(DB, Apply Collision, )
+			// Game Logic( )
 			s_ApplyObjectLogic(gameTickDiff);
 			// Destroy Game Objects
 			s_CleanupDestroyedObjects(g_currentGameTick);

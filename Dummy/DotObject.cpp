@@ -21,24 +21,19 @@ DotObject::~DotObject()
 void DotObject::MoveUp()
 {
 	_transform.Position.y -= 1;
-
-	_dirty = true;
 }
 
 void DotObject::MoveDown()
 {
 	_transform.Position.y += 1;
-	_dirty = true;
 }
 
 void DotObject::MoveRight()
 {
 	_transform.Position.x += 1;
-	_dirty = true;
 }
 
 void DotObject::MoveLeft()
 {
 	_transform.Position.x -= 1;
-	_dirty = true;
 }

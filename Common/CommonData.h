@@ -12,6 +12,7 @@ enum EColliderKindnessFlag: UINT32
 
 
 const float SAME_POSITION_THRESHOLD = 1E-04f;
+const float PENETRATION_THRESHOLD = 1E-02;
 
 const static ULONGLONG OBJECT_DESTROY_DELAY = 0x1000;
 

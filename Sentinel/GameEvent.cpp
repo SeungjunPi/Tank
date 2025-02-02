@@ -292,7 +292,8 @@ void GamePacket::HandleMoving(BYTE* pGameEvent, SessionID senderId)
 
 	Player* pPlayer = g_playerManager.GetPlayerBySessionID(senderId);
 	if (pPlayer == nullptr) {
-		__debugbreak();
+		// Disconnect와 Moving이 동시에 쌓여있다면, Disconnect가 먼저 처리되므로 이 경우가 생길 수 있음. 
+		return;
 	}
 	UserDBIndex userIndex = pPlayer->GetUserIndex();
 	

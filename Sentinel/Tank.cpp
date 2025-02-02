@@ -147,7 +147,7 @@ BOOL Tank::IsTransformCloseEnough(const Transform* other)
 	float rotDisctance = Quaternion::AngularDistance(_transform.Rotation, other->Rotation);
 
 	if (posDistanceSq < TOLERANCE_POSITION_SQUARE && rotDisctance < TOLERANCE_ROTATION) {
-		printf("Accept Client's Transform, Diff: [%f, %f]\n", posDistanceSq, rotDisctance);
+		// printf("Accept Client's Transform, Diff: [%f, %f]\n", posDistanceSq, rotDisctance);
 		return true;
 	}
 	else {

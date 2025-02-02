@@ -1,4 +1,4 @@
-﻿#include "GameEvent.h"
+#include "GameEvent.h"
 #include "Global.h"
 #include "NetCore.h"
 #include "Tank.h"
@@ -180,6 +180,7 @@ void GamePacket::HandleObjectHit(BYTE* pGameEvent, UINT32 senderID)
 
 void GamePacket::HandleTankHit(BYTE* pGameEvent, UINT32 senderId)
 {
+	__debugbreak();
 	//PACKET_SC_TANK_HIT* pScTankHit = (PACKET_SC_TANK_HIT*)(pGameEvent + sizeof(EGameEventCode));
 	//Tank* pTank = (Tank*)g_objectManager.GetObjectPtrOrNull(pScTankHit->tankId);
 	//

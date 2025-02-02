@@ -1,4 +1,4 @@
-﻿
+
 #include "Physics.h"
 
 #include "ICollisionManager.h"
@@ -84,7 +84,7 @@ void Physics::ResolvePenetration(GameObject* a, GameObject* b)
 	Vector3 n = a->_transform.Position - b->_transform.Position;
 	float distance = Vector3::Norm(n);
 	float penetrationDepth = (a->_radius + b->_radius) - distance;
-	if (penetrationDepth <= 0.0f) {
+	if (penetrationDepth <= PENETRATION_THRESHOLD) {
 		return;
 	}
 

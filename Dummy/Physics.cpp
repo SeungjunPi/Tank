@@ -5,7 +5,7 @@
 #include "Collider.h"
 #include "GameObject.h"
 #include "Global.h"
-#include "ObjectManager.h"
+#include "AllocObjectManager.h"
 #include "CommonData.h"
 
 
@@ -43,7 +43,9 @@ void Physics::ProcessNextMovement(ULONGLONG tickDiff)
 				continue;
 			}
 
-			pObject->_nextPosition = pObject->_transform.Position + pObject->_translationDirection * pObject->_translationSpeed * tickDiff;
+
+			float weight = (pObject->_translationSpeed * tickDiff);
+			pObject->_nextPosition = pObject->_transform.Position + pObject->_translationDirection * weight;
 			pObject->_nextRotationAngle = pObject->_rotationAngle * tickDiff;
 		}
 	}
@@ -98,5 +100,5 @@ void Physics::ResolvePenetration(GameObject* a, GameObject* b)
 
 	a->_nextPosition = a->_transform.Position + n * (penetrationDepth * weight1);
 	b->_nextPosition = b->_transform.Position + n * (penetrationDepth * weight2) * -1.f;
-	
+
 }

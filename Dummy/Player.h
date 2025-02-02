@@ -1,9 +1,10 @@
-﻿#pragma once
+#pragma once
 
 
 #include "Global.h"
 #include "NetCoreAliases.h"
-#include "TankPch.h"
+#include "DummyAliases.h"
+#include "DummyPch.h"
 #include "GameStruct.h"
 
 struct Score;
@@ -23,21 +24,21 @@ public:
 
 	void SetTank(Tank* pTank);
 	ObjectID GetTankID();
-	Tank* GetTank() { return _pTank; }
+	
 	Tank* ClearTank();
 
 	void HandleKeyboardEvents(UINT64 pressedKeys, UINT64 releasedKeys, UINT64 heldKeys);
 
 	UserDBIndex GetUserID() const { return _userID; }
 	SessionID GetSessionID() const { return _sessionID; }
-	
+
 	INT IncreaseHit();
 	INT IncreaseKill();
 	INT IncreaseDeath();
 
-
+	void LogTankPosition(const char* str);
 protected:
-	ULONGLONG _prevSyncTick = MAXULONGLONG;
+	Tank* GetTank() { return _pTank; }
 
 private:
 	std::wstring _name;
@@ -48,6 +49,5 @@ private:
 
 	Tank* _pTank = nullptr;
 	Score _score;
-
-	
 };
+

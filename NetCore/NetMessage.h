@@ -3,7 +3,7 @@
 
 #include "NetCorePch.h"
 
-#define NET_MSG_MAX_LEN (512) // 2bytes with header
+#define NET_MSG_MAX_LEN (4096) // 2bytes with header
 #define NET_PAGE_MAX_LEN (65536)
 
 

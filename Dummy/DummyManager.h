@@ -1,10 +1,10 @@
-﻿#pragma once
+#pragma once
 
 #include <unordered_map>
 
-#include "TankPch.h"
+#include "DummyPch.h"
 #include "NetCoreAliases.h"
-#include "TankAliases.h"
+#include "DummyAliases.h"
 
 class Dummy;
 
@@ -28,14 +28,18 @@ public:
 	Dummy* GetDummyBySessionID(SessionID sessionID);
 	Dummy* GetDummyByUserID(UserDBIndex userID);
 
-	void OnFrame();
+	void Tick();
 
 private:
+	const int MAX_DUMMY_COUNT = 30;
 	int _countDummy = 0;
 	Dummy* _pDummyMaster = nullptr;
 
 	std::unordered_map<SessionID, Dummy*> _dummyMap;
 
 	ULONGLONG _lastDummyAddTick = 0;
+
+	std::wstring* ids;
+	std::wstring* pws;
 };
 

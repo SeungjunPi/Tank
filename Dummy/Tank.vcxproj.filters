@@ -37,6 +37,9 @@
     <Filter Include="Dummy">
       <UniqueIdentifier>{2c062d88-ec51-44f6-8335-bca824b79ce1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Physics">
+      <UniqueIdentifier>{3ef7527d-edaa-4e2b-8a0a-92d72abea54d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -81,7 +84,7 @@
     <ClCompile Include="GameEvent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TankAliases.h">
+    <ClCompile Include="DummyAliases.h">
       <Filter>pch</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
@@ -95,6 +98,9 @@
     </ClCompile>
     <ClCompile Include="Dummy.cpp">
       <Filter>Dummy</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics.cpp">
+      <Filter>Physics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -110,7 +116,7 @@
     <ClInclude Include="StaticData.h">
       <Filter>Static Data</Filter>
     </ClInclude>
-    <ClInclude Include="TankPch.h">
+    <ClInclude Include="DummyPch.h">
       <Filter>pch</Filter>
     </ClInclude>
     <ClInclude Include="KeyboardEventListener.h">
@@ -151,6 +157,9 @@
     </ClInclude>
     <ClInclude Include="DummyManager.h">
       <Filter>Dummy</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics.h">
+      <Filter>Physics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

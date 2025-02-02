@@ -6,6 +6,7 @@
 #include "Tank.h"
 #include "AllocObjectManager.h"
 #include "ICollisionManager.h"
+#include "Physics.h"
 
 
 ULONGLONG g_previousGameTick = 0;

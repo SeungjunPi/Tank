@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "Player.h"
 
@@ -15,18 +15,17 @@ public:
 
 	SessionID ConnectToServer();
 
-	void UpdateLastSyncTick();
-	void OnFrame();
+	void Tick();
 	
 
 private:
 	Transform* _transform = nullptr;
 	Vector3 _destinationCoord;
 
-	UINT64 _virtualInputEvent = 0;
-	UINT64 _prevInputEvent = 0;
-
 	bool _isConnecting = false;
+
+	UINT64 _input = 0;
+	UINT64 _prevInput = 0;
 
 	ULONGLONG _prevReactionTick = 0;
 
