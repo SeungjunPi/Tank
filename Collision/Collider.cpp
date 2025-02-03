@@ -2,57 +2,35 @@
 
 Collider::Collider()
 {
-	for (size_t i = 0; i < MAX_SIMULTANEOUS_COLLISIONS; ++i) {
-		_collidingIDs[i] = INVALID_COLLIDER_ID;
-	}
 }
 
-void Collider::UpdateCenterPosition(const Vector3* position)
+void Collider::UpdateCenter(const Vector3& position)
 {
-	memcpy(&_center, position, sizeof(Vector3));
+	_center = position;
 }
 
-UINT16 Collider::GetCollidingIDs(ColliderID* out)
+void Collider::ResetCollisionFlag()
 {
-	if (_countColliding > 0) {
-		memcpy(out, _collidingIDs, sizeof(ColliderID) * _countColliding);
-	}
-	return _countColliding;
+	_collisionKindnessFlag = 0;
 }
 
-void Collider::ClearCollisionInfo()
+void Collider::Initiate(float radius, GameObject* pObj, const Vector3* center, UINT32 kindness)
 {
-	_countColliding = 0;
-}
-
-
-void Collider::AddCollidingID(ColliderID otherColliderID)
-{
-	if (_countColliding == MAX_SIMULTANEOUS_COLLISIONS) {
-		__debugbreak();
-	}
-	_collidingIDs[_countColliding] = otherColliderID;
-	++_countColliding;
-}
-
-void Collider::Initiate(float radius, GameObject* pObj)
-{
-	if (radius <= 0) {
-		__debugbreak();
-	}
 	_radius = radius;
 	_pObject = pObj;
+	_kindness = kindness;
+	UpdateCenter(*center);
 	Activate();
 }
 
 void Collider::Clear()
 {
-	for (size_t i = 0; i < MAX_SIMULTANEOUS_COLLISIONS; ++i) {
-		_collidingIDs[i] = INVALID_COLLIDER_ID;
-	}
-	_radius = 0;
-	_countColliding = 0;
+	_id = INVALID_COLLIDER_ID;
+	_isActive = FALSE;
+	_collisionKindnessFlag = 0;
 	_pObject = nullptr;
+	_kindness = 0;
+
 	Deactivate();
 }
 

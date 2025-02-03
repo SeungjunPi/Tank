@@ -1,6 +1,18 @@
 #include "GameMath.h"
 #include <math.h>
 
+void Quaternion::Normalize(Quaternion* out_normalized, Quaternion q)
+{
+    float norm = sqrtf(q.w * q.w + q.x * q.x + q.y * q.y + q.z * q.z);
+    if (norm == 0.0f) {
+        __debugbreak();
+    }
+    out_normalized->w = q.w / norm;
+    out_normalized->x = q.x / norm;
+    out_normalized->y = q.y / norm;
+    out_normalized->z = q.z / norm;
+}
+
 Quaternion Quaternion::Product(Quaternion a, Quaternion b)
 {
     Quaternion result = { 0, };
@@ -58,7 +70,43 @@ Quaternion Quaternion::RotateZM90(Quaternion v)
 float Quaternion::AngularDistance(Quaternion q1, Quaternion q2)
 {
     float dotProduct = q1.w * q2.w + q1.x * q2.x + q1.y * q2.y + q1.z * q2.z;
-    return 2.0f * acosf(fabs(dotProduct));
+
+    if (dotProduct < 0.0f) {
+        dotProduct = -dotProduct;
+    }
+
+    dotProduct = fmaxf(fminf(dotProduct, 1.0f), 0.0f);
+    return 2.0f * acosf(fabsf(dotProduct));
+}
+
+Vector3 Vector3::operator*(const float scalar)
+{
+    return Vector3{x * scalar, y * scalar, z * scalar};
+}
+
+Vector3 Vector3::operator+(const float scalar)
+{
+    return Vector3{ x + scalar, y + scalar, z + scalar };
+}
+
+Vector3 Vector3::operator-(const float scalar)
+{
+    return Vector3{ x - scalar, y - scalar, z - scalar };
+}
+
+Vector3 Vector3::operator+(const Vector3& another)
+{
+    return Vector3{ x + another.x, y + another.y, z + another.z };
+}
+
+Vector3 Vector3::operator+(const Vector3&& another)
+{
+    return Vector3{ x + another.x, y + another.y, z + another.z };
+}
+
+Vector3 Vector3::operator-(const Vector3& another)
+{
+    return Vector3{ x - another.x, y - another.y, z - another.z }; 
 }
 
 Vector3 Vector3::Rotate(Vector3 v, Quaternion rotQuat)
@@ -170,7 +218,12 @@ float Vector3::DistanceSquared(Vector3 v, Vector3 w)
     return x * x + y * y + z * z;
 }
 
-const float Vector2::TRUNCATION = 1E-02;
+float Vector3::DotProduct(Vector3 v, Vector3 w)
+{
+    return v.x * w.x + v.y * w.y + v.z * w.z;
+}
+
+const float Vector2::TRUNCATION = 1E-02f;
 
 float Vector2::SquareSum(Vector2 v)
 {

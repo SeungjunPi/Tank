@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 
 #include "GameObject.h"
@@ -13,7 +13,7 @@ public:
 	void Initiate(ObjectID id, Transform* pInitTransform);
 	void Terminate();
 
-	void OnHit(ULONGLONG currentTick) override;
+	void OnHitWith(ULONGLONG currentTick, GameObject* pOther) override;
 	BOOL IsDestroyed(ULONGLONG currentTick) const override;
 
 private:

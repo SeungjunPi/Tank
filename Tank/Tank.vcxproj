@@ -71,7 +71,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
     <IncludePath>
     </IncludePath>
   </PropertyGroup>
@@ -110,13 +110,13 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\NetCore\;$(SolutionDir)..\DataStruct\;$(SolutionDir)..\Collision\;$(SolutionDir)..\Math\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\NetCore\;$(SolutionDir)..\DataStruct\;$(SolutionDir)..\Collision\;$(SolutionDir)..\Math\;$(SolutionDir)..\Common\</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>TankPch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(SolutionDir)..\NetCore\x64\Debug\NetCore.lib;$(SolutionDir)..\DataStruct\x64\Debug\DataStruct.lib;$(SolutionDir)..\Collision\x64\Debug\Collision.lib;$(SolutionDir)..\Math\x64\Debug\Math.lib;$(CoreLibraryDependencies);$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)..\bin\Debug\NetCore.lib;$(SolutionDir)..\bin\Debug\DataStruct.lib;$(SolutionDir)..\bin\Debug\Collision.lib;$(SolutionDir)..\bin\Debug\Math.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
       <PerUserRedirection>false</PerUserRedirection>
@@ -154,6 +154,7 @@
     <ClCompile Include="KeyboardEventListener.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Obstacle.cpp" />
+    <ClCompile Include="Physics.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Projectile.cpp" />
     <ClCompile Include="StaticData.cpp" />
@@ -172,6 +173,7 @@
     <ClInclude Include="Global.h" />
     <ClInclude Include="KeyboardEventListener.h" />
     <ClInclude Include="Obstacle.h" />
+    <ClInclude Include="Physics.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Projectile.h" />
     <ClInclude Include="StaticData.h" />

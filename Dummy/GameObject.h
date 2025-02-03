@@ -1,28 +1,17 @@
-﻿#pragma once
+#pragma once
 
 
 #include "GameStruct.h"
+#include "DummyAliases.h"
 
 class Collider;
+class Physics;
 
 const Vector3 FORWARD_DIRECTION = { .0f, -1.0f, .0f };
 
-enum class EMovement
-{
-	NONE,
-	FORWARD,
-	BACKWARD
-};
-
-enum class ERotation
-{
-	NONE,
-	LEFT,
-	RIGHT
-};
-
 class GameObject
 {
+	friend Physics;
 public:
 	GameObject();
 	GameObject(ObjectID id, UserDBIndex ownerID);
@@ -37,32 +26,32 @@ public:
 
 	UINT GetTransformedModel(Vertex* out_vertices);
 
-	// other object
-	BOOL UpdateFrom(const GameObject* pOther);
-	void UpdateTransform(const Transform* pTransform);
-
-	void SetPosition(Vector3 position);
-
-	BOOL IsDirty();
+	void SetTransformByServer(const Transform* pTransform);
 	
-
-	virtual void OnFrame(ULONGLONG tickDiff) { }
-
-	virtual BOOL IsAlive() const { return _isAlive; }
-
-	
-	virtual BOOL IsDestroyed(ULONGLONG currentTick) const;
-	virtual void OnUpdateTransform() {}
 
 	void Respawn();
 
-
 	void AttachCollider(Collider* pCollider);
-	Collider* GetColliderPtr() { return _pCollider; }
 	BOOL IsCollidable() { return _pCollider != nullptr; }
+
+	Collider* GetColliderPtr() { return _pCollider; }
+	void SyncTransformWithCollider();
 	ULONGLONG GetHitTick() const { return _hitTick; }
-	virtual void OnHit(ULONGLONG currentTick);
+	void ApplyNextMovement(ULONGLONG tickDiff);
+
+	virtual void PreProcessMovementState() = 0;
+	virtual void OnHitWith(ULONGLONG currentTick, GameObject* other) = 0;
+	virtual void OnUpdateTransform() = 0;
+
+	virtual void Tick(ULONGLONG tickDiff);
+
+	virtual BOOL IsAlive() const { return _isAlive; }
+
+	virtual BOOL IsDestroyed(ULONGLONG currentTick) const;
+
 	virtual void OnRespawn();
+
+	virtual void OnHitServer(ULONGLONG currentTick, GameObject* other) = 0;
 
 	
 protected:
@@ -70,16 +59,24 @@ protected:
 	Transform _transform = { 0, };
 	ObjectID _id = INVALID_OBJECT_ID;
 	UserDBIndex _ownerID = 0;
-
-	Model _model;
-	float _colliderSize = 0;
-	BOOL _dirty = false;
 	BOOL _isAlive = true;
+
+
+	// Physics
+	Vector3 _translationDirection = FORWARD_DIRECTION;
+	float _translationSpeed = 0.f;
+	float _rotationAngle = 0.f; // Z축을 기준으로만 고려함
+	float _mass = 1000000.f; // 기본적으로 움직이지 않기 위해 이렇게 설정	
+	float _radius = 0.0f; // 크기 없음
+
+	Vector3 _nextPosition;
+	float _nextRotationAngle = 0.0f;
 
 	Collider* _pCollider = nullptr;
 	ULONGLONG _hitTick = 0;
 
-	const static UINT DESTROY_DELAY = 0x1000;
+	// Rendering
+	Model _model;
 private:
 	
 };

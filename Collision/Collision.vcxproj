@@ -105,11 +105,12 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Math\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Math\;$(SolutionDir)..\DataStruct\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(SolutionDir)..\NetCore\x64\Debug\NetCore.lib;$(SolutionDir)..\DataStruct\x64\Debug\DataStruct.lib;$(SolutionDir)..\Math\x64\Debug\Math.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(OutDir)*.*" "$(SolutionDir)..\bin\Debug"</Command>
@@ -140,6 +141,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Collider.cpp" />
+    <ClCompile Include="collisionMain.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="ICollisionManager.cpp" />
   </ItemGroup>

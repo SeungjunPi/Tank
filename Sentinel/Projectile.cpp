@@ -4,25 +4,24 @@
 #include "CollisionManager.h"
 #include "ObjectManager.h"
 #include "PlayerManager.h"
+#include "StaticData.h"
+#include "GameEvent.h"
+#include "CommonData.h"
 
-const float Projectile::COLLIDER_RADIUS = 1.f;
 
 void Projectile::Initiate(ObjectID id, Transform* transform, UserDBIndex ownerId)
 {
+	assert(_pCollider != nullptr);
 	_id = id;
-	memcpy(&_transform, transform, sizeof(Transform));
-
-	_forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
-	_transform.Position.x += _forwardDirection.x * 1.2f;
-	_transform.Position.y += _forwardDirection.y * 1.2f;
-	_transform.Position.z += _forwardDirection.z * 1.2f;
-
-	_dirty = true;
-	_genTick = g_previousGameTick;
-	
 	_ownerIndex = ownerId;
+	memcpy(&_transform, transform, sizeof(Transform));
+	
+	_genTick = g_previousGameTick;
 
-	OnUpdateTransform();
+	_translationSpeed = PROJECTILE_TRANSLATION_SPEED;
+	_mass = PROJECTILE_COLLIDER_MASS;
+	_radius = PROJECTILE_COLLIDER_RADIUS;
+	SyncTransformWithCollider();
 }
 
 void Projectile::Terminate()
@@ -30,14 +29,14 @@ void Projectile::Terminate()
 
 }
 
-void Projectile::OnFrame(ULONGLONG tickDiff)
+void Projectile::Tick(ULONGLONG tickDiff)
 {
+	GameObject::Tick(tickDiff);
 	if (IsTimeout() || _hitTick != 0) {
 		_isAlive = false;
+		_pCollider->Deactivate();
 		return;
 	}
-
-	Move(tickDiff);
 }
 
 BOOL Projectile::IsDestroyed(ULONGLONG currentTick) const
@@ -45,38 +44,31 @@ BOOL Projectile::IsDestroyed(ULONGLONG currentTick) const
 	return !_isActivatable && (!_isAlive || _hitTick != 0);
 }
 
-void Projectile::OnHit(ULONGLONG currentTick)
+void Projectile::PreProcessMovementState()
 {
+	_translationDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
+	_translationSpeed = PROJECTILE_TRANSLATION_SPEED;
+	_rotationAngle = 0.f;
+}
+
+void Projectile::OnHitWith(ULONGLONG currentTick, GameObject* other)
+{
+	// printf("Projectile OnHit %llu\n", _hitTick);
 	if (_hitTick != 0) {
-		__debugbreak();
+		return;
 	}
 
-	ColliderID colliderIDs[MAX_SIMULTANEOUS_COLLISIONS];
-	UINT16 countColliders = _pCollider->GetCollidingIDs(colliderIDs);
-	for (UINT16 i = 0; i < countColliders; ++i) {
-		Collider* pOtherCollider = g_pCollisionManager->GetAttachedColliderPtr(colliderIDs[i]);
-		ObjectID otherObjID = pOtherCollider->GetAttachedObjectPtr()->GetID();
-		switch (otherObjID.type) {
-		case GAME_OBJECT_TYPE_PROJECTILE:
-			// hit
-			printf("[JUNLOG]Projectile Hit Other Projectile\n");
-			break;
-		case GAME_OBJECT_TYPE_TANK:
-			g_playerManager.IncreaseKillCount(_ownerIndex);
-			_hitTick = currentTick;
-			_pCollider->Deactivate();
-			printf("Projectile [%u(%u)] hit Tank [%u] \n", _id.key, _ownerIndex, otherObjID.key);
-			break;
-			// Fall Through
-		case GAME_OBJECT_TYPE_OBSTACLE:
-			break;
-		}
-	}		
+	ObjectID otherID = other->GetID();
+	if (otherID.type == GAME_OBJECT_TYPE_TANK) {
+		_hitTick = currentTick;
+		_pCollider->Deactivate();
+		printf("Projectile [%u(%u)] hit Tank\n", _id.key, _ownerIndex);
+		return;
+	}
 }
 
 void Projectile::OnUpdateTransform()
 {
-	_pCollider->UpdateCenterPosition(&_transform.Position);
 }
 
 BOOL Projectile::IsTimeout() const
@@ -88,14 +80,4 @@ BOOL Projectile::IsTimeout() const
 	}
 
 	return false;
-}
-
-void Projectile::Move(ULONGLONG tickDiff)
-{
-	const static float SPEED_PER_MS = 40.0f / 1000.0f;
-	_transform.Position.x += _forwardDirection.x * SPEED_PER_MS * tickDiff;
-	_transform.Position.y += _forwardDirection.y * SPEED_PER_MS * tickDiff;
-	_transform.Position.z += _forwardDirection.z * SPEED_PER_MS * tickDiff;
-	_dirty = true;
-	OnUpdateTransform();
 }

@@ -1,5 +1,6 @@
 #include "SentinelPch.h"
 
+
 #include "Collider.h"
 #include "GameEvent.h"
 #include "GameServer.h"
@@ -11,16 +12,17 @@
 #include "ObjectManager.h"
 #include "PlayerManager.h"
 #include "Tank.h"
+#include "Physics.h"
 
 
 static BOOL s_isRunning = false;
 
 
 static void s_ApplyObjectLogic(ULONGLONG tickDiff);
-static void s_CollideObjects(ULONGLONG curTick);
 static void s_CleanupDestroyedObjects(ULONGLONG curTick);
 static void s_OnSessionEvent(UINT32 sessionID, ESessionEvent sessionEvent);
 static void s_ProcessDBQueryResults();
+static void s_PreProcessNextMovements();
 
 static void s_ProcessDBResultValidation(DBQueryValidation* pQueryValidation);
 static void s_ProcessDBResultLoadScore(DBQueryLoadStat* pQueryLoadStat); // 현재 이 함수는 Validation이 성공한 직후에만 불린다고 가정.
@@ -41,6 +43,7 @@ void GameServer::Initialize()
 
 	g_playerManager.Initiate(2048);
 	g_objectManager.Initiate();
+	g_pPhysics = DNew Physics;
 
 	g_sessionIds = DNew UINT32[2048];
 }
@@ -70,21 +73,16 @@ void GameServer::Start()
 
 	
 	while (s_isRunning) {
-		// Handle Keyboard Events
 		ULONGLONG currentTick = GetTickCount64();
 		g_currentGameTick = currentTick;
+		g_diffGameTick = g_currentGameTick - g_previousGameTick;
+		
+		
 		ULONGLONG gameTickDiff = currentTick - g_previousGameTick;
 
-		// Physics(Detect Collision)
 
-		// Input
-
-		// Game Logic(DB, Apply Collision, )
-
-		// Destroy Game Objects
-
-
-		// Handle NetCore Session Events
+		// Input Event (DB Result, Session Event, User act, etc..)
+		//// Handle NetCore Session Events
 		NetSessionEventQueue* pNetSessionEventQueue = g_pNetCore->StartHandleSessionEvents();
 		ESessionEvent sessionEvent = pNetSessionEventQueue->GetNetSessionEvent(&senderID);
 		while (sessionEvent != ESessionEvent::NONE) {
@@ -93,7 +91,7 @@ void GameServer::Start()
 		}
 		g_pNetCore->EndHandleSessionEvents();
 
-		// Handle NetCore Messages
+		//// Handle NetCore Messages
 		NetMessageQueue* msgs = g_pNetCore->StartHandleReceivedMessages();
 
 		NetMessage* pMsg = msgs->GetNetMessageOrNull(&senderID);
@@ -103,28 +101,32 @@ void GameServer::Start()
 		}
 		g_pNetCore->EndHandleReceivedMessages();
 
-		// DB 
+		//// DB 
 		s_ProcessDBQueryResults();
 
-		// Erase Destroyed Objects
+		// PreProcessNextMovement
+		s_PreProcessNextMovements();
+
+		// ApplyPhysics (Movement, etc..)
+		g_pPhysics->ProcessNextMovement(gameTickDiff);
+		
+		// Game Logic(DB, Apply Collision, )
+		s_ApplyObjectLogic(gameTickDiff);
+		
+		// Destroy Game Objects
 		s_CleanupDestroyedObjects(currentTick);
 		
-
-		// Apply Object Logics
-		s_ApplyObjectLogic(gameTickDiff);
-
-		// Collide Objects
-		s_CollideObjects(currentTick);
-
-			
+		
 		g_previousGameTick = currentTick;
-
 		{
 			// Todo: WaitForSingleObject
-			ULONGLONG tick = GetTickCount64();
+			ULONGLONG tick = GetTickCount64() + 1;
 			ULONGLONG tickDiff = tick - currentTick;
 			ULONGLONG sleepTick = tickDiff >= TICK_PER_GAME_FRAME ? 0 : TICK_PER_GAME_FRAME - tickDiff;
-			Sleep(sleepTick);
+			if (tickDiff < TICK_PER_GAME_FRAME) {
+				Sleep(TICK_PER_GAME_FRAME - tickDiff);	
+				continue;
+			}
 		}
 	}
 
@@ -144,6 +146,7 @@ void GameServer::End()
 
 void GameServer::CleanUp()
 {
+	delete g_pPhysics;
 	g_playerManager.Terminate();
 	g_objectManager.Terminate();
 	delete[] g_sessionIds;
@@ -258,6 +261,26 @@ void s_ProcessDBQueryResults()
 	g_pJunDB->EndHandleResult();
 }
 
+void s_PreProcessNextMovements()
+{
+	UINT32 keys[128];
+	UINT32 countKeys;
+
+	int objectKindEnumMax = (int)GAME_OBJECT_TYPE_OBSTACLE;
+	for (int i = 0; i <= objectKindEnumMax; ++i) {
+		EGameObjectType kind = (EGameObjectType)i;
+		g_objectManager.GetKeys(kind, keys, &countKeys);
+		for (int j = 0; j < countKeys; ++j) {
+			GameObject* pObject = g_objectManager.GetObjectPtrOrNull(kind, keys[j]);
+			if (pObject == NULL) {
+				__debugbreak();
+			}
+
+			pObject->PreProcessMovementState();
+		}
+	}
+}
+
 void s_ProcessDBResultValidation(DBQueryValidation* pQueryValidation)
 {
 	DBResultUserValidation validationResult;
@@ -337,8 +360,8 @@ void s_ApplyObjectLogic(ULONGLONG tickDiff)
 	UINT32 keys[1024];
 	UINT32 countKeys;
 
-	int objectKindEnumMax = (int)GAME_OBJECT_TYPE_OBSTACLE;
-	for (int i = 0; i <= objectKindEnumMax; ++i) {
+	int objectKindEnumMax = (int)GAME_OBJECT_TYPE_MAX;
+	for (int i = 0; i < objectKindEnumMax; ++i) {
 		EGameObjectType type = (EGameObjectType)i;
 		g_objectManager.GetKeys(type, keys, &countKeys);
 		for (UINT32 i = 0; i < countKeys; ++i) {
@@ -347,22 +370,16 @@ void s_ApplyObjectLogic(ULONGLONG tickDiff)
 				__debugbreak();
 			}
 
-			pObject->OnFrame(tickDiff);
+			pObject->Tick(tickDiff);
 		}
 	}
-}
 
-
-void s_CollideObjects(ULONGLONG currentTick)
-{
-	ColliderID* pColliderIDs = nullptr;
-	UINT32 countCollidedObjects = g_pCollisionManager->DetectCollision(&pColliderIDs);
-	for (UINT32 i = 0; i < countCollidedObjects; ++i) {
-		Collider* pCollider = g_pCollisionManager->GetAttachedColliderPtr(pColliderIDs[i]);
-		if (pCollider == nullptr) {
-			continue;
-		}
-		GameObject* pGameObject = pCollider->GetAttachedObjectPtr();
-		pGameObject->OnHit(currentTick);
+	JStack* collisionPairs = g_pCollisionManager->GetCollisionPairs();
+	UINT32 size = collisionPairs->GetCount();
+	CollisionPair* pair = (CollisionPair*)collisionPairs->First();
+	for (UINT32 i = 0; i < size; ++i) {
+		pair->a->OnHitWith(g_currentGameTick, pair->b);
+		pair->b->OnHitWith(g_currentGameTick, pair->a);
+		++pair;
 	}
 }

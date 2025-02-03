@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC
@@ -15,7 +15,4 @@
 #include <math.h>
 #include <float.h>
 #include <string>
-#include "TankAliases.h"
-
-
 

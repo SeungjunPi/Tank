@@ -33,6 +33,13 @@ struct Vector3
 	float y = 0.f;
 	float z = 0.f;
 
+	Vector3 operator*(const float scalar);
+	Vector3 operator+(const float scalar);
+	Vector3 operator-(const float scalar);
+	Vector3 operator+(const Vector3& another);
+	Vector3 operator+(const Vector3&& another);
+	Vector3 operator-(const Vector3& another);
+
 	static Vector3 Rotate(Vector3 v, Quaternion quaternion);
 	static Vector3 RotateZP(float radian, Vector3 v);
 	static Vector3 RotateZM(float radian, Vector3 v);
@@ -44,14 +51,17 @@ struct Vector3
 	static void Normalize(Vector3* out_normalized, Vector3 v);
 
 	static float DistanceSquared(Vector3 v, Vector3 w);
+	static float DotProduct(Vector3 v, Vector3 w);
 };
 
 struct Quaternion
 {
-	float w = 0.f;
+	float w = 1.f;
 	float x = 0.f;
 	float y = 0.f;
 	float z = 0.f;
+
+	static void Normalize(Quaternion* out_normalized, Quaternion q);
 
 	static Quaternion Product(Quaternion a, Quaternion b);
 	static Quaternion RotateZP(float radian, Quaternion v);

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "TankPch.h"
-#include "TankAliases.h"
+#include "DummyPch.h"
+#include "DummyAliases.h"
 #include "GameMath.h"
 
 class GameCamera

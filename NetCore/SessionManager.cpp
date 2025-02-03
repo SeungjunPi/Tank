@@ -44,6 +44,9 @@ Session* SessionManager::CreateSession(SOCKET hSocket)
         __debugbreak();
     }
     pSession->Initiate();
+    int flag = 1;
+    setsockopt(hSocket, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(flag));
+
     ReleaseSRWLockExclusive(&_srwLock);
     return pSession;
 }

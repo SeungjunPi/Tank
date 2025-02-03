@@ -11,6 +11,7 @@
 
 NetCore* g_pNetCore = nullptr;
 UINT32* g_sessionIds = nullptr;
+ULONGLONG g_diffGameTick = 0;
 ULONGLONG g_previousGameTick = 0;
 ULONGLONG g_currentGameTick = 0;
 
@@ -19,3 +20,5 @@ ICollisionManager* g_pCollisionManager = nullptr;
 
 PlayerManager g_playerManager;
 ObjectManager g_objectManager;
+
+Physics* g_pPhysics = nullptr;

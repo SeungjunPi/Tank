@@ -1,4 +1,6 @@
 #include "GameObject.h"
+#include "Global.h"
+#include "Collider.h"
 
 GameObject::GameObject()
 	: _transform{ 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f }
@@ -44,28 +46,12 @@ Vector3 GameObject::GetPosition() const
 	return _transform.Position;
 }
 
-BOOL GameObject::UpdateFrom(const GameObject* pOther)
-{
-	if (_id.equals(pOther->_id)) {
-		__debugbreak();
-		return false;
-	}
-
-	memcpy(&_transform, &pOther->_transform, sizeof(Transform));
-	_dirty = true;
-	return true;
-}
-
-void GameObject::UpdateTransform(const Transform* pTransform)
-{
-	memcpy(&_transform, pTransform, sizeof(Transform));
-}
-
 BOOL GameObject::UpdateTransformIfValid(const Transform* pTransform)
 {
 	BOOL isClosed = IsTransformCloseEnough(pTransform);
 	if (isClosed) {
-		UpdateTransform(pTransform);
+		memcpy(&_transform, pTransform, sizeof(Transform));
+		SyncTransformWithCollider();
 		return true;
 	}
 	
@@ -73,16 +59,13 @@ BOOL GameObject::UpdateTransformIfValid(const Transform* pTransform)
 	
 }
 
-void GameObject::SetPosition(Vector3 position)
+void GameObject::Tick(ULONGLONG tickDiff)
 {
-	_transform.Position.x = position.x;
-	_transform.Position.y = position.y;
-	_transform.Position.z = position.z;
-}
+	if (!IsAlive()) {
+		return;
+	}
 
-BOOL GameObject::IsDirty()
-{
-	return _dirty;
+	ApplyNextMovement(tickDiff);
 }
 
 UserDBIndex GameObject::GetOwnerId() const
@@ -90,14 +73,14 @@ UserDBIndex GameObject::GetOwnerId() const
 	return _ownerIndex;
 }
 
-void GameObject::OnRespawn()
+void GameObject::Respawn()
 {
 	if (!_isActivatable) {
 		__debugbreak();
 	}
 	_isAlive = true;
 	_transform = { 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f };
-	OnUpdateTransform();
+	_hitTick = 0;
 }
 
 BOOL GameObject::IsDestroyed(ULONGLONG currentTick) const
@@ -110,6 +93,24 @@ void GameObject::AttachCollider(Collider* pCollider)
 	assert(_pCollider == nullptr);
 
 	_pCollider = pCollider;
+}
+
+void GameObject::SyncTransformWithCollider()
+{
+	if (_pCollider != nullptr) {
+		_pCollider->UpdateCenter(_transform.Position);
+	}
+}
+
+void GameObject::ApplyNextMovement(ULONGLONG tickDiff)
+{
+	_transform.Position = _nextPosition;
+	_transform.Rotation = Quaternion::RotateZP(_nextRotationAngle, _transform.Rotation);
+
+	// printf("P[%f, %f, %f], R[%f, %f, %f, %f]\n", _transform.Position.x, _transform.Position.y, _transform.Position.z, _transform.Rotation.w, _transform.Rotation.x, _transform.Rotation.y, _transform.Rotation.z);
+
+	OnUpdateTransform();
+	SyncTransformWithCollider();
 }
 
 BOOL GameObject::IsTransformCloseEnough(const Transform* other)

@@ -31,6 +31,9 @@
     <Filter Include="Static Data">
       <UniqueIdentifier>{80d4aaa3-7e59-40db-9fb9-8ac49a183c9b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Physics">
+      <UniqueIdentifier>{8586cfec-8932-4e86-93d0-95076ec208f9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameServer.cpp">
@@ -81,8 +84,8 @@
     <ClCompile Include="ObjectManager.cpp">
       <Filter>Game Object</Filter>
     </ClCompile>
-    <ClCompile Include="ICollisionManager.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Physics.cpp">
+      <Filter>Physics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -142,6 +145,12 @@
     </ClInclude>
     <ClInclude Include="Global.h">
       <Filter>Static Data</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticData.h">
+      <Filter>Static Data</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics.h">
+      <Filter>Physics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

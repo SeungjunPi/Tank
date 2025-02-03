@@ -1,6 +1,6 @@
-﻿
 
-#include "TankPch.h"
+
+#include "DummyPch.h"
 #include "Global.h"
 #include "Player.h"
 #include "Tank.h"
@@ -73,61 +73,9 @@ void Player::HandleKeyboardEvents(UINT64 pressedKeys, UINT64 releasedKeys, UINT6
 		return;
 	}
 
-	if (heldKeys & KEYBOARD_INPUT_FLAG_UP) {
-		_pTank->StartMove(EMovement::FORWARD);
-	}
+	// Convert KeyboardInput to PlayerInput
 
-	if (heldKeys & KEYBOARD_INPUT_FLAG_DOWN) {
-		_pTank->StartMove(EMovement::BACKWARD);
-	}
-	if (heldKeys & KEYBOARD_INPUT_FLAG_LEFT) {
-		_pTank->StartRotate(ERotation::LEFT);
-	}
-				
-	if (heldKeys & KEYBOARD_INPUT_FLAG_RIGHT) {
-		_pTank->StartRotate(ERotation::RIGHT);
-	}
-
-	if (pressedKeys & 0xFF) {
-		char moveFlag = pressedKeys & 0xFF;
-		GamePacket::SendStartMove(_pTank->GetTransformPtr(), moveFlag, _sessionID);
-		//g_lastOwnTankSyncTick = g_currentGameTick;
-		_prevSyncTick = g_currentGameTick;
-	}
-
-
-	if (~heldKeys & KEYBOARD_INPUT_FLAG_UP) {
-		_pTank->EndMove(EMovement::FORWARD);
-	}
-
-	if (~heldKeys & KEYBOARD_INPUT_FLAG_DOWN) {
-		_pTank->EndMove(EMovement::BACKWARD);
-	}
-
-	if (~heldKeys & KEYBOARD_INPUT_FLAG_LEFT) {
-		_pTank->EndRotate(ERotation::LEFT);
-	}
-
-	if (~heldKeys & KEYBOARD_INPUT_FLAG_RIGHT) {
-		_pTank->EndRotate(ERotation::RIGHT);
-	}
-
-	if (releasedKeys & 0xFF) {
-		char moveFlag = releasedKeys & 0xFF;
-		GamePacket::SendEndMove(_pTank->GetTransformPtr(), moveFlag, _sessionID);
-		_prevSyncTick = g_currentGameTick;
-	}
-
-	if (heldKeys & KEYBOARD_INPUT_FLAG_SPACE) {
-		// 서버에서 오기 전 반복해서 Fire 요청을 보낼 수 있으나, 서버에서 무시될 것.
-		bool canFire = _pTank->CanFireMachineGun();
-		if (canFire) {
-			Transform transf = { 0.f, };
-			_pTank->GetTurretInfo(&transf);
-			GamePacket::SendFireMachineGun(&transf, _sessionID);
-		}
-	}
-	
+	_pTank->UpdatePlayerInputState(heldKeys);
 }
 
 INT Player::IncreaseHit()
@@ -146,5 +94,17 @@ INT Player::IncreaseDeath()
 {
 	++_score.death;
 	return _score.death;
+}
+
+void Player::LogTankPosition(const char* str)
+{
+	if (_pTank == nullptr) {
+		printf("No Tank\n");
+		return;
+	}
+
+	Vector3 pos = _pTank->GetPosition();
+
+	printf("[%s], [%f, %f, %f]\n", str, pos.x, pos.y, pos.z);
 }
 

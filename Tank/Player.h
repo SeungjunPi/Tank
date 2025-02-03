@@ -6,6 +6,8 @@
 #include "TankPch.h"
 #include "GameStruct.h"
 
+
+
 struct Score;
 class Tank;
 
@@ -34,7 +36,7 @@ public:
 	INT IncreaseKill();
 	INT IncreaseDeath();
 
-
+	void LogTankPosition(const char* str);
 private:
 	std::wstring _name;
 	std::wstring _password;

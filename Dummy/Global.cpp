@@ -1,4 +1,4 @@
-﻿
+
 
 #include "Global.h"
 
@@ -7,10 +7,12 @@
 #include "AllocObjectManager.h"
 #include "ICollisionManager.h"
 #include "DummyManager.h"
+#include "Physics.h"
 
 
 ULONGLONG g_previousGameTick = 0;
 ULONGLONG g_currentGameTick = 0;
+ULONGLONG g_gameTickDiff = 0;
 DWORD g_currentFPS = 0;
 
 NetCore* g_pNetCore;
@@ -22,6 +24,8 @@ ICollisionManager* g_pCollisionManager;
 GameCamera* g_pCamera;
 
 DummyManager* g_pDummyManager;
+
+Physics* g_pPhysics;
 
 void Global::Initiate()
 {

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "TankPch.h"
 #include "GameObject.h"
 #include "Tank.h"
@@ -26,9 +26,7 @@ public:
 	void RemoveObject(EGameObjectType objectKind, ObjectKey objectKey);
 	void RemoveObject(ObjectID objectID);
 
-	void UpdateObject(GameObject* obj);
-
-	void UpdateObjectTransform(ObjectID objId, const Transform* pTransform);
+	void UpdateObjectTransformFromServer(ObjectID objId, const Transform* pTransform);
 
 	void GetTransformedModelOf(EGameObjectType objectKind, ObjectKey objectID, Vertex* out_vertices, UINT* out_numVectors);
 	void GetTransformedModelOf(ObjectID objectID, Vertex* out_vertices, UINT* out_numVectors);
@@ -41,12 +39,7 @@ public:
 
 	int GetCountObjects() const;
 
-
-	void StartTankMove(ObjectID objectId, EMovement movement);
-	void EndTankMove(ObjectID objectId, EMovement movement, const Transform* pTransform);
-
-	void StartTankRotate(ObjectID objectId, ERotation rotation);
-	void EndTankRotate(ObjectID objectId, ERotation rotation, const Transform* pTransform);
+	void SetObjectInputStateByServer(ObjectID objectID, PlayerInputState inputState);
 
 private:
 	PointerTable32 _tankTable;

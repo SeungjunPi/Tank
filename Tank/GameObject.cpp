@@ -1,4 +1,5 @@
-#include "GameObject.h"
+﻿#include "GameObject.h"
+#include "Collider.h"
 
 GameObject::GameObject()
 	: _transform{ 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f }
@@ -67,44 +68,14 @@ UINT GameObject::GetTransformedModel(Vertex* out_vertices)
 		out_vertices[i].v = v;
 		out_vertices[i].c = _model.vertices[i].c;
 	}
-	_dirty = false;
 	return _model.numVertices;
 }
 
-BOOL GameObject::UpdateFrom(const GameObject* pOther)
-{
-	if (_id.equals(pOther->_id)) {
-		__debugbreak();
-		return false;
-	}
-
-	memcpy(&_transform, &pOther->_transform, sizeof(Transform));
-	_dirty = true;
-	return true;
-}
-
-void GameObject::UpdateTransform(const Transform* pTransform)
+void GameObject::SetTransformByServer(const Transform* pTransform)
 {
 	memcpy(&_transform, pTransform, sizeof(Transform));
-}
-
-void GameObject::SetPosition(Vector3 position)
-{
-	_transform.Position.x = position.x;
-	_transform.Position.y = position.y;
-	_transform.Position.z = position.z;
-}
-
-BOOL GameObject::IsDirty()
-{
-	return _dirty;
-}
-
-void GameObject::OnHit(ULONGLONG currentTick)
-{
-	if (_hitTick == 0) {
- 		_hitTick = currentTick;
-	}
+	OnUpdateTransform();
+	SyncTransformWithCollider();
 }
 
 void GameObject::OnRespawn()
@@ -115,7 +86,6 @@ void GameObject::OnRespawn()
 	_isAlive = true;
 	_transform = { 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f };
 	_hitTick = 0;
-	OnUpdateTransform();
 }
 
 BOOL GameObject::IsDestroyed(ULONGLONG currentTick) const
@@ -136,4 +106,35 @@ void GameObject::AttachCollider(Collider* pCollider)
 
 	_pCollider = pCollider;
 }
+
+void GameObject::SyncTransformWithCollider()
+{
+	if (_pCollider != nullptr) {
+		_pCollider->UpdateCenter(_transform.Position);
+	}
+}
+
+void GameObject::ApplyNextMovement(ULONGLONG tickDiff)
+{
+	
+	_transform.Position = _nextPosition;
+	_transform.Rotation = Quaternion::RotateZP(_nextRotationAngle, _transform.Rotation);
+
+	// printf("P[%f, %f, %f], R[%f, %f, %f, %f]\n", _transform.Position.x, _transform.Position.y, _transform.Position.z, _transform.Rotation.w, _transform.Rotation.x, _transform.Rotation.y, _transform.Rotation.z);
+
+	OnUpdateTransform();
+	SyncTransformWithCollider();
+
+}
+
+void GameObject::Tick(ULONGLONG tickDiff)
+{
+	if (!IsAlive()) {
+		return;
+	}
+	ApplyNextMovement(tickDiff);
+}
+
+
+
 

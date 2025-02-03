@@ -1,6 +1,6 @@
-﻿
+
 #include "DummyManager.h"
-#include "TankPch.h"
+#include "DummyPch.h"
 #include "Dummy.h"
 
 DummyManager::DummyManager()
@@ -21,6 +21,19 @@ void DummyManager::Initiate()
 	_pDummyMaster = DNew Dummy(name, pw);
 	_pDummyMaster->ConnectToServer();
 	_lastDummyAddTick = GetTickCount64();
+
+	ids = DNew std::wstring[MAX_DUMMY_COUNT];
+	pws = DNew std::wstring[MAX_DUMMY_COUNT];
+	int dummyIndex = 100;
+	for (int i = 0; i < MAX_DUMMY_COUNT; ++i) {
+		ids[i] += L"player";
+		ids[i] += std::to_wstring(dummyIndex);
+
+		pws[i] += L"passw0rd";
+		pws[i] += std::to_wstring(dummyIndex);
+
+		++dummyIndex;
+	}
 }
 
 void DummyManager::Shutdown()
@@ -43,10 +56,11 @@ void DummyManager::CreateDummyOrNot()
 		return;
 	}
 	_lastDummyAddTick = g_currentGameTick;
-	if (_countDummy > 0) {
+	if (_countDummy >= MAX_DUMMY_COUNT) {
 		return;
 	}
-	Dummy* pDummy = DNew Dummy(L"player009", L"passw0rd009");
+
+	Dummy* pDummy = DNew Dummy(ids[_countDummy], pws[_countDummy]);
 	SessionID sessionID = pDummy->ConnectToServer();
 	_dummyMap.emplace(sessionID, pDummy);
 	++_countDummy;
@@ -97,15 +111,15 @@ Dummy* DummyManager::GetDummyByUserID(UserDBIndex userID)
 	return nullptr;
 }
 
-void DummyManager::OnFrame()
+void DummyManager::Tick()
 {
 	// Player 추가
 	CreateDummyOrNot();
 
 	// Player 동작
-	_pDummyMaster->OnFrame();
+	_pDummyMaster->Tick();
 	for (auto& it : _dummyMap) {
-		it.second->OnFrame();
+		it.second->Tick();
 	}
 	
 	// Player 제거

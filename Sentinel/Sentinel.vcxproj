@@ -104,14 +104,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\NetCore\;$(SolutionDir)..\DataStruct\;$(SolutionDir)..\Collision\;$(SolutionDir)..\Math\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\NetCore\;$(SolutionDir)..\DataStruct\;$(SolutionDir)..\Collision\;$(SolutionDir)..\Math\;$(SolutionDir)..\Common\</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeaderFile>SentinelPch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(SolutionDir)..\NetCore\x64\Debug\NetCore.lib;$(SolutionDir)..\DataStruct\x64\Debug\DataStruct.lib;$(SolutionDir)..\Collision\x64\Debug\Collision.lib;$(SolutionDir)..\Math\x64\Debug\Math.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)..\bin\Debug\NetCore.lib;$(SolutionDir)..\bin\Debug\DataStruct.lib;$(SolutionDir)..\bin\Debug\Collision.lib;$(SolutionDir)..\bin\Debug\Math.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(OutDir)*.*" "$(SolutionDir)..\bin\Debug"</Command>
@@ -141,10 +141,10 @@
     <ClCompile Include="GameServer.cpp" />
     <ClCompile Include="GameStruct.cpp" />
     <ClCompile Include="Global.cpp" />
-    <ClCompile Include="ICollisionManager.cpp" />
     <ClCompile Include="JunDB.cpp" />
     <ClCompile Include="LiteWString.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
+    <ClCompile Include="Physics.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayerManager.cpp" />
     <ClCompile Include="Projectile.cpp" />
@@ -165,11 +165,13 @@
     <ClInclude Include="JunDB.h" />
     <ClInclude Include="LiteWString.h" />
     <ClInclude Include="ObjectManager.h" />
+    <ClInclude Include="Physics.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerManager.h" />
     <ClInclude Include="Projectile.h" />
     <ClInclude Include="SentinelAliases.h" />
     <ClInclude Include="SentinelPch.h" />
+    <ClInclude Include="StaticData.h" />
     <ClInclude Include="Tank.h" />
     <ClInclude Include="UserIdentifierManager.h" />
   </ItemGroup>

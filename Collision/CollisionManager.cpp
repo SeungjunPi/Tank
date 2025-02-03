@@ -1,28 +1,37 @@
+#define _USE_MATH_DEFINES
+
 #include "CollisionManager.h"
 #include "Collider.h"
 
+#include <time.h>
+#include <cmath>
+
+const float SAME_POSITION_THRESHOLD = 1E-04f;
+
+
 CollisionManager::CollisionManager()
+	: _collisionPairs(sizeof(CollisionPair), MAX_NUM_COLLIDERS * 10)
 {
 	_colliders = DNew Collider[MAX_NUM_COLLIDERS];
 	for (UINT16 i = 0; i < MAX_NUM_COLLIDERS; ++i) {
 		_colliders[i]._id = (ColliderID)i;
 	}
 	_usedIDs = DNew ColliderID[MAX_NUM_COLLIDERS];
-	_collidedColliderIDs = DNew ColliderID[MAX_NUM_COLLIDERS];
+
+	srand((unsigned)(time(0)));
 }
 
 CollisionManager::~CollisionManager()
 {
 	delete[] _colliders;
 	delete[] _usedIDs;
-	delete[] _collidedColliderIDs;
 }
 
-Collider* CollisionManager::GetNewColliderPtr(float radius, GameObject* pObj)
+Collider* CollisionManager::GetNewColliderPtr(float radius, GameObject* pObj, const Vector3* center, UINT32 kindness)
 {
 	ColliderID id = GetUnusedID();
 	Collider* pCollider = _colliders + id;
-	pCollider->Initiate(radius, pObj);
+	pCollider->Initiate(radius, pObj, center, kindness);
 	_usedIDs[_countActiveColliders] = id;
 	++_countActiveColliders;
 	
@@ -39,6 +48,11 @@ Collider* CollisionManager::GetAttachedColliderPtr(ColliderID id)
 	return nullptr;
 }
 
+JStack* CollisionManager::GetCollisionPairs()
+{
+	return &_collisionPairs;
+}
+
 void CollisionManager::ReturnCollider(Collider* pCollider)
 {
 	ColliderID key = pCollider->GetID();
@@ -46,57 +60,48 @@ void CollisionManager::ReturnCollider(Collider* pCollider)
 	PopUsedIDs(key);
 }
 
-UINT32 CollisionManager::DetectCollision(ColliderID** out)
+void CollisionManager::DetectCollision()
 {
 	ResetAllColliders();
+	_collisionPairs.Clear();
 
-	UINT32 countCollidedColliders = 0;
-	*out = _collidedColliderIDs;
 	for (size_t i = 0; i < _countActiveColliders; ++i) {
-		ColliderID firstID = _usedIDs[i];
-		bool isFirstColliderColide = false;
-		Collider* pCollider1 = _colliders + firstID;
+		for (size_t j = i + 1; j < _countActiveColliders; ++j) {
+			ColliderID oneID = _usedIDs[i];
+			Collider* pColliderOne = _colliders + oneID;
+			ColliderID anotherID = _usedIDs[j];
+			Collider* pColliderAnother = _colliders + anotherID;
 
-		if (!pCollider1->_isActive) {
-			continue;
-		}
-
-		for (size_t j = 0; j < _countActiveColliders; ++j) {
-			if (i == j) {
-				continue;
+			if (CheckCollision(pColliderOne, pColliderAnother)) {
+				CollisionPair pair{ pColliderOne->_pObject, pColliderAnother->_pObject };
+				_collisionPairs.Push(&pair);
+				pColliderOne->_collisionKindnessFlag = 0x01;
+				pColliderAnother->_collisionKindnessFlag = 0x01;
 			}
-			ColliderID secondID = _usedIDs[j];
-
-			Collider* pCollider2 = _colliders + secondID;
-			if (!pCollider2->_isActive) {
-				continue;
-			}
-			
-			float firstColliderRadius = pCollider1->_radius;
-			float secondColliderRadius = pCollider2->_radius;
-			float thresholdSq = (firstColliderRadius + secondColliderRadius) * (firstColliderRadius + secondColliderRadius);
-
-			if (Vector3::DistanceSquared(pCollider1->GetPosition(), pCollider2->GetPosition()) < thresholdSq) {
-				pCollider1->AddCollidingID(secondID);
-				isFirstColliderColide = true;
-			}
-		}
-
-		if (isFirstColliderColide) {
-			_collidedColliderIDs[countCollidedColliders] = firstID;
-			++countCollidedColliders;
 		}
 	}
-
-	return countCollidedColliders;
 }
 
 void CollisionManager::ResetAllColliders()
 {
 	for (UINT32 i = 0; i < _countActiveColliders; ++i) {
 		ColliderID id = _usedIDs[i];
-		_colliders[id].ClearCollisionInfo();
+		_colliders[id].ResetCollisionFlag();
 	}
+}
+
+BOOL CollisionManager::CheckCollision(Collider* one, Collider* another)
+{
+	if (!one->_isActive || !another->_isActive) {
+		return FALSE;
+	}
+
+	float distance = Vector3::DistanceSquared(one->_center, another->_center);
+	float radiusSum = one->_radius + another->_radius;
+	if (distance < radiusSum * radiusSum) {
+		return TRUE;
+	}
+	return FALSE;
 }
 
 void CollisionManager::PopUsedIDs(ColliderID id)

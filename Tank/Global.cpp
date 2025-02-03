@@ -6,13 +6,13 @@
 #include "Tank.h"
 #include "AllocObjectManager.h"
 #include "ICollisionManager.h"
+#include "Physics.h"
 
 
 ULONGLONG g_previousGameTick = 0;
 ULONGLONG g_currentGameTick = 0;
+ULONGLONG g_gameTickDiff = 0;
 DWORD g_currentFPS = 0;
-
-ULONGLONG g_lastOwnTankSyncTick = 0;
 
 NetCore* g_pNetCore;
 UINT32 g_serverId;
@@ -28,6 +28,8 @@ std::wstring g_userName;
 std::wstring g_password;
 
 ICollisionManager* g_pCollisionManager;
+
+Physics* g_pPhysics;
 
 GameCamera* g_pCamera;
 
