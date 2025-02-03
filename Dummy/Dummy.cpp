@@ -89,7 +89,7 @@ void Dummy::DetermineInput()
 	Vector3 currentPosition = pTank->GetPosition();
 	if (Vector3::DistanceSquared(currentPosition, _destinationCoord) < 1.0f) {
 		// 한 프레임 정지, 새로운 방향 설정
-		printf("Reset Destination\n");
+		// printf("Reset Destination\n");
 		_destinationCoord = GetRandomPlanePosition();
 		_input = 0;
 		return;

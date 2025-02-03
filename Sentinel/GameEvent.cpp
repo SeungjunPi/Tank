@@ -223,7 +223,7 @@ void GamePacket::HandleStartMove(BYTE* pGameEvent, SessionID senderId)
 	pScStartMove->inputState = pCsStartMove->inputState;
 	memcpy(&pScStartMove->transform, pTank->GetTransformPtr(), sizeof(Transform));
 
-	printf("StartMove: owner=%u\n", userIndex);
+	// printf("StartMove: owner=%u\n", userIndex);
 	GameServer::BroadcastExcept(pRawPacket, PACKET_SIZE, senderId);
 }
 
@@ -246,7 +246,7 @@ void GamePacket::HandleEndMove(BYTE* pGameEvent, SessionID senderId)
 		__debugbreak();
 	}
 	UserDBIndex userIndex = pPlayer->GetUserIndex();
-	printf("EndMove: owner=%u\n", userIndex);
+	// printf("EndMove: owner=%u\n", userIndex);
 
 	Tank* pTank = g_objectManager.GetTankByOwnerId(userIndex);
 	if (pTank == nullptr) {

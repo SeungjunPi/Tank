@@ -60,6 +60,8 @@ void DummyManager::CreateDummyOrNot()
 		return;
 	}
 
+	printf("Dummy %d created.\n", _countDummy);
+
 	Dummy* pDummy = DNew Dummy(ids[_countDummy], pws[_countDummy]);
 	SessionID sessionID = pDummy->ConnectToServer();
 	_dummyMap.emplace(sessionID, pDummy);

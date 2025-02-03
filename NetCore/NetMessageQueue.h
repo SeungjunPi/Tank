@@ -5,7 +5,7 @@
 #include "NetMessage.h"
 
 #define NETCORE_API __declspec(dllexport)
-#define NET_CONCURRENT_MESSAGE_QUEUE_MAX_SIZE (65536)
+#define NET_CONCURRENT_MESSAGE_QUEUE_MAX_SIZE (65536 * 128)
 
 // 쓰는 것은 동시에 가능하나, 읽는 동작은 별도로 싱글스레드에서 처리해야 한다.
 class NETCORE_API NetMessageQueue

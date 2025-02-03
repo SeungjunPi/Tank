@@ -152,6 +152,7 @@ void Session::RegisterSend()
 		}
 
 		HandleWSAError(error, _id);
+		Disconnect();
 		
 		// Todo: Handle error	
 		return;
