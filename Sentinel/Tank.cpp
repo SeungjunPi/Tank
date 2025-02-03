@@ -151,7 +151,7 @@ BOOL Tank::IsTransformCloseEnough(const Transform* other)
 		return true;
 	}
 	else {
-		printf("Accept Server's Transform, Diff: [%f, %f]\n", posDistanceSq, rotDisctance);
+		// printf("Accept Server's Transform, Diff: [%f, %f]\n", posDistanceSq, rotDisctance);
 		return false;
 	}
 }

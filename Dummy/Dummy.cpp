@@ -14,7 +14,7 @@ static Vector3 GetRandomPlanePosition()
 {
 	static std::random_device rd;
 	std::mt19937 gen(rd());
-	std::uniform_int_distribution<> dist(-15, 15);
+	std::uniform_int_distribution<> dist(-30, 30);
 
 	Vector3 pos{ dist(gen), dist(gen), 0.0 };
 

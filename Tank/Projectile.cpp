@@ -1,4 +1,4 @@
-﻿#include "TankPch.h"
+#include "TankPch.h"
 
 #include "Projectile.h"
 #include "Global.h"
@@ -68,7 +68,7 @@ void Projectile::OnHitServer(ULONGLONG currentTick, GameObject* other)
 {
 	if (other->GetID().type == GAME_OBJECT_TYPE_TANK) {
 		if (_hitTick != 0) {
-			__debugbreak();
+			return;
 		}
 
 		_hitTick = currentTick;

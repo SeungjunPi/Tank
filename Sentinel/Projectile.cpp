@@ -53,9 +53,9 @@ void Projectile::PreProcessMovementState()
 
 void Projectile::OnHitWith(ULONGLONG currentTick, GameObject* other)
 {
-	printf("Projectile OnHit %llu\n", _hitTick);
+	// printf("Projectile OnHit %llu\n", _hitTick);
 	if (_hitTick != 0) {
-		__debugbreak();
+		return;
 	}
 
 	ObjectID otherID = other->GetID();
