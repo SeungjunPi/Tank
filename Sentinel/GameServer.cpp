@@ -73,12 +73,13 @@ void GameServer::Start()
 
 	
 	while (s_isRunning) {
-		ULONGLONG currentTick = GetTickCount64();
-		g_currentGameTick = currentTick;
+		ULONGLONG loopInitTick = GetTickCount64();
+		g_currentGameTick = loopInitTick;
 		g_diffGameTick = g_currentGameTick - g_previousGameTick;
 		
 		
-		ULONGLONG gameTickDiff = currentTick - g_previousGameTick;
+		
+		ULONGLONG gameTickDiff = loopInitTick - g_previousGameTick;
 
 
 		// Input Event (DB Result, Session Event, User act, etc..)
@@ -101,32 +102,54 @@ void GameServer::Start()
 		}
 		g_pNetCore->EndHandleReceivedMessages();
 
+
+		ULONGLONG netCoreEndTick = GetTickCount64();
+
 		//// DB 
 		s_ProcessDBQueryResults();
+
+		ULONGLONG dbEndTick = GetTickCount64();
 
 		// PreProcessNextMovement
 		s_PreProcessNextMovements();
 
 		// ApplyPhysics (Movement, etc..)
 		g_pPhysics->ProcessNextMovement(gameTickDiff);
+
+		ULONGLONG physicsEndTick = GetTickCount64();
 		
 		// Game Logic(DB, Apply Collision, )
 		s_ApplyObjectLogic(gameTickDiff);
+
+		ULONGLONG customLogicEndTick = GetTickCount64();
 		
 		// Destroy Game Objects
-		s_CleanupDestroyedObjects(currentTick);
+		s_CleanupDestroyedObjects(loopInitTick);
+
+		ULONGLONG cleanUpEndTick = GetTickCount64();
 		
 		
-		g_previousGameTick = currentTick;
+		if (cleanUpEndTick - loopInitTick > 16) {
+			ULONGLONG netCoreDuration = netCoreEndTick - loopInitTick;
+			ULONGLONG dbDuration = dbEndTick - netCoreEndTick;
+			ULONGLONG physicsDuration = physicsEndTick - dbEndTick;
+			ULONGLONG customLogicDutation = customLogicEndTick - physicsEndTick;
+			ULONGLONG cleanUpDuration = cleanUpEndTick - customLogicEndTick;
+			printf("N[%llu], D[%llu], P[%llu], L[%llu], C[%llu]\n", netCoreDuration, dbDuration, physicsDuration, customLogicDutation, cleanUpDuration);
+		}
+
+		g_previousGameTick = loopInitTick;
+
 		{
 			// Todo: WaitForSingleObject
-			ULONGLONG tick = GetTickCount64() + 1;
-			ULONGLONG tickDiff = tick - currentTick;
-			ULONGLONG sleepTick = tickDiff >= TICK_PER_GAME_FRAME ? 0 : TICK_PER_GAME_FRAME - tickDiff;
-			if (tickDiff < TICK_PER_GAME_FRAME) {
-				Sleep(TICK_PER_GAME_FRAME - tickDiff);	
-				continue;
-			}
+
+			//ULONGLONG tick = GetTickCount64() + 1;
+			//ULONGLONG tickDiff = tick - currentTick;
+			//ULONGLONG sleepTick = tickDiff >= TICK_PER_GAME_FRAME ? 0 : TICK_PER_GAME_FRAME - tickDiff;
+			//if (tickDiff < TICK_PER_GAME_FRAME) {
+			//	Sleep(TICK_PER_GAME_FRAME - tickDiff);	
+			//	continue;
+			//}
 		}
 	}
 
