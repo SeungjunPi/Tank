@@ -257,10 +257,14 @@ unsigned WINAPI NetCore::ThreadIoCompletion(LPVOID pParam)
 			IoOperationData* pData = CONTAINING_RECORD(pOverlapped, IoOperationData, wol);
 			if (pData->operation == IoOperationData::RECEIVE)
 			{
+				// SessionManager->OnReceive(dwTransferredSize, sessionID)
 				// recieve 완료
 				if (dwTransferredSize == 0)
 				{
 					// 클라이언트의 종료
+					// SessionManager->OnReceiveDisconnect()
+
+					
 					ESessionRefResult res = pSession->ReduceReference(ESessionRefParam::SESSION_REF_DECREASE_RECV);
 					if (res == SESSION_REF_DEACTIVATE) {
 						SHORT id = pSession->GetID();
@@ -271,6 +275,8 @@ unsigned WINAPI NetCore::ThreadIoCompletion(LPVOID pParam)
 				else
 				{
 					// 데이터를 수신한 경우
+					// SessionManager->OnReceive(dwTransferredSize, sessionID, threadID);
+
 					pSession->OnReceive(dwTransferredSize);
 					
 					NetMessage* pNetMessage = pSession->GetReceiveNetMessageOrNull();
@@ -287,6 +293,7 @@ unsigned WINAPI NetCore::ThreadIoCompletion(LPVOID pParam)
 			}
 			else if (pData->operation == IoOperationData::SEND)
 			{
+				// sessionManager->OnSendComplete(sessionID);
 				pSession->OnSendComplete();
 			}
 			else if (pData->operation == IoOperationData::ACCEPT)
@@ -299,6 +306,7 @@ unsigned WINAPI NetCore::ThreadIoCompletion(LPVOID pParam)
 		}
 		else
 		{
+			// 각종 오류 상황
 			if (pSession == NULL || pOverlapped == NULL) {
 				// 발생하면 안되는 경우
 				__debugbreak();
@@ -306,6 +314,7 @@ unsigned WINAPI NetCore::ThreadIoCompletion(LPVOID pParam)
 
 			IoOperationData* pData = CONTAINING_RECORD(pOverlapped, IoOperationData, wol);
 			if (pData->operation == IoOperationData::RECEIVE) {
+				// Receiving 해제, 
 				ESessionRefResult res = pSession->ReduceReference(ESessionRefParam::SESSION_REF_DECREASE_RECV);
 				if (res == SESSION_REF_DEACTIVATE) {
 					SHORT id = pSession->GetID();
@@ -315,6 +324,7 @@ unsigned WINAPI NetCore::ThreadIoCompletion(LPVOID pParam)
 				continue;
 			}
 			else if (pData->operation == IoOperationData::SEND) {
+				// Sending 해제, 
 				ESessionRefResult res = pSession->ReduceReference(ESessionRefParam::SESSION_REF_DECREASE_SEND);
 				if (res == SESSION_REF_DEACTIVATE) {
 					SHORT id = pSession->GetID();
