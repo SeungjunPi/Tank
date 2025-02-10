@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Session">
+      <UniqueIdentifier>{90293971-343a-488f-a5c8-1c745bfe956f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NetCore.cpp">
@@ -27,14 +30,14 @@
     <ClCompile Include="NetSessionEventQueue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Session.cpp">
+    <ClCompile Include="Stream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SessionManager.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Session</Filter>
     </ClCompile>
-    <ClCompile Include="Stream.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Session.cpp">
+      <Filter>Session</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -56,12 +59,6 @@
     <ClInclude Include="NetSessionEventQueue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Session.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SessionManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="NetCorePch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -70,6 +67,12 @@
     </ClInclude>
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Session.h">
+      <Filter>Session</Filter>
+    </ClInclude>
+    <ClInclude Include="SessionManager.h">
+      <Filter>Session</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
