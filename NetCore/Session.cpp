@@ -33,7 +33,7 @@ void Session::Initiate()
 
 void Session::Terminate()
 {
-	AcquireSRWLockExclusive(&_srwLock);
+	AcquireSRWLockExclusive(&_tableLock);
 	if (_isRecving || _isSending) {
 		__debugbreak();
 	}
@@ -47,7 +47,7 @@ void Session::Terminate()
 	delete _sendBackNetPage;
 	delete _receiveStream;
 
-	ReleaseSRWLockExclusive(&_srwLock);
+	ReleaseSRWLockExclusive(&_tableLock);
 }
 
 void Session::RegisterReceive()
@@ -98,11 +98,11 @@ NetMessage* Session::GetReceiveNetMessageOrNull()
 void Session::SendLock(BYTE* msg, UINT32 len)
 {
 	bool isAlreadySending = false;
-	AcquireSRWLockExclusive(&_srwLock);
+	AcquireSRWLockExclusive(&_tableLock);
 
 	if (!_isRecving) {
 		Terminate();
-		ReleaseSRWLockExclusive(&_srwLock);
+		ReleaseSRWLockExclusive(&_tableLock);
 		return;
 	}
 
@@ -120,7 +120,7 @@ void Session::SendLock(BYTE* msg, UINT32 len)
 		_sendFrontNetPage = tmp;
 	}
 
-	ReleaseSRWLockExclusive(&_srwLock);
+	ReleaseSRWLockExclusive(&_tableLock);
 	
 	if (isAlreadySending) {
 		return;
@@ -191,7 +191,7 @@ void Session::OnSendComplete()
 	bool sendAgain = false;
 
 	_sendFrontNetPage->length = 0;
-	AcquireSRWLockExclusive(&_srwLock);
+	AcquireSRWLockExclusive(&_tableLock);
 	if (!_isRecving) {
 		// IO에서 error가 발생하진 않았으나, session이 비활성화되어 receive가 비활성화 된 경우. 
 		// Todo: 이 부분을 확인하지 않고 GQCS의 콜백에서 처리해도 괜찮을지 검토 
@@ -206,7 +206,7 @@ void Session::OnSendComplete()
 	else {
 		_isSending = false;
 	}
-	ReleaseSRWLockExclusive(&_srwLock);
+	ReleaseSRWLockExclusive(&_tableLock);
 
 	if (sendAgain) {
 		RegisterSend();
@@ -217,7 +217,7 @@ void Session::OnSendComplete()
 ESessionRefResult Session::ReduceReference(ESessionRefParam param)
 {
 	ESessionRefResult result = SESSION_REF_DEACTIVATE;
-	AcquireSRWLockExclusive(&_srwLock);
+	AcquireSRWLockExclusive(&_tableLock);
 	switch (param) {
 	case SESSION_REF_DECREASE_RECV:
 		_isRecving = false;
@@ -232,18 +232,18 @@ ESessionRefResult Session::ReduceReference(ESessionRefParam param)
 	if (!_isRecving && !_isSending) {
 		result = SESSION_REF_DEACTIVATE;
 	}
-	ReleaseSRWLockExclusive(&_srwLock);
+	ReleaseSRWLockExclusive(&_tableLock);
 	return result;
 }
 
 void Session::Lock()
 {
-	AcquireSRWLockExclusive(&_srwLock);
+	AcquireSRWLockExclusive(&_tableLock);
 }
 
 void Session::Unlock()
 {
-	ReleaseSRWLockExclusive(&_srwLock);
+	ReleaseSRWLockExclusive(&_tableLock);
 }
 
 void Session::HandleWSAError(DWORD errorCode, UINT32 sessionId)

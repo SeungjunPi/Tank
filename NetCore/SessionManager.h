@@ -2,8 +2,17 @@
 
 #include "NetCorePch.h"
 #include "Session.h"
-#include "PointerTable.h"
 #include "NetCoreCommon.h"
+#include "LinearQueue.h"
+#include "JMap.h"
+
+const int MAX_NUM_SESSIONS = 65536;
+
+struct SessionGuard
+{
+	SRWLOCK lock = SRWLOCK_INIT;
+	Session* pSession = nullptr;
+};
 
 class SessionManager
 {
@@ -16,19 +25,14 @@ public:
 
 	Session* CreateSession(SOCKET hSocket);
 
-	void RemoveSession(SHORT id, ESessionRemoveReason reason);
+	void RemoveSession(SessionID id, ESessionRemoveReason reason);
 
 	void DisconnectAllSessions();
 
-	void SendMessageTo(UINT32 sessionID, BYTE* msg, UINT32 length);
-
-	Session* GetSessionPtr(SHORT id);
+	void SendMessageTo(SessionID sessionID, BYTE* msg, UINT32 length);
 
 private:
-	SHORT* _ids = nullptr;
-	SHORT _currentIdIndex = 0;
-	PointerTable32 _pointerTable;
-
-	SRWLOCK _srwLock = SRWLOCK_INIT;
+	SRWLOCK _tableLock = SRWLOCK_INIT;
+	SessionGuard _sessionTable[MAX_NUM_SESSIONS];
+	LinearQueue _unusedIDs;
 };
-

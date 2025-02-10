@@ -2,103 +2,85 @@
 
 void SessionManager::Initiate()
 {
-    _srwLock = SRWLOCK_INIT;
-    _pointerTable.Initiate(SHRT_MAX);
-    _ids = (SHORT*)malloc(sizeof(SHORT) * SHRT_MAX);
-    assert(_ids != nullptr);
-    for (SHORT i = 0; i < SHRT_MAX; ++i) {
-        _ids[i] = i;
+    _unusedIDs.Initiate(sizeof(SessionID), MAX_NUM_SESSIONS);
+    for (SessionID id = 0; id < MAX_NUM_SESSIONS; ++id) {
+        bool res = _unusedIDs.Push(&id);
+        assert(res);
     }
-    _currentIdIndex = 0;
 }
 
 void SessionManager::Terminate()
 {
-    for (SHORT id = 0; id < SHRT_MAX; ++id) {
-        Session* ptr = (Session*)_pointerTable.Pop(id);
-        if (ptr != nullptr) {
-            delete ptr;
-        }
+    for (SessionID id = 0; id < MAX_NUM_SESSIONS; ++id) {
+        AcquireSRWLockExclusive(&_sessionTable[id].lock);
+        // 이미 Disconnect로 인해 정리됐어야 함.
+        assert(_sessionTable[id].pSession == nullptr);
+        ReleaseSRWLockExclusive(&_sessionTable[id].lock);
     }
-
-    bool res = _pointerTable.Terminate();
-    if (!res) {
-        __debugbreak();
-    }
-    free(_ids);
     
+    _unusedIDs.Terminate();
 }
 
 Session* SessionManager::CreateSession(SOCKET hSocket)
 {
-    AcquireSRWLockExclusive(&_srwLock);
-    SHORT idIndex = _currentIdIndex++;
-    SHORT id = _ids[idIndex];
-    if (id < 0) {
-        __debugbreak();
-    }
-    _ids[idIndex] = -1;
-    Session* pSession = DNew Session(hSocket, id);
-    bool res = _pointerTable.Insert(id, pSession);
-    if (!res) {
-        __debugbreak();
-    }
-    pSession->Initiate();
+    AcquireSRWLockExclusive(&_tableLock);
+    
     int flag = 1;
     setsockopt(hSocket, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(flag));
 
-    ReleaseSRWLockExclusive(&_srwLock);
+    SessionID newID;
+    _unusedIDs.TryPopTo(&newID);
+    assert(newID != INVALID_SESSION_ID);
+
+    AcquireSRWLockExclusive(&_sessionTable[newID].lock);
+    Session* pSession = DNew Session(hSocket, newID);
+    pSession->Initiate();
+    _sessionTable[newID].pSession = pSession;
+    ReleaseSRWLockExclusive(&_sessionTable[newID].lock);
+
+    ReleaseSRWLockExclusive(&_tableLock);
     return pSession;
 }
 
-void SessionManager::RemoveSession(SHORT id, ESessionRemoveReason reason)
+void SessionManager::RemoveSession(SessionID id, ESessionRemoveReason reason)
 {
-    AcquireSRWLockExclusive(&_srwLock);
-    Session* pSession = (Session*)_pointerTable.Pop(id);
-    if (pSession == nullptr) {
-        return;
-    }
+    AcquireSRWLockExclusive(&_tableLock);
+
+    AcquireSRWLockExclusive(&_sessionTable[id].lock);
+    
+    Session* pSession = _sessionTable[id].pSession;
     pSession->Terminate();
-    SHORT returnIdIndex = --_currentIdIndex;
-    assert(_ids[returnIdIndex] == -1);
-    _ids[returnIdIndex] = id;
     delete pSession;
     printf("Remove Session: %d\n", id);
-    ReleaseSRWLockExclusive(&_srwLock);
+    bool res = _unusedIDs.Push(&id);
+    assert(res);
+
+    ReleaseSRWLockExclusive(&_sessionTable[id].lock);
+
+    ReleaseSRWLockExclusive(&_tableLock);
 }
 
 void SessionManager::DisconnectAllSessions()
 {
-    AcquireSRWLockExclusive(&_srwLock);
-    UINT32 countSessions = _pointerTable.GetCount();
-    UINT32* usingKeys = DNew UINT32[countSessions];
-    _pointerTable.GetIdsTo(usingKeys, &countSessions);
-    for (SHORT i = 0; i < countSessions; ++i) {
-        Session* pSession = (Session*)_pointerTable.Get(usingKeys[i]);
+    AcquireSRWLockExclusive(&_tableLock);
+    
+    for (SessionID i = 0; i < MAX_NUM_SESSIONS; ++i) {
+        AcquireSRWLockExclusive(&_sessionTable[i].lock);
+        Session* pSession = _sessionTable[i].pSession;
         pSession->Disconnect();
+        _sessionTable[i].pSession = nullptr;
+        ReleaseSRWLockExclusive(&_sessionTable[i].lock);
     }
 
-    delete[] usingKeys;
-
-    ReleaseSRWLockExclusive(&_srwLock);
+    ReleaseSRWLockExclusive(&_tableLock);
 }
 
-void SessionManager::SendMessageTo(UINT32 sessionID, BYTE* msg, UINT32 length)
+void SessionManager::SendMessageTo(SessionID sessionID, BYTE* msg, UINT32 length)
 {
-    AcquireSRWLockExclusive(&_srwLock);
-    Session* pSession = (Session*)_pointerTable.Get(sessionID);
+    AcquireSRWLockExclusive(&_sessionTable[sessionID].lock);
+    Session* pSession = _sessionTable[sessionID].pSession;
     if (pSession != nullptr) {
-        pSession->Lock();
         pSession->Send(msg, length);
-        pSession->Unlock();
     }
-    ReleaseSRWLockExclusive(&_srwLock);
-}
-
-Session* SessionManager::GetSessionPtr(SHORT id)
-{
-    AcquireSRWLockExclusive(&_srwLock);
-    Session* pSession = (Session*)_pointerTable.Get(id);
-    ReleaseSRWLockExclusive(&_srwLock);
-    return pSession;
+    ReleaseSRWLockExclusive(&_sessionTable[sessionID].lock);
 }

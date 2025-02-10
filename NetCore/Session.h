@@ -70,7 +70,6 @@ private:
 	WSABUF _sendWsaBuf = { 0, };
 	IoOperationData _sendIoData = { 0, };
 
-	SRWLOCK _srwLock = SRWLOCK_INIT;
 	
 	BOOL _isSending = false;
 	BOOL _isRecving = true;
