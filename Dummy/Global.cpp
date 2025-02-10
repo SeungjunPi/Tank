@@ -2,7 +2,7 @@
 
 #include "Global.h"
 
-#include "NetCore.h"
+#include "INetCore.h"
 #include "Tank.h"
 #include "AllocObjectManager.h"
 #include "ICollisionManager.h"
@@ -15,7 +15,7 @@ ULONGLONG g_currentGameTick = 0;
 ULONGLONG g_gameTickDiff = 0;
 DWORD g_currentFPS = 0;
 
-NetCore* g_pNetCore;
+INetCore* g_pNetCore;
 
 AllocObjectManager g_objectManager;
 

@@ -40,7 +40,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -143,8 +143,10 @@
     <ClCompile Include="Stream.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="INetCore.h" />
     <ClInclude Include="NetCore.h" />
     <ClInclude Include="NetCoreAliases.h" />
+    <ClInclude Include="NetCoreCommon.h" />
     <ClInclude Include="NetGlobal.h" />
     <ClInclude Include="NetMessage.h" />
     <ClInclude Include="NetMessageQueue.h" />

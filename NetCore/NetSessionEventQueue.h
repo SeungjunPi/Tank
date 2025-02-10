@@ -1,17 +1,11 @@
 #pragma once
 
 #include "NetCorePch.h"
+#include "NetCoreCommon.h"
 
 #define NETCORE_API __declspec(dllexport)
 #define NET_SESSION_EVENT_QUEUE_MAX_SIZE (65536)
 
-enum class ESessionEvent
-{
-	NONE,
-	CREATE_PASSIVE_CLIENT,
-	DELETE_PASSIVE_CLIENT,
-	CREATE_ACTIVE_SERVER,
-};
 
 // 쓰는 것은 동시에 가능하나, 읽는 동작은 별도로 싱글스레드에서 처리해야 한다.
 class NETCORE_API NetSessionEventQueue

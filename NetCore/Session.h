@@ -3,17 +3,7 @@
 #include "NetCorePch.h"
 #include "NetMessage.h"
 #include "Stream.h"
-
-struct IoOperationData
-{
-	WSAOVERLAPPED wol;
-	enum {
-		SEND,
-		RECEIVE,
-		ACCEPT,
-	} operation;
-	SOCKET socket;
-};
+#include "NetCoreCommon.h"
 
 enum ESessionRefParam
 {

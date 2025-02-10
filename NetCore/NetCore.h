@@ -1,53 +1,78 @@
 #pragma once
 
-#define NETCORE_API __declspec(dllexport)
+#include "INetCore.h"
+#include "Session.h"
+#include "SessionManager.h"
 
-#include "NetMessageQueue.h"
-#include "NetSessionEventQueue.h"
+class NetCore;
 
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
+struct ThreadArgInfo
+{
+	UINT32 threadID = 0;
+	NetCore* pNetCore = nullptr;
+};
 
-#define NET_CORE_NUM_THREADS (2)
-#define NET_CORE_PORT (30283)
+struct AcceptIoOperationData
+{
+	IoOperationData data;
+	CHAR buffer[2 * (sizeof(SOCKADDR_IN) + 16)];
+};
 
 
-class NETCORE_API NetCore
+class NetCore: public INetCore
 {
 public:
-	// IOCP 생성
-	bool StartNetCore();
+	bool StartNetCore() override;
+	void StartAccept() override;
+	void EndNetCore() override;
+	UINT32 ConnectTo(const char* ip, int port) override;
+	void Disconnect(UINT32 sessionID) override;
 
-	// Accept 시작, session 생성 시 매개변수로 전달되는 콜백함수 실행
-	void StartAccept();
+	bool SendMessageTo(UINT32 sessionID, BYTE* msg, UINT32 length) override;
+	bool SendMessageTo(UINT32* sessionIDs, UINT32 numSessions, BYTE* msg, UINT32 length) override;
 
-	// IOCP 종료
-	void EndNetCore();
+	NetSessionEventQueue* StartHandleSessionEvents() override;
+	void EndHandleSessionEvents() override;
 
-	// session ID 반환
-	UINT32 ConnectTo(const char* ip, int port);
-	void Disconnect(UINT32 sessionID);
+	NetMessageQueue* StartHandleReceivedMessages() override;
+	void EndHandleReceivedMessages() override; 
+
+
+private:
+	static unsigned WINAPI ThreadIoCompletion(LPVOID pParam);
+
+	void OnAccept(AcceptIoOperationData* data, int threadId);
+	bool PostAccept();
+
+	void InitiateAllocation();
+	void TerminateAllocation();
+
+	void WriteSessionEvent(UINT32 sessionId, ESessionEvent sessionEvent, int threadId);
 
 	// 임시
 	void WaitNetCore();
 
-
-	bool SendMessageTo(UINT32 sessionID, BYTE* msg, UINT32 length);
-	bool SendMessageTo(UINT32* sessionIDs, UINT32 numSessions, BYTE* msg, UINT32 length);
-
-	NetSessionEventQueue* StartHandleSessionEvents();
-	void EndHandleSessionEvents();
-
-	NetMessageQueue* StartHandleReceivedMessages(); // 이 함수는 싱글 스레드에서 호출돼야 하며, 이후 반드시 End가 호출돼야 함 
-	void EndHandleReceivedMessages(); // 이 함수가 호출된 시점에 NetMessageQueue의 모든 NetMessage가 처리됐다고 간주함
-
-
 	void EndIoThreads();
+
+
+	WSADATA _wsa = { 0, };
+
+	HANDLE _hIOCP;
+	SOCKET _hListeningSocket;
+	AcceptIoOperationData _acceptIoOperationData;
+
+
+	HANDLE _ioThreads[NET_CORE_NUM_THREADS];
+	ThreadArgInfo _threadArgs[NET_CORE_NUM_THREADS];
+
+	SRWLOCK _sessionEventLocks[NET_CORE_NUM_THREADS];
+	NetSessionEventQueue* _pSessionEventsFront;
+	NetSessionEventQueue* _pSessionEventsBack;
+
+	SRWLOCK _receiveSrwLocks[NET_CORE_NUM_THREADS];
+	NetMessageQueue* _pReceiveMessagesFront;
+	NetMessageQueue* _pReceiveMessagesBack;
+
+	SessionManager _sessionManager;
 };
-
-
-NETCORE_API NetCore* GetNetCore(); // deprecated
-NETCORE_API void DeleteNetCore(); // deprecated
-
-NETCORE_API void CreateNetCore(NetCore** dst);
-NETCORE_API void DeleteNetCore(NetCore* src);
 

@@ -8,11 +8,18 @@
 #include "Global.h"
 #include "ICollisionManager.h"
 #include "JunDB.h"
-#include "NetCore.h"
+
 #include "ObjectManager.h"
 #include "PlayerManager.h"
 #include "Tank.h"
 #include "Physics.h"
+
+// NetCore
+#include "INetCore.h"
+#include "NetSessionEventQueue.h"
+#include "NetMessage.h"
+#include "NetMessageQueue.h"
+
 
 
 static BOOL s_isRunning = false;

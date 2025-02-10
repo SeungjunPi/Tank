@@ -16,6 +16,9 @@
     <Filter Include="Session">
       <UniqueIdentifier>{90293971-343a-488f-a5c8-1c745bfe956f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Common">
+      <UniqueIdentifier>{32f3566d-54b5-4a2c-9126-fdbd3b5cf2b2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NetCore.cpp">
@@ -44,9 +47,6 @@
     <ClInclude Include="NetCore.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="NetCoreAliases.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="NetGlobal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -73,6 +73,15 @@
     </ClInclude>
     <ClInclude Include="SessionManager.h">
       <Filter>Session</Filter>
+    </ClInclude>
+    <ClInclude Include="INetCore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NetCoreCommon.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="NetCoreAliases.h">
+      <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -3,15 +3,7 @@
 #include "NetCorePch.h"
 #include "Session.h"
 #include "PointerTable.h"
-
-enum ESessionRemoveReason
-{
-	COMPLETION_RECV_ERROR,
-	COMPLETION_SEND_ERROR,
-	COMPLETION_RECV_DISCONNECT,
-	FORCE_REMOVE
-};
-
+#include "NetCoreCommon.h"
 
 class SessionManager
 {
