@@ -246,6 +246,8 @@ unsigned WINAPI NetCore::ThreadIoCompletion(LPVOID pParam)
 	printf("Start IO Completion thread[%d]..\n", threadID);
 	while (TRUE) {
 		result = GetQueuedCompletionStatus(pNetCore->_hIOCP, &dwTransferredSize, (PULONG_PTR)&pSession, &pOverlapped, INFINITE);
+
+		// 종료가 아닌 이상, pSession은 유효함.
 		if (result)
 		{
 			if (pOverlapped == NULL) {
@@ -257,26 +259,26 @@ unsigned WINAPI NetCore::ThreadIoCompletion(LPVOID pParam)
 			IoOperationData* pData = CONTAINING_RECORD(pOverlapped, IoOperationData, wol);
 			if (pData->operation == IoOperationData::RECEIVE)
 			{
-				// SessionManager->OnReceive(dwTransferredSize, sessionID)
 				// recieve 완료
 				if (dwTransferredSize == 0)
 				{
-					// 클라이언트의 종료
-					// SessionManager->OnReceiveDisconnect()
+					// 세션의 종료 수신
+					// SessionManager->OnReceiveDisconnect(sessionID);
 
 					
-					ESessionRefResult res = pSession->ReduceReference(ESessionRefParam::SESSION_REF_DECREASE_RECV);
-					if (res == SESSION_REF_DEACTIVATE) {
-						SHORT id = pSession->GetID();
-						pNetCore->_sessionManager.RemoveSession(id, COMPLETION_RECV_ERROR);
-						pNetCore->WriteSessionEvent(id, ESessionEvent::DELETE_PASSIVE_CLIENT, threadID);
+					{
+						// 여기 session Manager로 이동
+						ESessionRefResult res = pSession->ReduceReference(ESessionRefParam::SESSION_REF_DECREASE_RECV);
+						if (res == SESSION_REF_DEACTIVATE) {
+							SHORT id = pSession->GetID();
+							pNetCore->_sessionManager.RemoveSession(id, COMPLETION_RECV_ERROR);
+							pNetCore->WriteSessionEvent(id, ESessionEvent::DELETE_PASSIVE_CLIENT, threadID);
+						}
 					}
 				}
 				else
 				{
 					// 데이터를 수신한 경우
-					// SessionManager->OnReceive(dwTransferredSize, sessionID, threadID);
-
 					pSession->OnReceive(dwTransferredSize);
 					
 					NetMessage* pNetMessage = pSession->GetReceiveNetMessageOrNull();
@@ -288,20 +290,23 @@ unsigned WINAPI NetCore::ThreadIoCompletion(LPVOID pParam)
 					}
 					ReleaseSRWLockExclusive(&pNetCore->_receiveSrwLocks[threadID]);
 					
-					pSession->RegisterReceive();
+					// sessionManager->RegisterReceive(sessionID);
+					{
+						pSession->RegisterReceive(); // WSARecv 즉시 실패시 동작을 session manager에서 정의.
+					}
+					
 				}
 			}
 			else if (pData->operation == IoOperationData::SEND)
 			{
 				// sessionManager->OnSendComplete(sessionID);
+				// 세션 내부에서 send를 반복하는 동작을 SessionManager로 이동
 				pSession->OnSendComplete();
 			}
 			else if (pData->operation == IoOperationData::ACCEPT)
 			{
 				AcceptIoOperationData* accpetIoOpData = (AcceptIoOperationData*)pOverlapped;
 				pNetCore->OnAccept(accpetIoOpData, threadID);
-
-				
 			}
 		}
 		else
@@ -314,7 +319,9 @@ unsigned WINAPI NetCore::ThreadIoCompletion(LPVOID pParam)
 
 			IoOperationData* pData = CONTAINING_RECORD(pOverlapped, IoOperationData, wol);
 			if (pData->operation == IoOperationData::RECEIVE) {
-				// Receiving 해제, 
+				// Receive complete 오류
+				// SessionManager.OnReceiveCompleteError(sessionID);
+				
 				ESessionRefResult res = pSession->ReduceReference(ESessionRefParam::SESSION_REF_DECREASE_RECV);
 				if (res == SESSION_REF_DEACTIVATE) {
 					SHORT id = pSession->GetID();
@@ -324,7 +331,9 @@ unsigned WINAPI NetCore::ThreadIoCompletion(LPVOID pParam)
 				continue;
 			}
 			else if (pData->operation == IoOperationData::SEND) {
-				// Sending 해제, 
+				// Send Complete 오류
+				// SessionManager.OnReceiveCompleteError(sessionID);
+
 				ESessionRefResult res = pSession->ReduceReference(ESessionRefParam::SESSION_REF_DECREASE_SEND);
 				if (res == SESSION_REF_DEACTIVATE) {
 					SHORT id = pSession->GetID();
