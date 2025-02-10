@@ -1,6 +1,6 @@
 #include "Global.h"
 
-#include "NetCore.h"
+#include "INetCore.h"
 #include "JunDB.h"
 
 #include "PlayerManager.h"
@@ -9,7 +9,7 @@
 
 #include "ICollisionManager.h"
 
-NetCore* g_pNetCore = nullptr;
+INetCore* g_pNetCore = nullptr;
 UINT32* g_sessionIds = nullptr;
 ULONGLONG g_diffGameTick = 0;
 ULONGLONG g_previousGameTick = 0;

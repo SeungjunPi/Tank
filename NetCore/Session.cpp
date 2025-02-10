@@ -1,10 +1,5 @@
 #include "Session.h"
 
-
-#define RECEIVE_BUFFER_SIZE (65536)
-
-static UINT32 sessionID = 0;
-
 Session::Session(SOCKET socket, SHORT id)
 	: _socket(socket)
 	, _id(id)

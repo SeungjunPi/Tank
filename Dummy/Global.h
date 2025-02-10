@@ -2,7 +2,7 @@
 
 #include "DummyPch.h"
 
-class NetCore;
+class INetCore;
 class AllocObjectManager;
 class ICollisionManager;
 class GameCamera;
@@ -28,7 +28,7 @@ extern ULONGLONG g_currentGameTick;
 extern ULONGLONG g_gameTickDiff;
 extern DWORD g_currentFPS;
 
-extern NetCore* g_pNetCore;
+extern INetCore* g_pNetCore;
 
 extern AllocObjectManager g_objectManager;
 extern ICollisionManager* g_pCollisionManager;

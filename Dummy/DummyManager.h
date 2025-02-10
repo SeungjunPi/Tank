@@ -8,7 +8,7 @@
 
 class Dummy;
 
-const ULONGLONG DUMMY_ADD_DELAY = 1000;
+const ULONGLONG DUMMY_ADD_DELAY = 200;
 
 class DummyManager
 {
@@ -31,7 +31,7 @@ public:
 	void Tick();
 
 private:
-	const int MAX_DUMMY_COUNT = 80;
+	const int MAX_DUMMY_COUNT = 100;
 	int _countDummy = 0;
 	Dummy* _pDummyMaster = nullptr;
 

@@ -1,4 +1,4 @@
-﻿#include "Game.h"
+#include "Game.h"
 
 #include "Global.h"
 #include "ConsoleRenderer.h"
@@ -8,7 +8,11 @@
 #include "DotObject.h"
 #include "Tank.h"
 
-#include "NetCore.h"
+#include "INetCore.h"
+#include "NetSessionEventQueue.h"
+#include "NetMessage.h"
+#include "NetMessageQueue.h"
+
 #include "GameEvent.h"
 #include "ICollisionManager.h"
 #include "Collider.h"

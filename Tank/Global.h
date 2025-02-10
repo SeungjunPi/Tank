@@ -2,7 +2,7 @@
 
 #include "TankPch.h"
 
-class NetCore;
+class INetCore;
 class AllocObjectManager;
 class ICollisionManager;
 class GameCamera;
@@ -27,7 +27,7 @@ extern ULONGLONG g_currentGameTick;
 extern ULONGLONG g_gameTickDiff;
 extern DWORD g_currentFPS;
 
-extern NetCore* g_pNetCore;
+extern INetCore* g_pNetCore;
 
 extern bool g_isTankCreateRequest;
 extern Player* g_pPlayer;
