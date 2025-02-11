@@ -5,19 +5,6 @@
 #include "Stream.h"
 #include "NetCoreCommon.h"
 
-enum ESessionRefParam
-{
-	SESSION_REF_DECREASE_RECV,
-	SESSION_REF_DECREASE_SEND
-};
-
-enum ESessionRefResult
-{
-	SESSION_REF_DEACTIVATE,
-	SESSION_REF_STOP_RECVING,
-	SESSION_REF_STOP_SENDING,
-};
-
 class SessionManager;
 
 // SessionManager 클래스에서 관리돼야 하며, 외부에서 직접 접근할 시 쓰레드 안전을 보장하지 않음.
@@ -34,22 +21,26 @@ public:
 	UINT32 GetID() const;
 	SOCKET GetSocket() const;
 
-	void Disconnect();
+	// Receive가 정상적으로 pending 됐으면 true, 아니면 false 반환.
+	// 쓰레드 안전하지 않은 함수.
+	bool RegisterReceive();
+	
+	// Receive가 정상적으로 pending 됐으면 true, 아니면 false 반환.
+	// false를 반환받을 시 즉시 GetLastError()를 통해 원인을 파악할 것.
+	bool RegisterSend();
 
-	DWORD RegisterReceive();
 	void OnReceive(DWORD length);
 
 	// 여기서 얻은 NetMessage 포인터에 대해 메모리 할당 해제를 하면 안됨.
 	NetMessage* GetReceiveNetMessageOrNull();
 
-	// 반드시 외부에서 lock을 통해 쓰레드안전하게 만든 후 호출해야 함
-	bool Send(BYTE* msg, UINT32 len);
+	void WriteSendMessage(BYTE* msg, UINT32 len);
 	
-	void OnSendComplete();
-	bool TryResend();
+	bool TrySwapSendPages();
 	
+	void ResetSendFrontPage();
 
-	ESessionRefResult ReduceReference(ESessionRefParam param);
+	void CancelReservedIo() const;
 
 	static void HandleWSAError(DWORD errorCode, SessionID sessionId);
 
@@ -67,11 +58,5 @@ private:
 
 	WSABUF _sendWsaBuf = { 0, };
 	IoOperationData _sendIoData = { 0, };
-
-	
-	BOOL _isSending = false;
-	BOOL _isRecving = true;
-
-	DWORD RegisterSend();
 };
 

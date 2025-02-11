@@ -8,10 +8,18 @@
 
 const int MAX_NUM_SESSIONS = 65536;
 
+
+const SessionFlag SESSION_FLAG_DEFAULT = 0;
+const SessionFlag SESSION_FLAG_ACTIVE = 0b1;
+const SessionFlag SESSION_FLAG_RECEIVE_PENDING = 0b10;
+const SessionFlag SESSION_FLAG_SEND_PENDING = 0b100;
+
+
 struct SessionGuard
 {
 	SRWLOCK lock = SRWLOCK_INIT;
 	Session* pSession = nullptr;
+	SessionFlag flag = SESSION_FLAG_DEFAULT;
 };
 
 class SessionManager
@@ -29,16 +37,21 @@ public:
 
 	void DisconnectAllSessions();
 
-	void SendMessageTo(SessionID sessionID, BYTE* msg, UINT32 length);
+	ENetCoreResult SendMessageTo(SessionID sessionID, BYTE* msg, UINT32 length);
 
-	// Resend or ..
-	bool OnSendComplete(SessionID sessionID);
-	bool TryRemoveSessionOnReceive(SessionID sessionID);
-	bool TryRemoveSessionOnSend(SessionID sessionID);
+	ENetCoreResult OnSendComplete(SessionID sessionID);
+
+	ENetCoreResult OnFailReceivePending(SessionID sessionID);
+
+
+	ENetCoreResult HandleErrorOnReceiveComplete(SessionID sessionID);
+	ENetCoreResult HandleErrorOnSendComplete(SessionID sessionID);
 
 
 private:
 	SRWLOCK _tableLock = SRWLOCK_INIT;
 	SessionGuard _sessionTable[MAX_NUM_SESSIONS];
 	LinearQueue _unusedIDs;
+
+
 };

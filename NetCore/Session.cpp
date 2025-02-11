@@ -28,22 +28,19 @@ void Session::Initiate()
 	_sendWsaBuf.buf = NULL;
 	_sendWsaBuf.len = 0;
 	_sendIoData.operation = IoOperationData::SEND;
-	_isRecving = true;
 }
 
 void Session::Terminate()
 {
-	if (_isRecving || _isSending) {
-		__debugbreak();
-	}
-	assert(_socket == INVALID_SOCKET);
+	closesocket(_socket);
+	_socket = INVALID_SOCKET;
 	
 	delete _sendFrontNetPage;
 	delete _sendBackNetPage;
 	delete _receiveStream;
 }
 
-DWORD Session::RegisterReceive()
+bool Session::RegisterReceive()
 {
 	DWORD dwFlag = 0;
 	DWORD numBytes = 0;
@@ -56,17 +53,16 @@ DWORD Session::RegisterReceive()
 	if (result == 0) {
 		// Send가 즉시 완료되었으나, Overlapped socket이므로 GQCS에서 처리됨
 		// 외부에선 IO Complete에서 처리할지 말지만 알면 되므로 PENDING을 반환.
-		return WSA_IO_PENDING;
+		return true;
 	}
 
 	DWORD errorCode = WSAGetLastError();
 	if (errorCode == WSA_IO_PENDING) {
 		// 정상적으로 예약됨, GQCS에서 처리될 예정
-		return ERROR_IO_PENDING;
+		return true;
 	}
 
-	HandleWSAError(errorCode, _id);
-	return result;
+	return false;
 }
 
 void Session::OnReceive(DWORD length)
@@ -90,7 +86,7 @@ NetMessage* Session::GetReceiveNetMessageOrNull()
 	return NULL;
 }
 
-DWORD Session::RegisterSend()
+bool Session::RegisterSend()
 {
 	_sendWsaBuf.buf = (CHAR*)_sendFrontNetPage->messages;
 	_sendWsaBuf.len = _sendFrontNetPage->length;
@@ -98,103 +94,68 @@ DWORD Session::RegisterSend()
 	int result = WSASend(_socket, &_sendWsaBuf, 1, NULL, 0, &_sendIoData.wol, NULL);
 	if (result == 0) {
 		// Send가 즉시 완료되었으나, Overlapped socket이므로 GQCS에서 처리됨
-		return ERROR_IO_PENDING;
+		return true;
 	}
 	else if (result == SOCKET_ERROR) {
 		DWORD error = GetLastError();
 		if (error == ERROR_IO_PENDING) {
 			// 정상적으로 예약됨, GQCS에서 처리될 예정
-			return ERROR_IO_PENDING;
+			return true;
 		}
 
 		HandleWSAError(error, _id);
-		return error;
+		return false;
 	}
 
 	__debugbreak();
 }
 
-bool Session::Send(BYTE* msg, UINT32 len)
+void Session::WriteSendMessage(BYTE* msg, UINT32 len)
 {
-	bool isAlreadySending = false;
-	
-	if (!_isRecving) {
-		assert(_isSending);
-		// Receiving이 종료됐으나, Sending이 종료되지 않은 상황. 
-		// Sending에서 처리될 것이므로, 종료.
-		// 둘 모두 false인 경우, manager에서 이미 걸러졌어야 함. 
-		return false;
-	}
-
 	UINT32 writePos = _sendBackNetPage->length;
 	NetMessage* pNetMessage = (NetMessage*)(_sendBackNetPage->messages + writePos);
 	pNetMessage->header.length = len;
 	memcpy(pNetMessage->body, msg, len);
 	_sendBackNetPage->length += len + sizeof(pNetMessage->header);
-
-	isAlreadySending = _isSending;
-	_isSending = true;
-	if (!isAlreadySending) {
-		NetPage* tmp = _sendBackNetPage;
-		_sendBackNetPage = _sendFrontNetPage;
-		_sendFrontNetPage = tmp;
-	}
-
-	if (isAlreadySending) {
-		return true;
-	}
-
-	DWORD wsaResult = RegisterSend();
-	if (wsaResult == ERROR_IO_PENDING) {
-		return true;
-	}
-
-	return false;
 }
 
-void Session::OnSendComplete()
-{
-	_sendFrontNetPage->length = 0;
-}
-
-bool Session::TryResend()
+bool Session::TrySwapSendPages()
 {
 	if (_sendBackNetPage->length == 0) {
-		_isSending = false;
-		return true;
+		return false;
 	}
-	
 	NetPage* tmp = _sendBackNetPage;
 	_sendBackNetPage = _sendFrontNetPage;
 	_sendFrontNetPage = tmp;
-	DWORD sendResult = RegisterSend();
-	if (sendResult == ERROR_IO_PENDING) {
-		_isSending = true;
-		return true;
-	}
-	return false;
+	return true;
 }
 
-ESessionRefResult Session::ReduceReference(ESessionRefParam param)
+void Session::ResetSendFrontPage()
 {
-	ESessionRefResult result = SESSION_REF_DEACTIVATE;
-	switch (param) {
-	case SESSION_REF_DECREASE_RECV:
-		_isRecving = false;
-		result = SESSION_REF_STOP_RECVING;
-		break;
-	case SESSION_REF_DECREASE_SEND:
-		_isSending = false;
-		result = SESSION_REF_STOP_SENDING;
-		break;
-	}
-
-	if (!_isRecving && !_isSending) {
-		result = SESSION_REF_DEACTIVATE;
-	}
-	
-	return result;
+	_sendFrontNetPage->length = 0;
 }
+void Session::CancelReservedIo() const
+{
+	CancelIoEx((HANDLE)_socket, NULL);
+}
+//
+//bool Session::TryResend()
+//{
+//	if (_sendBackNetPage->length == 0) {
+//		_isSending = false;
+//		return true;
+//	}
+//	
+//	NetPage* tmp = _sendBackNetPage;
+//	_sendBackNetPage = _sendFrontNetPage;
+//	_sendFrontNetPage = tmp;
+//	DWORD sendResult = RegisterSend();
+//	if (sendResult == ERROR_IO_PENDING) {
+//		_isSending = true;
+//		return true;
+//	}
+//	return false;
+//}
 
 void Session::HandleWSAError(DWORD errorCode, SessionID sessionId)
 {
@@ -210,12 +171,6 @@ UINT32 Session::GetID() const
 SOCKET Session::GetSocket() const
 {
 	return _socket;
-}
-
-void Session::Disconnect()
-{
-	closesocket(_socket);
-	_socket = INVALID_SOCKET;
 }
 
 

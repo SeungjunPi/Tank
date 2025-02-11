@@ -293,7 +293,7 @@ void s_ProcessDBQueryResults()
 
 void s_PreProcessNextMovements()
 {
-	UINT32 keys[128];
+	UINT32 keys[1024];
 	UINT32 countKeys;
 
 	int objectKindEnumMax = (int)GAME_OBJECT_TYPE_OBSTACLE;

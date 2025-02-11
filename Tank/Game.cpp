@@ -140,7 +140,7 @@ void s_ApplyKeyboardEvents(ULONGLONG tickDiff)
 void s_PreProcessNextMovements()
 {
 	// 유저와 네트워크 입력에 따라 객체의 이동 상태 변경에 대응하기 위함
-	UINT32 keys[128];
+	UINT32 keys[1024];
 	UINT32 countKeys;
 
 	int objectKindEnumMax = (int)GAME_OBJECT_TYPE_OBSTACLE;
@@ -160,7 +160,7 @@ void s_PreProcessNextMovements()
 
 void s_ApplyObjectLogic(ULONGLONG tickDiff)
 {
-	UINT32 keys[128];
+	UINT32 keys[1024];
 	UINT32 countKeys;
 
 	int objectKindEnumMax = (int)GAME_OBJECT_TYPE_OBSTACLE;

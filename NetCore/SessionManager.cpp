@@ -36,8 +36,8 @@ Session* SessionManager::CreateSession(SOCKET hSocket)
     Session* pSession = DNew Session(hSocket, newID);
     pSession->Initiate();
     _sessionTable[newID].pSession = pSession;
+    _sessionTable[newID].flag = SESSION_FLAG_ACTIVE;
     ReleaseSRWLockExclusive(&_sessionTable[newID].lock);
-
     ReleaseSRWLockExclusive(&_tableLock);
     return pSession;
 }
@@ -58,92 +58,206 @@ void SessionManager::RemoveSession(SessionID id, ESessionRemoveReason reason)
 
 void SessionManager::DisconnectAllSessions()
 {
-    AcquireSRWLockExclusive(&_tableLock);
-    
-    for (SessionID i = 0; i < MAX_NUM_SESSIONS; ++i) {
-        AcquireSRWLockExclusive(&_sessionTable[i].lock);
-        Session* pSession = _sessionTable[i].pSession;
-        pSession->Disconnect();
-        _sessionTable[i].pSession = nullptr;
-        ReleaseSRWLockExclusive(&_sessionTable[i].lock);
-    }
 
-    ReleaseSRWLockExclusive(&_tableLock);
+    // AcquireSRWLockExclusive(&_tableLock);
+
+
+
+    //
+    //for (SessionID i = 0; i < MAX_NUM_SESSIONS; ++i) {
+    //    AcquireSRWLockExclusive(&_sessionTable[i].lock);
+    //    Session* pSession = _sessionTable[i].pSession;
+    //    pSession->Disconnect();
+    //    _sessionTable[i].pSession = nullptr;
+    //    ReleaseSRWLockExclusive(&_sessionTable[i].lock);
+    //}
+
+	//for (SessionID i = 0; i < MAX_NUM_SESSIONS; ++i) {
+	//    AcquireSRWLockExclusive(&_sessionTable[i].lock);
+	//    Session* pSession = _sessionTable[i].pSession;
+	//    pSession->Disconnect();
+	//    _sessionTable[i].pSession = nullptr;
+	//    ReleaseSRWLockExclusive(&_sessionTable[i].lock);
+	//}
+
+    // ReleaseSRWLockExclusive(&_tableLock);
 }
 
-void SessionManager::SendMessageTo(SessionID sessionID, BYTE* msg, UINT32 length)
+ENetCoreResult SessionManager::SendMessageTo(SessionID sessionID, BYTE* msg, UINT32 length)
+{
+	AcquireSRWLockExclusive(&_sessionTable[sessionID].lock);
+	Session* pSession = _sessionTable[sessionID].pSession;
+	SessionFlag flag = _sessionTable[sessionID].flag;
+	bool isSendSuccessed = false;
+	if (!(flag & SESSION_FLAG_ACTIVE)) {
+		// NetCore 내부 쓰레드에서 이 상황이 발생한 경우, 심각한 오류.
+		// 제거 중인 상황이지만, 외부에서 Event를 반영하기 전에 호출된 경우. 
+		ReleaseSRWLockExclusive(&_sessionTable[sessionID].lock);
+		return NC_ERROR_REQUEST_FAIL;
+	}
+
+	assert(pSession != nullptr);
+	
+	pSession->WriteSendMessage(msg, length);
+	if (!(flag & SESSION_FLAG_SEND_PENDING)) {
+		// 아직 send에 대해 pending중이 아닌 경우
+		isSendSuccessed = pSession->RegisterSend();
+		if (isSendSuccessed) {
+			_sessionTable[sessionID].flag |= SESSION_FLAG_SEND_PENDING;
+		}
+		else {
+			// WSASend 실패
+			ENetCoreResult result;
+			_sessionTable[sessionID].flag &= ~SESSION_FLAG_ACTIVE;
+			if (flag & SESSION_FLAG_RECEIVE_PENDING) {
+				pSession->CancelReservedIo();
+				result = NC_ERROR_REQUEST_FAIL;
+			}
+			else {
+				// 마지막으로 처리중인 IO
+				RemoveSession(sessionID, COMPLETION_SEND_ERROR);
+				result = NC_ERROR_SESSION_REMOVED;
+			}
+			ReleaseSRWLockExclusive(&_sessionTable[sessionID].lock);
+			return result;
+		}
+	}
+	ReleaseSRWLockExclusive(&_sessionTable[sessionID].lock);
+	return NC_SUCCESS;
+	
+	
+}
+
+ENetCoreResult SessionManager::OnSendComplete(SessionID sessionID)
 {
     AcquireSRWLockExclusive(&_sessionTable[sessionID].lock);
     Session* pSession = _sessionTable[sessionID].pSession;
-    if (pSession != nullptr) {
-        bool isSuccess = pSession->Send(msg, length);
-        if (!isSuccess) {
-            bool isRemoved = TryRemoveSessionOnSend(sessionID);
-            // hmmmmmmmmmmmmmmmmmmm
-        }
-    }
-    ReleaseSRWLockExclusive(&_sessionTable[sessionID].lock);
+	assert(pSession != nullptr);
+	SessionFlag flag = _sessionTable[sessionID].flag;
+    
+	assert(flag & SESSION_FLAG_SEND_PENDING);
+
+	_sessionTable[sessionID].flag &= ~SESSION_FLAG_SEND_PENDING;
+    pSession->ResetSendFrontPage();
+	if (!(flag & SESSION_FLAG_ACTIVE)) {
+		ENetCoreResult result;
+		if (!(flag & SESSION_FLAG_RECEIVE_PENDING)) {
+			RemoveSession(sessionID, COMPLETION_SEND_ERROR);
+			result = NC_ERROR_SESSION_REMOVED;
+		}
+		else {
+			result = NC_ERROR_REQUEST_FAIL;
+		}
+		ReleaseSRWLockExclusive(&_sessionTable[sessionID].lock);
+		return result;
+	}
+
+	bool isReSendNeeded = pSession->TrySwapSendPages();
+	if (!isReSendNeeded) {
+		ReleaseSRWLockExclusive(&_sessionTable[sessionID].lock);
+		return NC_SUCCESS;
+	}
+
+	bool isSendSuccessed = pSession->RegisterSend();
+	if (!isSendSuccessed) {
+		// WSASend 실패
+		_sessionTable[sessionID].flag &= ~SESSION_FLAG_ACTIVE;
+		ENetCoreResult result;
+
+		if (flag & SESSION_FLAG_RECEIVE_PENDING) {
+			pSession->CancelReservedIo();
+			result = NC_ERROR_REQUEST_FAIL;
+		}
+		else {
+			// 마지막으로 처리중인 IO
+			RemoveSession(sessionID, COMPLETION_SEND_ERROR);
+			result = NC_ERROR_SESSION_REMOVED;
+		}
+
+		ReleaseSRWLockExclusive(&_sessionTable[sessionID].lock);
+		return result;
+	}
+
+	_sessionTable[sessionID].flag |= SESSION_FLAG_SEND_PENDING;
+	ReleaseSRWLockExclusive(&_sessionTable[sessionID].lock);
+    return NC_SUCCESS;
 }
 
-bool SessionManager::OnSendComplete(SessionID sessionID)
+ENetCoreResult SessionManager::OnFailReceivePending(SessionID sessionID)
+{
+	AcquireSRWLockExclusive(&_sessionTable[sessionID].lock);
+	Session* pSession = _sessionTable[sessionID].pSession;
+	assert(pSession != nullptr);
+	
+	SessionFlag flag = _sessionTable[sessionID].flag;
+	assert(flag & SESSION_FLAG_RECEIVE_PENDING);
+	
+	_sessionTable[sessionID].flag &= ~SESSION_FLAG_RECEIVE_PENDING;	
+	_sessionTable[sessionID].flag &= ~SESSION_FLAG_ACTIVE;
+
+	ENetCoreResult result;
+	if (flag & SESSION_FLAG_SEND_PENDING) {
+		pSession->CancelReservedIo();
+		result = NC_ERROR_REQUEST_FAIL;
+	}
+	else {
+		RemoveSession(sessionID, COMPLETION_RECV_ERROR);
+		result = NC_ERROR_SESSION_REMOVED;
+	}
+	ReleaseSRWLockExclusive(&_sessionTable[sessionID].lock);
+	return result;
+}
+
+ENetCoreResult SessionManager::HandleErrorOnReceiveComplete(SessionID sessionID)
 {
     AcquireSRWLockExclusive(&_sessionTable[sessionID].lock);
     Session* pSession = _sessionTable[sessionID].pSession;
     assert(pSession != nullptr);
 
-    pSession->OnSendComplete();
-
-    if (!pSession->_isRecving) {
-        pSession->_isSending = false;
-        RemoveSession(sessionID, COMPLETION_SEND_ERROR);
-        ReleaseSRWLockExclusive(&_sessionTable[sessionID].lock);
-        return false;
-    }
-
-    bool isNormalResult = pSession->TryResend();
-    if (!isNormalResult) {
-        pSession->_isSending = false;
-    }
+	assert(_sessionTable[sessionID].flag & SESSION_FLAG_RECEIVE_PENDING);
+	
+	_sessionTable[sessionID].flag &= ~SESSION_FLAG_RECEIVE_PENDING;
+	_sessionTable[sessionID].flag &= ~SESSION_FLAG_ACTIVE;
+	SessionFlag flag = _sessionTable[sessionID].flag;
+	
+	ENetCoreResult result;
+    if (flag & (~SESSION_FLAG_SEND_PENDING)) {
+        RemoveSession(sessionID, COMPLETION_RECV_ERROR);
+		result = NC_ERROR_SESSION_REMOVED;
+	}
+	else {
+		pSession->CancelReservedIo();
+		result = NC_NONE;
+	}
     
     ReleaseSRWLockExclusive(&_sessionTable[sessionID].lock);
-    return true;
+    return result;
 }
 
-bool SessionManager::TryRemoveSessionOnReceive(SessionID sessionID)
+ENetCoreResult SessionManager::HandleErrorOnSendComplete(SessionID sessionID)
 {
     AcquireSRWLockExclusive(&_sessionTable[sessionID].lock);
     Session* pSession = _sessionTable[sessionID].pSession;
     assert(pSession != nullptr);
 
-    ESessionRefResult res = pSession->ReduceReference(ESessionRefParam::SESSION_REF_DECREASE_RECV);
-    if (res == SESSION_REF_DEACTIVATE) {
-        SHORT id = pSession->GetID();
-        // Send Disconnect Event
-        RemoveSession(id, COMPLETION_RECV_ERROR);
-    }
-    
+	assert(_sessionTable[sessionID].flag & SESSION_FLAG_SEND_PENDING);
+	
+
+	_sessionTable[sessionID].flag &= ~SESSION_FLAG_SEND_PENDING;
+	_sessionTable[sessionID].flag &= ~SESSION_FLAG_ACTIVE;
+	SessionFlag flag = _sessionTable[sessionID].flag;
+
+	ENetCoreResult result;
+
+	if (flag & SESSION_FLAG_RECEIVE_PENDING) {
+		pSession->CancelReservedIo();
+		result = NC_NONE;
+	}
+	else {
+		RemoveSession(sessionID, COMPLETION_SEND_ERROR);
+		result = NC_ERROR_SESSION_REMOVED;
+	}
+
     ReleaseSRWLockExclusive(&_sessionTable[sessionID].lock);
-    if (res == SESSION_REF_DEACTIVATE) {
-        return true;
-    }
-    return false;
-}
-
-bool SessionManager::TryRemoveSessionOnSend(SessionID sessionID)
-{
-    AcquireSRWLockExclusive(&_sessionTable[sessionID].lock);
-    Session* pSession = _sessionTable[sessionID].pSession;
-    assert(pSession != nullptr);
-
-    ESessionRefResult res = pSession->ReduceReference(ESessionRefParam::SESSION_REF_DECREASE_SEND);
-    if (res == SESSION_REF_DEACTIVATE) {
-        SessionID id = pSession->GetID();
-        RemoveSession(id, COMPLETION_SEND_ERROR);
-    }
-    ReleaseSRWLockExclusive(&_sessionTable[sessionID].lock);
-
-    if (res == SESSION_REF_DEACTIVATE) {
-        return true;
-    }
-    return false;
+	return result;
 }

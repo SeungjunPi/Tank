@@ -268,7 +268,7 @@ unsigned WINAPI NetCore::ThreadIoCompletion(LPVOID pParam)
 					// 세션의 종료 수신
 					SessionID sessionID = pSession->GetID();
 					pSession = nullptr;
-					bool isSessionRemoved = pSessionManager->TryRemoveSessionOnReceive(sessionID);
+					bool isSessionRemoved = pSessionManager->HandleErrorOnReceiveComplete(sessionID);
 					if (isSessionRemoved) {
 						pNetCore->WriteSessionEvent(sessionID, ESessionEvent::DELETE_PASSIVE_CLIENT, threadID);
 					}
@@ -287,12 +287,14 @@ unsigned WINAPI NetCore::ThreadIoCompletion(LPVOID pParam)
 					}
 					ReleaseSRWLockExclusive(&pNetCore->_receiveSrwLocks[threadID]);
 
-					DWORD result = pSession->RegisterReceive();
-					if (result != ERROR_IO_PENDING) {
+					bool isReceivePending = pSession->RegisterReceive();
+					if (!isReceivePending) {
+						// Receive 실패
 						SessionID sessionID = pSession->GetID();
 						pSession = nullptr;
-						bool isSessionRemoved = pSessionManager->TryRemoveSessionOnReceive(sessionID);
-						if (isSessionRemoved) {
+
+						ENetCoreResult result = pSessionManager->OnFailReceivePending(sessionID);
+						if (result == NC_ERROR_SESSION_REMOVED) {
 							pNetCore->WriteSessionEvent(sessionID, ESessionEvent::DELETE_PASSIVE_CLIENT, threadID);
 						}
 					}
@@ -302,9 +304,8 @@ unsigned WINAPI NetCore::ThreadIoCompletion(LPVOID pParam)
 			{
 				SessionID sessionID = pSession->GetID();
 				pSession = nullptr;
-				
-				bool isSessionAlive = pSessionManager->OnSendComplete(sessionID);
-				if (!isSessionAlive) {
+				ENetCoreResult result = pSessionManager->OnSendComplete(sessionID);
+				if (result == NC_ERROR_SESSION_REMOVED) {
 					pNetCore->WriteSessionEvent(sessionID, ESessionEvent::DELETE_PASSIVE_CLIENT, threadID);
 				}
 			}
@@ -328,7 +329,7 @@ unsigned WINAPI NetCore::ThreadIoCompletion(LPVOID pParam)
 			IoOperationData* pData = CONTAINING_RECORD(pOverlapped, IoOperationData, wol);
 			if (pData->operation == IoOperationData::RECEIVE) {
 				// Receive complete 오류
-				bool isSessionRemoved = pSessionManager->TryRemoveSessionOnReceive(sessionID);
+				bool isSessionRemoved = pSessionManager->HandleErrorOnReceiveComplete(sessionID);
 				if (isSessionRemoved) {
 					pNetCore->WriteSessionEvent(sessionID, ESessionEvent::DELETE_PASSIVE_CLIENT, threadID);
 				}
@@ -336,7 +337,7 @@ unsigned WINAPI NetCore::ThreadIoCompletion(LPVOID pParam)
 			}
 			else if (pData->operation == IoOperationData::SEND) {
 				// Send Complete 오류
-				bool isSessionRemoved = pSessionManager->TryRemoveSessionOnSend(sessionID);
+				bool isSessionRemoved = pSessionManager->HandleErrorOnSendComplete(sessionID);
 				if (isSessionRemoved) {
 					pNetCore->WriteSessionEvent(sessionID, ESessionEvent::DELETE_PASSIVE_CLIENT, threadID);
 				}
@@ -371,10 +372,13 @@ void NetCore::OnAccept(AcceptIoOperationData* data, int threadId)
 		0
 	);
 
-	pNewSession->RegisterReceive();
-
-	WriteSessionEvent(pNewSession->GetID(), ESessionEvent::CREATE_PASSIVE_CLIENT, threadId);
-
+	bool isSuccessed = pNewSession->RegisterReceive();
+	if (isSuccessed) {
+		WriteSessionEvent(pNewSession->GetID(), ESessionEvent::CREATE_PASSIVE_CLIENT, threadId);
+	}
+	else {
+		_sessionManager.RemoveSession(pNewSession->GetID(), COMPLETION_RECV_ERROR);
+	}
 	// Register async accept chain
 	PostAccept();
 }

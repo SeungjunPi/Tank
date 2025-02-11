@@ -31,3 +31,13 @@ enum ESessionRemoveReason
 	FORCE_REMOVE
 };
 
+enum ENetCoreResult
+{
+	NC_SUCCESS,
+	NC_ERROR_REQUEST_FAIL,
+	NC_ERROR_SESSION_REMOVED,
+	NC_NONE
+};
+
+
+
