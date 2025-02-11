@@ -18,9 +18,12 @@ enum ESessionRefResult
 	SESSION_REF_STOP_SENDING,
 };
 
+class SessionManager;
+
 // SessionManager 클래스에서 관리돼야 하며, 외부에서 직접 접근할 시 쓰레드 안전을 보장하지 않음.
 class Session
 {
+	friend SessionManager;
 public:
 	Session(SOCKET socket, SessionID id);
 	~Session();
@@ -33,17 +36,17 @@ public:
 
 	void Disconnect();
 
-	void RegisterReceive();
+	DWORD RegisterReceive();
 	void OnReceive(DWORD length);
 
 	// 여기서 얻은 NetMessage 포인터에 대해 메모리 할당 해제를 하면 안됨.
 	NetMessage* GetReceiveNetMessageOrNull();
 
 	// 반드시 외부에서 lock을 통해 쓰레드안전하게 만든 후 호출해야 함
-	void Send(BYTE* msg, UINT32 len);
+	bool Send(BYTE* msg, UINT32 len);
 	
 	void OnSendComplete();
-
+	bool TryResend();
 	
 
 	ESessionRefResult ReduceReference(ESessionRefParam param);
@@ -69,6 +72,6 @@ private:
 	BOOL _isSending = false;
 	BOOL _isRecving = true;
 
-	void RegisterSend();
+	DWORD RegisterSend();
 };
 

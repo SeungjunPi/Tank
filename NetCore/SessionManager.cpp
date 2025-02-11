@@ -45,8 +45,6 @@ Session* SessionManager::CreateSession(SOCKET hSocket)
 void SessionManager::RemoveSession(SessionID id, ESessionRemoveReason reason)
 {
     AcquireSRWLockExclusive(&_tableLock);
-
-    AcquireSRWLockExclusive(&_sessionTable[id].lock);
     
     Session* pSession = _sessionTable[id].pSession;
     pSession->Terminate();
@@ -54,8 +52,6 @@ void SessionManager::RemoveSession(SessionID id, ESessionRemoveReason reason)
     printf("Remove Session: %d\n", id);
     bool res = _unusedIDs.Push(&id);
     assert(res);
-
-    ReleaseSRWLockExclusive(&_sessionTable[id].lock);
 
     ReleaseSRWLockExclusive(&_tableLock);
 }
@@ -80,7 +76,74 @@ void SessionManager::SendMessageTo(SessionID sessionID, BYTE* msg, UINT32 length
     AcquireSRWLockExclusive(&_sessionTable[sessionID].lock);
     Session* pSession = _sessionTable[sessionID].pSession;
     if (pSession != nullptr) {
-        pSession->Send(msg, length);
+        bool isSuccess = pSession->Send(msg, length);
+        if (!isSuccess) {
+            bool isRemoved = TryRemoveSessionOnSend(sessionID);
+            // hmmmmmmmmmmmmmmmmmmm
+        }
     }
     ReleaseSRWLockExclusive(&_sessionTable[sessionID].lock);
+}
+
+bool SessionManager::OnSendComplete(SessionID sessionID)
+{
+    AcquireSRWLockExclusive(&_sessionTable[sessionID].lock);
+    Session* pSession = _sessionTable[sessionID].pSession;
+    assert(pSession != nullptr);
+
+    pSession->OnSendComplete();
+
+    if (!pSession->_isRecving) {
+        pSession->_isSending = false;
+        RemoveSession(sessionID, COMPLETION_SEND_ERROR);
+        ReleaseSRWLockExclusive(&_sessionTable[sessionID].lock);
+        return false;
+    }
+
+    bool isNormalResult = pSession->TryResend();
+    if (!isNormalResult) {
+        pSession->_isSending = false;
+    }
+    
+    ReleaseSRWLockExclusive(&_sessionTable[sessionID].lock);
+    return true;
+}
+
+bool SessionManager::TryRemoveSessionOnReceive(SessionID sessionID)
+{
+    AcquireSRWLockExclusive(&_sessionTable[sessionID].lock);
+    Session* pSession = _sessionTable[sessionID].pSession;
+    assert(pSession != nullptr);
+
+    ESessionRefResult res = pSession->ReduceReference(ESessionRefParam::SESSION_REF_DECREASE_RECV);
+    if (res == SESSION_REF_DEACTIVATE) {
+        SHORT id = pSession->GetID();
+        // Send Disconnect Event
+        RemoveSession(id, COMPLETION_RECV_ERROR);
+    }
+    
+    ReleaseSRWLockExclusive(&_sessionTable[sessionID].lock);
+    if (res == SESSION_REF_DEACTIVATE) {
+        return true;
+    }
+    return false;
+}
+
+bool SessionManager::TryRemoveSessionOnSend(SessionID sessionID)
+{
+    AcquireSRWLockExclusive(&_sessionTable[sessionID].lock);
+    Session* pSession = _sessionTable[sessionID].pSession;
+    assert(pSession != nullptr);
+
+    ESessionRefResult res = pSession->ReduceReference(ESessionRefParam::SESSION_REF_DECREASE_SEND);
+    if (res == SESSION_REF_DEACTIVATE) {
+        SessionID id = pSession->GetID();
+        RemoveSession(id, COMPLETION_SEND_ERROR);
+    }
+    ReleaseSRWLockExclusive(&_sessionTable[sessionID].lock);
+
+    if (res == SESSION_REF_DEACTIVATE) {
+        return true;
+    }
+    return false;
 }

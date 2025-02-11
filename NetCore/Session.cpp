@@ -43,7 +43,7 @@ void Session::Terminate()
 	delete _receiveStream;
 }
 
-void Session::RegisterReceive()
+DWORD Session::RegisterReceive()
 {
 	DWORD dwFlag = 0;
 	DWORD numBytes = 0;
@@ -55,16 +55,18 @@ void Session::RegisterReceive()
 	DWORD result = WSARecv(_socket, &_receiveWsaBuf, 1, &numBytes, &dwFlag, &_receiveIoData.wol, NULL);
 	if (result == 0) {
 		// Send가 즉시 완료되었으나, Overlapped socket이므로 GQCS에서 처리됨
-		return;
+		// 외부에선 IO Complete에서 처리할지 말지만 알면 되므로 PENDING을 반환.
+		return WSA_IO_PENDING;
 	}
 
 	DWORD errorCode = WSAGetLastError();
 	if (errorCode == WSA_IO_PENDING) {
 		// 정상적으로 예약됨, GQCS에서 처리될 예정
-		return;
+		return ERROR_IO_PENDING;
 	}
 
 	HandleWSAError(errorCode, _id);
+	return result;
 }
 
 void Session::OnReceive(DWORD length)
@@ -88,7 +90,7 @@ NetMessage* Session::GetReceiveNetMessageOrNull()
 	return NULL;
 }
 
-void Session::RegisterSend()
+DWORD Session::RegisterSend()
 {
 	_sendWsaBuf.buf = (CHAR*)_sendFrontNetPage->messages;
 	_sendWsaBuf.len = _sendFrontNetPage->length;
@@ -96,27 +98,23 @@ void Session::RegisterSend()
 	int result = WSASend(_socket, &_sendWsaBuf, 1, NULL, 0, &_sendIoData.wol, NULL);
 	if (result == 0) {
 		// Send가 즉시 완료되었으나, Overlapped socket이므로 GQCS에서 처리됨
-		return;
+		return ERROR_IO_PENDING;
 	}
 	else if (result == SOCKET_ERROR) {
 		DWORD error = GetLastError();
 		if (error == ERROR_IO_PENDING) {
 			// 정상적으로 예약됨, GQCS에서 처리될 예정
-			return;
+			return ERROR_IO_PENDING;
 		}
 
 		HandleWSAError(error, _id);
-		_isSending = false;
-		Disconnect();
-		
-		// Todo: Handle error	
-		return;
+		return error;
 	}
 
 	__debugbreak();
 }
 
-void Session::Send(BYTE* msg, UINT32 len)
+bool Session::Send(BYTE* msg, UINT32 len)
 {
 	bool isAlreadySending = false;
 	
@@ -125,7 +123,7 @@ void Session::Send(BYTE* msg, UINT32 len)
 		// Receiving이 종료됐으나, Sending이 종료되지 않은 상황. 
 		// Sending에서 처리될 것이므로, 종료.
 		// 둘 모두 false인 경우, manager에서 이미 걸러졌어야 함. 
-		return;
+		return false;
 	}
 
 	UINT32 writePos = _sendBackNetPage->length;
@@ -143,36 +141,38 @@ void Session::Send(BYTE* msg, UINT32 len)
 	}
 
 	if (isAlreadySending) {
-		return;
+		return true;
 	}
 
-	RegisterSend();
+	DWORD wsaResult = RegisterSend();
+	if (wsaResult == ERROR_IO_PENDING) {
+		return true;
+	}
+
+	return false;
 }
 
 void Session::OnSendComplete()
 {
-	bool sendAgain = false;
-
 	_sendFrontNetPage->length = 0;
-	if (!_isRecving) {
-		// IO에서 error가 발생하진 않았으나, session이 비활성화되어 receive가 비활성화 된 경우. 
-		// Todo: 이 부분을 확인하지 않고 GQCS의 콜백에서 처리해도 괜찮을지 검토 
-		_isSending = false;
-		Terminate();
-	} else if (_sendBackNetPage->length != 0) {
-		sendAgain = true;
-		NetPage* tmp = _sendBackNetPage;
-		_sendBackNetPage = _sendFrontNetPage;
-		_sendFrontNetPage = tmp;
-	}
-	else {
-		_isSending = false;
-	}
+}
 
-	if (sendAgain) {
-		RegisterSend();
-		return;
+bool Session::TryResend()
+{
+	if (_sendBackNetPage->length == 0) {
+		_isSending = false;
+		return true;
 	}
+	
+	NetPage* tmp = _sendBackNetPage;
+	_sendBackNetPage = _sendFrontNetPage;
+	_sendFrontNetPage = tmp;
+	DWORD sendResult = RegisterSend();
+	if (sendResult == ERROR_IO_PENDING) {
+		_isSending = true;
+		return true;
+	}
+	return false;
 }
 
 ESessionRefResult Session::ReduceReference(ESessionRefParam param)

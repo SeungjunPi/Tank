@@ -31,6 +31,12 @@ public:
 
 	void SendMessageTo(SessionID sessionID, BYTE* msg, UINT32 length);
 
+	// Resend or ..
+	bool OnSendComplete(SessionID sessionID);
+	bool TryRemoveSessionOnReceive(SessionID sessionID);
+	bool TryRemoveSessionOnSend(SessionID sessionID);
+
+
 private:
 	SRWLOCK _tableLock = SRWLOCK_INIT;
 	SessionGuard _sessionTable[MAX_NUM_SESSIONS];
