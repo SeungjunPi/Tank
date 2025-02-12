@@ -1,4 +1,4 @@
-﻿#include "Global.h"
+#include "Global.h"
 
 #include <windows.h>
 #include <thread>
@@ -189,7 +189,7 @@ void s_Draw(SHORT x, SHORT y, WCHAR c)
 void ConsoleRenderer::DrawObjects()
 {
 	UINT32 countObjects = 0;
-	UINT32 keys[128];
+	UINT32 keys[1024];
 
 	Vector3 cameraPos = g_pCamera->GetPosition();
 

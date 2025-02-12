@@ -30,6 +30,7 @@ bool NetCore::StartNetCore()
 	for (int i = 0; i < NET_CORE_NUM_THREADS; ++i) {
 		_threadArgs[i].pNetCore = this;
 		_threadArgs[i].threadID = i;
+		_threadArgs[i].pSessionManager = &_sessionManager;
 
 
 		_receiveSrwLocks[i] = SRWLOCK_INIT;
@@ -134,14 +135,22 @@ UINT32 NetCore::ConnectTo(const char* ip, int port)
 		return 0;
 	}
 
-	pSession->RegisterReceive();
+	ENetCoreResult receiveStartResult = _sessionManager.BeginReceive(pSession->GetID());
+	if (receiveStartResult == NC_SUCCESS) {
+		// WriteSessionEvent(pSession->GetID(), ESessionEvent::CREATE_PASSIVE_CLIENT, threadID); // 
+	}
+	else {
+		_sessionManager.RemoveSession(pSession->GetID(), COMPLETION_RECV_ERROR);
+		return INVALID_SESSION_ID;
+	}
 
 	return pSession->GetID();
 }
 
 void NetCore::Disconnect(UINT32 sessionID)
 {
-	_sessionManager.RemoveSession(sessionID, ESessionRemoveReason::FORCE_REMOVE);
+
+	//_sessionManager.RemoveSession(sessionID, ESessionRemoveReason::FORCE_REMOVE);
 }
 
 void NetCore::WaitNetCore()
@@ -241,11 +250,14 @@ unsigned WINAPI NetCore::ThreadIoCompletion(LPVOID pParam)
 
 	int threadID = arg->threadID;
 	NetCore* pNetCore = arg->pNetCore;
+	SessionManager* pSessionManager = arg->pSessionManager;
 
 	NetPage* netPage = NULL;
 	printf("Start IO Completion thread[%d]..\n", threadID);
 	while (TRUE) {
 		result = GetQueuedCompletionStatus(pNetCore->_hIOCP, &dwTransferredSize, (PULONG_PTR)&pSession, &pOverlapped, INFINITE);
+
+		// 종료가 아닌 이상, pSession은 유효함.
 		if (result)
 		{
 			if (pOverlapped == NULL) {
@@ -260,12 +272,12 @@ unsigned WINAPI NetCore::ThreadIoCompletion(LPVOID pParam)
 				// recieve 완료
 				if (dwTransferredSize == 0)
 				{
-					// 클라이언트의 종료
-					ESessionRefResult res = pSession->ReduceReference(ESessionRefParam::SESSION_REF_DECREASE_RECV);
-					if (res == SESSION_REF_DEACTIVATE) {
-						SHORT id = pSession->GetID();
-						pNetCore->_sessionManager.RemoveSession(id, COMPLETION_RECV_ERROR);
-						pNetCore->WriteSessionEvent(id, ESessionEvent::DELETE_PASSIVE_CLIENT, threadID);
+					// 세션의 종료 수신
+					SessionID sessionID = pSession->GetID();
+					pSession = nullptr;
+					bool isSessionRemoved = pSessionManager->HandleErrorOnReceiveComplete(sessionID);
+					if (isSessionRemoved) {
+						pNetCore->WriteSessionEvent(sessionID, ESessionEvent::DELETE_PASSIVE_CLIENT, threadID);
 					}
 				}
 				else
@@ -281,45 +293,60 @@ unsigned WINAPI NetCore::ThreadIoCompletion(LPVOID pParam)
 						pNetMessage = pSession->GetReceiveNetMessageOrNull();
 					}
 					ReleaseSRWLockExclusive(&pNetCore->_receiveSrwLocks[threadID]);
-					
-					pSession->RegisterReceive();
+
+					bool isReceivePending = pSession->RegisterReceive();
+					if (!isReceivePending) {
+						// Receive 실패
+						SessionID sessionID = pSession->GetID();
+						pSession = nullptr;
+
+						ENetCoreResult result = pSessionManager->OnFailReceivePending(sessionID);
+						if (result == NC_ERROR_SESSION_REMOVED) {
+							pNetCore->WriteSessionEvent(sessionID, ESessionEvent::DELETE_PASSIVE_CLIENT, threadID);
+						}
+					}
 				}
 			}
 			else if (pData->operation == IoOperationData::SEND)
 			{
-				pSession->OnSendComplete();
+				SessionID sessionID = pSession->GetID();
+				pSession = nullptr;
+				ENetCoreResult result = pSessionManager->OnSendComplete(sessionID);
+				if (result == NC_ERROR_SESSION_REMOVED) {
+					pNetCore->WriteSessionEvent(sessionID, ESessionEvent::DELETE_PASSIVE_CLIENT, threadID);
+				}
 			}
 			else if (pData->operation == IoOperationData::ACCEPT)
 			{
 				AcceptIoOperationData* accpetIoOpData = (AcceptIoOperationData*)pOverlapped;
 				pNetCore->OnAccept(accpetIoOpData, threadID);
-
-				
 			}
 		}
 		else
 		{
+			// 각종 오류 상황
 			if (pSession == NULL || pOverlapped == NULL) {
 				// 발생하면 안되는 경우
 				__debugbreak();
 			}
 
+			SessionID sessionID = pSession->GetID();
+			pSession = nullptr;
+
 			IoOperationData* pData = CONTAINING_RECORD(pOverlapped, IoOperationData, wol);
 			if (pData->operation == IoOperationData::RECEIVE) {
-				ESessionRefResult res = pSession->ReduceReference(ESessionRefParam::SESSION_REF_DECREASE_RECV);
-				if (res == SESSION_REF_DEACTIVATE) {
-					SHORT id = pSession->GetID();
-					pNetCore->_sessionManager.RemoveSession(id, COMPLETION_RECV_ERROR);
-					pNetCore->WriteSessionEvent(id, ESessionEvent::DELETE_PASSIVE_CLIENT, threadID);
+				// Receive complete 오류
+				bool isSessionRemoved = pSessionManager->HandleErrorOnReceiveComplete(sessionID);
+				if (isSessionRemoved) {
+					pNetCore->WriteSessionEvent(sessionID, ESessionEvent::DELETE_PASSIVE_CLIENT, threadID);
 				}
 				continue;
 			}
 			else if (pData->operation == IoOperationData::SEND) {
-				ESessionRefResult res = pSession->ReduceReference(ESessionRefParam::SESSION_REF_DECREASE_SEND);
-				if (res == SESSION_REF_DEACTIVATE) {
-					SHORT id = pSession->GetID();
-					pNetCore->_sessionManager.RemoveSession(id, COMPLETION_SEND_ERROR);
-					pNetCore->WriteSessionEvent(id, ESessionEvent::DELETE_PASSIVE_CLIENT, threadID);
+				// Send Complete 오류
+				bool isSessionRemoved = pSessionManager->HandleErrorOnSendComplete(sessionID);
+				if (isSessionRemoved) {
+					pNetCore->WriteSessionEvent(sessionID, ESessionEvent::DELETE_PASSIVE_CLIENT, threadID);
 				}
 				continue;
 			}
@@ -352,10 +379,16 @@ void NetCore::OnAccept(AcceptIoOperationData* data, int threadId)
 		0
 	);
 
-	pNewSession->RegisterReceive();
+	// BeginReceive
 
-	WriteSessionEvent(pNewSession->GetID(), ESessionEvent::CREATE_PASSIVE_CLIENT, threadId);
+	ENetCoreResult receiveStartResult = _sessionManager.BeginReceive(pNewSession->GetID());
+	if (receiveStartResult == NC_SUCCESS) {
 
+		WriteSessionEvent(pNewSession->GetID(), ESessionEvent::CREATE_PASSIVE_CLIENT, threadId);
+	}
+	else {
+		_sessionManager.RemoveSession(pNewSession->GetID(), COMPLETION_RECV_ERROR);
+	}
 	// Register async accept chain
 	PostAccept();
 }
@@ -410,7 +443,7 @@ void NetCore::TerminateAllocation()
 	delete _pReceiveMessagesBack;
 }
 
-void NetCore::WriteSessionEvent(UINT32 sessionId, ESessionEvent sessionEvent, int threadId)
+void NetCore::WriteSessionEvent(SessionID sessionId, ESessionEvent sessionEvent, int threadId)
 {
 	AcquireSRWLockExclusive(&_sessionEventLocks[threadId]);
 	_pSessionEventsBack->WriteNetSessionEvent(sessionId, sessionEvent);

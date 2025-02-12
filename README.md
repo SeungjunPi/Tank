@@ -58,7 +58,7 @@ Windows 서버에서 동작하는 고성능 Stateful MMORPG 서버
 
 ## 게임 엔진
 
-![게임엔진루프](/pictures/게임엔진루프.png)
+![게임엔진루프](pictures/게임엔진루프.png)
 
 기본 루프를 서버, 클라이언트, 더미가 공유하며, 사용 시 약간의 차이가 있음.
 
@@ -70,21 +70,21 @@ Windows 서버에서 동작하는 고성능 Stateful MMORPG 서버
 - 핸들 등의 통신 핵심 리소스를 외부에 직접 노출하지 않음.
 - 받은 패킷을 NetMessage로 변경 후 공통 Buffer에 쌓으며, 읽어서 처리하는 것은 main의 몫.
 
-![Receive 과정](/pictures/NetCoreReceive.png)
+![Receive 과정](pictures/NetCoreReceive.png)
 
 Receive 과정
 
-![Send 과정(성공 시)](/pictures/NetCoreSend성공.png)
+![Send 과정(성공 시)](pictures/NetCoreSend성공.png)
 
 Send 과정(성공 시)
 
-![Send 과정(이미 해당 Session에 대해 Send중일 시)](/pictures/NetCoreSend실행중.png)
+![Send 과정(이미 해당 Session에 대해 Send중일 시)](pictures/NetCoreSend실행중.png)
 
 Send 과정(이미 해당 Session에 대해 Send중일 시)
 
 ### Sentinel (서버)
 
-![전체구조.png](/pictures/서버구조.png)
+![전체구조.png](pictures/서버구조.png)
 
 구름 모양은 쓰레드를 의미
 
@@ -92,7 +92,7 @@ Send 과정(이미 해당 Session에 대해 Send중일 시)
 
 ### DB
 
-![스크린샷 2025-02-03 173434.png](/pictures/DB구조.png)
+![스크린샷 2025-02-03 173434.png](pictures/DB구조.png)
 
 유저의 ID, PW, 점수가 저장돼있음.
 
@@ -104,15 +104,15 @@ Send 과정(이미 해당 Session에 대해 Send중일 시)
 
 이동 시작, 종료, 이동 중을 클라이언트가 서버로 전달.
 
-![이동 이벤트 발생 시 플래그 전달](/pictures/이동1.png)
+![이동 이벤트 발생 시 플래그 전달](pictures/이동1.png)
 
 이동 이벤트 발생 시 플래그 전달
 
-![클라이언트와 서버 각각 이동 처리](/pictures/이동2.png)
+![클라이언트와 서버 각각 이동 처리](pictures/이동2.png)
 
 클라이언트와 서버 각각 이동 처리
 
-![이동 종료 시 서버에서 수용 가능한 범위인지 판단해서 처리. 이동 중 패킷도 같은 동작을 함.](/pictures/이동3.png)
+![이동 종료 시 서버에서 수용 가능한 범위인지 판단해서 처리. 이동 중 패킷도 같은 동작을 함.](pictures/이동3.png)
 
 이동 종료 시 서버에서 수용 가능한 범위인지 판단해서 처리. 이동 중 패킷도 같은 동작을 함.
 
@@ -120,13 +120,13 @@ Send 과정(이미 해당 Session에 대해 Send중일 시)
 
 생성은 서버가 지시, 클라이언트는 요청만 함
 
-![투사체1.png](/pictures/투사체1.png)
+![투사체1.png](pictures/투사체1.png)
 
-![투사체2.png](/pictures/투사체2.png)
+![투사체2.png](pictures/투사체2.png)
 
-![투사체3.png](/pictures/투사체3.png)
+![투사체3.png](pictures/투사체3.png)
 
-![투사체4.png](/pictures/투사체4.png)
+![투사체4.png](pictures/투사체4.png)
 
 ---
 

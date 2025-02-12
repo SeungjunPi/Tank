@@ -10,6 +10,7 @@ struct ThreadArgInfo
 {
 	UINT32 threadID = 0;
 	NetCore* pNetCore = nullptr;
+	SessionManager* pSessionManager = nullptr;
 };
 
 struct AcceptIoOperationData
@@ -47,7 +48,7 @@ private:
 	void InitiateAllocation();
 	void TerminateAllocation();
 
-	void WriteSessionEvent(UINT32 sessionId, ESessionEvent sessionEvent, int threadId);
+	void WriteSessionEvent(SessionID sessionId, ESessionEvent sessionEvent, int threadId);
 
 	// 임시
 	void WaitNetCore();
