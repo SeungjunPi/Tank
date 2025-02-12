@@ -2,7 +2,7 @@
 
 저장소 주소: https://github.com/SeungjunPi/Tank
 
-유튜브 영상: https://youtu.be/l5pp469ZEJo
+유튜브 영상: https://youtu.be/G60u82f4WyU
 
 ## 목표
 
