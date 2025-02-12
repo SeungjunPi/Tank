@@ -31,7 +31,7 @@ public:
 	void Tick();
 
 private:
-	const int MAX_DUMMY_COUNT = 150;
+	const int MAX_DUMMY_COUNT = 100;
 	int _countDummy = 0;
 	Dummy* _pDummyMaster = nullptr;
 

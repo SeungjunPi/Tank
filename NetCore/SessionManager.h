@@ -37,6 +37,8 @@ public:
 
 	void DisconnectAllSessions();
 
+	ENetCoreResult BeginReceive(SessionID id);
+
 	ENetCoreResult SendMessageTo(SessionID sessionID, BYTE* msg, UINT32 length);
 
 	ENetCoreResult OnSendComplete(SessionID sessionID);

@@ -135,7 +135,14 @@ UINT32 NetCore::ConnectTo(const char* ip, int port)
 		return 0;
 	}
 
-	pSession->RegisterReceive();
+	ENetCoreResult receiveStartResult = _sessionManager.BeginReceive(pSession->GetID());
+	if (receiveStartResult == NC_SUCCESS) {
+		// WriteSessionEvent(pSession->GetID(), ESessionEvent::CREATE_PASSIVE_CLIENT, threadID); // 
+	}
+	else {
+		_sessionManager.RemoveSession(pSession->GetID(), COMPLETION_RECV_ERROR);
+		return INVALID_SESSION_ID;
+	}
 
 	return pSession->GetID();
 }
@@ -372,8 +379,11 @@ void NetCore::OnAccept(AcceptIoOperationData* data, int threadId)
 		0
 	);
 
-	bool isSuccessed = pNewSession->RegisterReceive();
-	if (isSuccessed) {
+	// BeginReceive
+
+	ENetCoreResult receiveStartResult = _sessionManager.BeginReceive(pNewSession->GetID());
+	if (receiveStartResult == NC_SUCCESS) {
+
 		WriteSessionEvent(pNewSession->GetID(), ESessionEvent::CREATE_PASSIVE_CLIENT, threadId);
 	}
 	else {
