@@ -84,6 +84,9 @@ void GamePacket::HandleCreateTank(BYTE* pGameEvent, UINT32 sessionID)
 	if (pDummy != nullptr) {
 		pDummy->SetTank(pTank);
 	}
+	else {
+	//	printf("Here????????\n");
+	}
 }
 
 void GamePacket::HandleDeleteTank(BYTE* pGameEvent, UINT32 sessionID)

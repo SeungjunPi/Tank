@@ -9,12 +9,13 @@
 #include "Tank.h"
 #include "NetCore.h"
 #include "GameEvent.h"
+#include "AllocObjectManager.h"
 
 static Vector3 GetRandomPlanePosition()
 {
 	static std::random_device rd;
 	std::mt19937 gen(rd());
-	std::uniform_int_distribution<> dist(-30, 30);
+	std::uniform_int_distribution<> dist(-100, 100);
 
 	Vector3 pos{ dist(gen), dist(gen), 0.0 };
 
@@ -38,6 +39,11 @@ void Dummy::OnConnected(SessionID sessionID)
 void Dummy::OnSuccessLogin(UserDBIndex key, Score score)
 {
 	Player::OnSuccessLogin(key, score);
+
+	GameObject* pObj = g_objectManager.GetObjectPtrByOwnerOrNull(key);
+	if (pObj != nullptr) {
+		SetTank((Tank*)pObj);
+	}
 }
 
 SessionID Dummy::ConnectToServer()
