@@ -65,7 +65,8 @@ void SessionManager::DisconnectAllSessions()
 		AcquireSRWLockExclusive(&_sessionTable[i].lock);
 		Session* pSession = _sessionTable[i].pSession;
 		if (pSession != nullptr) {
-			pSession->CancelReservedIo();
+			_sessionTable[i].flag &= ~SESSION_FLAG_ACTIVE;
+			pSession->CloseSocket();
 		}
 		ReleaseSRWLockExclusive(&_sessionTable[i].lock);
 	}
@@ -90,20 +91,26 @@ void SessionManager::DisconnectAllSessions()
 
 ENetCoreResult SessionManager::BeginReceive(SessionID id)
 {
-	AcquireSRWLockExclusive(&_sessionTable[id].lock);
-	Session* pSession = _sessionTable[id].pSession;
-	bool isSuccessed = pSession->RegisterReceive();
 	ENetCoreResult result;
-	if (isSuccessed) {
-		_sessionTable[id].flag |= SESSION_FLAG_RECEIVE_PENDING;
-		result = NC_SUCCESS;
+	AcquireSRWLockExclusive(&_sessionTable[id].lock);
+
+	if (_sessionTable[id].flag & SESSION_FLAG_ACTIVE) {
+		Session* pSession = _sessionTable[id].pSession;
+		bool isSuccessed = pSession->RegisterReceive();
+		if (isSuccessed) {
+			_sessionTable[id].flag |= SESSION_FLAG_RECEIVE_PENDING;
+			result = NC_SUCCESS;
+		}
+		else {
+			result = NC_ERROR_REQUEST_FAIL;
+		}
 	}
 	else {
 		result = NC_ERROR_REQUEST_FAIL;
 	}
 
 	ReleaseSRWLockExclusive(&_sessionTable[id].lock);
-	return ENetCoreResult();
+	return result;
 }
 
 ENetCoreResult SessionManager::SendMessageTo(SessionID sessionID, BYTE* msg, UINT32 length)
@@ -133,7 +140,7 @@ ENetCoreResult SessionManager::SendMessageTo(SessionID sessionID, BYTE* msg, UIN
 			ENetCoreResult result;
 			_sessionTable[sessionID].flag &= ~SESSION_FLAG_ACTIVE;
 			if (flag & SESSION_FLAG_RECEIVE_PENDING) {
-				pSession->CancelReservedIo();
+				pSession->CloseSocket();
 				result = NC_ERROR_REQUEST_FAIL;
 			}
 			else {
@@ -188,7 +195,7 @@ ENetCoreResult SessionManager::OnSendComplete(SessionID sessionID)
 		ENetCoreResult result;
 
 		if (flag & SESSION_FLAG_RECEIVE_PENDING) {
-			pSession->CancelReservedIo();
+			pSession->CloseSocket();
 			result = NC_ERROR_REQUEST_FAIL;
 		}
 		else {
@@ -220,7 +227,7 @@ ENetCoreResult SessionManager::OnFailReceivePending(SessionID sessionID)
 
 	ENetCoreResult result;
 	if (flag & SESSION_FLAG_SEND_PENDING) {
-		pSession->CancelReservedIo();
+		pSession->CloseSocket();
 		result = NC_ERROR_REQUEST_FAIL;
 	}
 	else {
@@ -245,7 +252,7 @@ ENetCoreResult SessionManager::HandleErrorOnReceiveComplete(SessionID sessionID)
 	
 	ENetCoreResult result;
     if (flag & SESSION_FLAG_SEND_PENDING) {
-		pSession->CancelReservedIo();
+		pSession->CloseSocket();
 		result = NC_NONE;
 	}
 	else {
@@ -273,7 +280,7 @@ ENetCoreResult SessionManager::HandleErrorOnSendComplete(SessionID sessionID)
 	ENetCoreResult result;
 
 	if (flag & SESSION_FLAG_RECEIVE_PENDING) {
-		pSession->CancelReservedIo();
+		pSession->CloseSocket();
 		result = NC_NONE;
 	}
 	else {

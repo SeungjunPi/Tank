@@ -22,7 +22,7 @@ void AllocObjectManager::Terminate()
 	_tankTableByOwner.GetIdsTo(keys, &numCounts);
 	for (int i = 0; i < numCounts; ++i) {
 		UINT32 key = keys[i];
-		void* ptr = _tankTable.Pop(key);
+		void* ptr = _tankTableByOwner.Pop(key);
 	}
 
 	_tankTable.GetIdsTo(keys, &numCounts);
@@ -47,7 +47,7 @@ void AllocObjectManager::Terminate()
 	}
 
 	delete[] keys;
-
+	_tankTableByOwner.Terminate();
 	_projectileTable.Terminate();
 	_obstacleTable.Terminate();
 	_tankTable.Terminate();

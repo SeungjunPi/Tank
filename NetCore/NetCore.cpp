@@ -294,8 +294,8 @@ unsigned WINAPI NetCore::ThreadIoCompletion(LPVOID pParam)
 					}
 					ReleaseSRWLockExclusive(&pNetCore->_receiveSrwLocks[threadID]);
 
-					bool isReceivePending = pSession->RegisterReceive();
-					if (!isReceivePending) {
+					ENetCoreResult res = pSessionManager->BeginReceive(pSession->GetID());
+					if (res == NC_ERROR_REQUEST_FAIL) {
 						// Receive 실패
 						SessionID sessionID = pSession->GetID();
 						pSession = nullptr;

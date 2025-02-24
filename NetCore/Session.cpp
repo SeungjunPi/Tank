@@ -134,9 +134,10 @@ void Session::ResetSendFrontPage()
 {
 	_sendFrontNetPage->length = 0;
 }
-void Session::CancelReservedIo() const
+void Session::CloseSocket() const
 {
 	CancelIoEx((HANDLE)_socket, NULL);
+	// closesocket(_socket);
 }
 //
 //bool Session::TryResend()

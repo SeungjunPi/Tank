@@ -40,7 +40,7 @@ public:
 	
 	void ResetSendFrontPage();
 
-	void CancelReservedIo() const;
+	void CloseSocket() const;
 
 	static void HandleWSAError(DWORD errorCode, SessionID sessionId);
 
