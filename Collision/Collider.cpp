@@ -4,14 +4,27 @@ Collider::Collider()
 {
 }
 
-void Collider::UpdateCenter(const Vector3& position)
-{
-	_center = position;
-}
-
 void Collider::ResetCollisionFlag()
 {
 	_collisionKindnessFlag = 0;
+}
+
+void Collider::UpdatePhysicsComponentFromGameObject()
+{
+	memcpy(&_transform, _pObjectTransform, sizeof(Transform));
+	memcpy(&_velocity, _pObjectVelocity, sizeof(Transform));
+}
+
+void Collider::OverwriteComputedResultsToGameObject()
+{
+	memcpy(&_nextTransform, _pObjectTransform, sizeof(Transform));
+	memcpy(&_nextVelocity, _pObjectVelocity, sizeof(Transform));
+}
+
+void Collider::GetComputedResults(Transform* out_transform, Transform* out_velocity) const
+{
+	memcpy(out_transform, &_nextTransform, sizeof(Transform));
+	memcpy(out_velocity, &_nextVelocity, sizeof(Transform));
 }
 
 void Collider::Initiate(float radius, GameObject* pObj, const Vector3* center, UINT32 kindness)
@@ -19,7 +32,6 @@ void Collider::Initiate(float radius, GameObject* pObj, const Vector3* center, U
 	_radius = radius;
 	_pObject = pObj;
 	_kindness = kindness;
-	UpdateCenter(*center);
 	Activate();
 }
 

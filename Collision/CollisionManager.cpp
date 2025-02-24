@@ -62,7 +62,7 @@ void CollisionManager::ReturnCollider(Collider* pCollider)
 
 void CollisionManager::DetectCollision()
 {
-	ResetAllColliders();
+	ResetAllColliderFlags();
 	_collisionPairs.Clear();
 
 	for (size_t i = 0; i < _countActiveColliders; ++i) {
@@ -82,7 +82,16 @@ void CollisionManager::DetectCollision()
 	}
 }
 
-void CollisionManager::ResetAllColliders()
+void CollisionManager::RenewPhysicalComponets()
+{
+	for (size_t i = 0; i < _countActiveColliders; ++i) {
+		ColliderID id = _usedIDs[i];
+		Collider* pCollider = _colliders + id;
+		pCollider->UpdatePhysicsComponentFromGameObject();
+	}
+}
+
+void CollisionManager::ResetAllColliderFlags()
 {
 	for (UINT32 i = 0; i < _countActiveColliders; ++i) {
 		ColliderID id = _usedIDs[i];

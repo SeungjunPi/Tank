@@ -16,6 +16,8 @@ public:
 
 	// 이전 호출의 결과를 모두 초기화하고 현재 상태를 기준으로 검출함
 	virtual void DetectCollision() override;
+
+	void RenewPhysicalComponets();
 private:
 	Collider* _colliders = nullptr;
 	ColliderID* _usedIDs = nullptr;
@@ -25,7 +27,7 @@ private:
 
 	void PopUsedIDs(ColliderID id);
 	ColliderID GetUnusedID();
-	void ResetAllColliders();
+	void ResetAllColliderFlags();
 
 	BOOL CheckCollision(Collider* one, Collider* another);
 };

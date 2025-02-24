@@ -18,9 +18,7 @@ public:
 	~Collider() = default;
 
  	ColliderID GetID() const { return _id; }
-	Vector3 GetCenter() const { return _center; }
-
-	void UpdateCenter(const Vector3& position);
+	Vector3 GetCenter() const { return _transform.Position; }
 
 	GameObject* GetAttachedObjectPtr() const { return _pObject; }
 
@@ -29,21 +27,31 @@ public:
 	
 	void ResetCollisionFlag();
 
-	BOOL IsActive() { return _isActive; }
+	BOOL IsActive() const { return _isActive; }
 	void Activate() { _isActive = TRUE; }
 	void Deactivate() { _isActive = FALSE; }
+
+	void UpdatePhysicsComponentFromGameObject();
+	void OverwriteComputedResultsToGameObject();
+	void GetComputedResults(Transform* out_transform, Transform* out_velocity) const;
 	
 private:
 	ColliderID _id = INVALID_COLLIDER_ID;
 
-	// Decide Collider
-	Vector3 _center;
+	Transform _transform;
+	Transform _velocity;
+
+	Transform _nextTransform;
+	Transform _nextVelocity;
+
 	float _radius = 0.0f;
 
 	UINT32 _kindness = 0;
 	UINT32 _collisionKindnessFlag = 0;
 	
 	GameObject* _pObject = nullptr;
+	Transform* _pObjectTransform = nullptr;
+	Transform* _pObjectVelocity = nullptr;
 	BOOL _isActive = FALSE;
 
 	void Initiate(float radius, GameObject* pObj, const Vector3* center, UINT32 kindness);

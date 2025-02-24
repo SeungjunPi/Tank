@@ -165,6 +165,7 @@
     <ClInclude Include="GameStruct.h" />
     <ClInclude Include="Global.h" />
     <ClInclude Include="IJunDB.h" />
+    <ClInclude Include="Impulse.h" />
     <ClInclude Include="JunDB.h" />
     <ClInclude Include="LiteWString.h" />
     <ClInclude Include="ObjectManager.h" />

@@ -16,6 +16,12 @@
     <Filter Include="pch">
       <UniqueIdentifier>{462cf0d0-1f9d-4067-a484-4d71d1170e97}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Collision">
+      <UniqueIdentifier>{36208f78-56f3-408b-b8e8-4b9747e76bb6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics">
+      <UniqueIdentifier>{2350f7a4-3681-43a6-9ecd-f7a9415557a7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CollisionPch.h">
@@ -24,28 +30,37 @@
     <ClInclude Include="CollisionAlias.h">
       <Filter>pch</Filter>
     </ClInclude>
+    <ClInclude Include="ICollisionManager.h">
+      <Filter>Collision</Filter>
+    </ClInclude>
     <ClInclude Include="Collider.h">
-      <Filter>Header Files</Filter>
+      <Filter>Collision</Filter>
     </ClInclude>
     <ClInclude Include="CollisionManager.h">
-      <Filter>Header Files</Filter>
+      <Filter>Collision</Filter>
     </ClInclude>
-    <ClInclude Include="ICollisionManager.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="StableFlow.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="IStableFlow.h">
+      <Filter>Physics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Collider.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CollisionManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ICollisionManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="collisionMain.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Collider.cpp">
+      <Filter>Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="ICollisionManager.cpp">
+      <Filter>Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="CollisionManager.cpp">
+      <Filter>Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="StableFlow.cpp">
+      <Filter>Physics</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

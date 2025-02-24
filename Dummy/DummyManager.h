@@ -8,7 +8,7 @@
 
 class Dummy;
 
-const ULONGLONG DUMMY_ADD_DELAY = 50;
+const ULONGLONG DUMMY_ADD_DELAY = 100;
 
 class DummyManager
 {
