@@ -5,20 +5,7 @@
 #include "GameMath.h"
 #include "JStack.h"
 
-
-const int MAX_NUM_COLLIDERS = 2048;
-
-class Collider;
-class GameObject;
-
-struct CollisionPair
-{
-	GameObject* a = nullptr;
-	GameObject* b = nullptr;
-};
-
-// 자체 메모리풀 사용
-// 총 충돌 수가 충돌체 * 10 만큼 검출 가능.
+// Deprecated
 class ICollisionManager
 {
 public:

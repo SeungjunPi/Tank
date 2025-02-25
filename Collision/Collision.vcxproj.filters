@@ -45,6 +45,9 @@
     <ClInclude Include="IStableFlow.h">
       <Filter>Physics</Filter>
     </ClInclude>
+    <ClInclude Include="StableFlowStaticData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="collisionMain.cpp">

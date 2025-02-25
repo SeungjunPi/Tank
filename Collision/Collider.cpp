@@ -11,27 +11,30 @@ void Collider::ResetCollisionFlag()
 
 void Collider::UpdatePhysicsComponentFromGameObject()
 {
-	memcpy(&_transform, _pObjectTransform, sizeof(Transform));
-	memcpy(&_velocity, _pObjectVelocity, sizeof(Transform));
+	memcpy(&_physicalComponent.transform, &_pObjectPhysicalComponent->transform, sizeof(Transform));
+	memcpy(&_physicalComponent.velocity, &_pObjectPhysicalComponent->velocity, sizeof(Transform));
+	memcpy(&_physicalComponent.angularVelocity, &_pObjectPhysicalComponent->angularVelocity, sizeof(Transform));
 }
 
 void Collider::OverwriteComputedResultsToGameObject()
 {
-	memcpy(&_nextTransform, _pObjectTransform, sizeof(Transform));
-	memcpy(&_nextVelocity, _pObjectVelocity, sizeof(Transform));
+	memcpy(&_pObjectPhysicalComponent->transform, &_nextTransform, sizeof(Transform));
+	memcpy(&_pObjectPhysicalComponent->velocity, &_nextVelocity, sizeof(Vector3));
+	memcpy(&_pObjectPhysicalComponent->angularVelocity, &_nextAngularVelocity, sizeof(Vector3));
 }
 
-void Collider::GetComputedResults(Transform* out_transform, Transform* out_velocity) const
+void Collider::GetComputedResults(Transform* out_transform, Vector3* out_velocity, Vector3* out_angularVelocity) const
 {
 	memcpy(out_transform, &_nextTransform, sizeof(Transform));
-	memcpy(out_velocity, &_nextVelocity, sizeof(Transform));
+	memcpy(out_velocity, &_nextVelocity, sizeof(Vector3));
+	memcpy(out_angularVelocity, &_nextAngularVelocity, sizeof(Vector3));
 }
 
-void Collider::Initiate(float radius, GameObject* pObj, const Vector3* center, UINT32 kindness)
+void Collider::Initiate(GameObject* pObj, PhysicalComponent* objectPhysicalComponent)
 {
-	_radius = radius;
+	memcpy(&_physicalComponent, objectPhysicalComponent, sizeof(PhysicalComponent));
 	_pObject = pObj;
-	_kindness = kindness;
+	_pObjectPhysicalComponent = objectPhysicalComponent;
 	Activate();
 }
 
@@ -41,8 +44,10 @@ void Collider::Clear()
 	_isActive = FALSE;
 	_collisionKindnessFlag = 0;
 	_pObject = nullptr;
-	_kindness = 0;
+	_pObjectPhysicalComponent = nullptr;
 
+	_physicalComponent = PhysicalComponent();
+	
 	Deactivate();
 }
 

@@ -2,6 +2,7 @@
 
 #include "CollisionManager.h"
 #include "Collider.h"
+#include "StableFlowStaticData.h"
 
 #include <time.h>
 #include <cmath>
@@ -27,11 +28,11 @@ CollisionManager::~CollisionManager()
 	delete[] _usedIDs;
 }
 
-Collider* CollisionManager::GetNewColliderPtr(float radius, GameObject* pObj, const Vector3* center, UINT32 kindness)
+Collider* CollisionManager::GetNewColliderPtr(GameObject* pObj, PhysicalComponent* objectPhysicalComponent)
 {
 	ColliderID id = GetUnusedID();
 	Collider* pCollider = _colliders + id;
-	pCollider->Initiate(radius, pObj, center, kindness);
+	pCollider->Initiate(pObj, objectPhysicalComponent);
 	_usedIDs[_countActiveColliders] = id;
 	++_countActiveColliders;
 	
@@ -73,7 +74,7 @@ void CollisionManager::DetectCollision()
 			Collider* pColliderAnother = _colliders + anotherID;
 
 			if (CheckCollision(pColliderOne, pColliderAnother)) {
-				CollisionPair pair{ pColliderOne->_pObject, pColliderAnother->_pObject };
+				CollisionPair pair{ pColliderOne, pColliderAnother };
 				_collisionPairs.Push(&pair);
 				pColliderOne->_collisionKindnessFlag = 0x01;
 				pColliderAnother->_collisionKindnessFlag = 0x01;
@@ -82,7 +83,30 @@ void CollisionManager::DetectCollision()
 	}
 }
 
-void CollisionManager::RenewPhysicalComponets()
+void CollisionManager::AdvanceFreeBodyMotion()
+{
+	for (size_t i = 0; i < _countActiveColliders; ++i) {
+		ColliderID id = _usedIDs[i];
+		Collider* pCollider = _colliders + id;
+
+		if (pCollider->IsCollided()) {
+			continue;
+		}
+
+		
+		// FreeBodyMotion
+		pCollider->_nextTransform.Position = pCollider->_physicalComponent.transform.Position + pCollider->_physicalComponent.velocity * PHYSICS_TICK_RATE;
+		// Rotation
+		Quaternion angularVelocityQ;
+		// angularVelocityQ = Quaternion::ConvertFromVector3(pCollider->_physicalComponent.angularVelocity * PHYSICS_TICK_RATE); // 이거 구현 안하면 탱크 안돌아감..
+		pCollider->_nextTransform.Rotation = Quaternion::Product(pCollider->_physicalComponent.transform.Rotation, angularVelocityQ);
+
+		pCollider->_nextVelocity = pCollider->_physicalComponent.velocity;
+		pCollider->_nextAngularVelocity = pCollider->_physicalComponent.angularVelocity;
+	}
+}
+
+void CollisionManager::RenewPhysicalComponents()
 {
 	for (size_t i = 0; i < _countActiveColliders; ++i) {
 		ColliderID id = _usedIDs[i];
@@ -105,9 +129,9 @@ BOOL CollisionManager::CheckCollision(Collider* one, Collider* another)
 		return FALSE;
 	}
 
-	float distance = Vector3::DistanceSquared(one->_center, another->_center);
-	float radiusSum = one->_radius + another->_radius;
-	if (distance < radiusSum * radiusSum) {
+	float distanceSq = Vector3::DistanceSquared(one->_physicalComponent.transform.Position, another->_physicalComponent.transform.Position);
+	float radiusSum = one->_physicalComponent.radius + another->_physicalComponent.radius;
+	if (distanceSq < radiusSum * radiusSum) {
 		return TRUE;
 	}
 	return FALSE;
@@ -129,7 +153,7 @@ ColliderID CollisionManager::GetUnusedID()
 {
 	ColliderID unusedID = INVALID_COLLIDER_ID;
 	for (ColliderID i = 0; i < MAX_NUM_COLLIDERS; ++i) {
-		if (_colliders[i]._radius == 0) {
+		if (_colliders[i]._physicalComponent.radius == 0) {
 			unusedID = i;
 			break;
 		}

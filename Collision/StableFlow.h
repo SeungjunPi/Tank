@@ -19,13 +19,14 @@ public:
 	
 
 	
-	virtual void ProcessStableFlow() override;
+	virtual void ProcessStableFlow(ULONGLONG currentTick) override;
 
 private:
+	ULONGLONG _lastProcessedTick = 0;
 	CollisionManager* _pCollisionManager;
 
-	void CalculateElasticCollisionNextMovements(GameObject* a, GameObject* b, ULONGLONG tickDiff);
-	void ResolvePenetration(GameObject* a, GameObject* b);
+	void CalculateElasticCollisionNextMovements(Collider* a, Collider *b, ULONGLONG tickDiff);
+	void ResolvePenetration(Collider* a, Collider* b);
 };
 
 

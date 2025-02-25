@@ -1,23 +1,43 @@
 #pragma once
 
-#include "ICollisionManager.h"
+#include "CollisionPch.h"
+#include "CollisionAlias.h"
 #include "GameMath.h"
+#include "JStack.h"
 
-class CollisionManager : public ICollisionManager
+
+const int MAX_NUM_COLLIDERS = 2048;
+
+class Collider;
+class GameObject;
+
+struct PhysicalComponent;
+
+struct CollisionPair
+{
+	Collider* a = nullptr;
+	Collider* b = nullptr;
+};
+
+// 자체 메모리풀 사용
+// 총 충돌 수가 충돌체 * 10 만큼 검출 가능.
+class CollisionManager
 {
 public:
 	CollisionManager();
-	virtual ~CollisionManager() override;
+	~CollisionManager();
 
-	virtual Collider* GetNewColliderPtr(float radius, GameObject* pObj, const Vector3* center, UINT32 kindness);
-	virtual Collider* GetAttachedColliderPtr(ColliderID id) override;
-	virtual JStack* GetCollisionPairs() override;
-	virtual void ReturnCollider(Collider* pColloder) override;
+	Collider* GetNewColliderPtr(GameObject* pObj, PhysicalComponent* objectPhysicalComponent);
+	Collider* GetAttachedColliderPtr(ColliderID id);
+	JStack* GetCollisionPairs();
+	void ReturnCollider(Collider* pColloder);
 
 	// 이전 호출의 결과를 모두 초기화하고 현재 상태를 기준으로 검출함
-	virtual void DetectCollision() override;
+	void DetectCollision();
 
-	void RenewPhysicalComponets();
+	void AdvanceFreeBodyMotion();
+
+	void RenewPhysicalComponents();
 private:
 	Collider* _colliders = nullptr;
 	ColliderID* _usedIDs = nullptr;

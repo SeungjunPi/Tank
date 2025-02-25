@@ -140,6 +140,7 @@
     <ClInclude Include="ICollisionManager.h" />
     <ClInclude Include="IStableFlow.h" />
     <ClInclude Include="StableFlow.h" />
+    <ClInclude Include="StableFlowStaticData.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Collider.cpp" />
