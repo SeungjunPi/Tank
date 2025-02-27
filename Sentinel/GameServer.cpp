@@ -6,7 +6,7 @@
 #include "GameServer.h"
 #include "GameStruct.h"
 #include "Global.h"
-#include "ICollisionManager.h"
+#include "IStableFlow.h"
 #include "JunDB.h"
 
 #include "ObjectManager.h"
@@ -46,11 +46,10 @@ void GameServer::Initialize()
 {
 	CreateNetCore(&g_pNetCore);
 	CreateJunDB(&g_pJunDB);
-	CreateCollisionManager(&g_pCollisionManager);
+	CreateStableFlow(&g_pStableFlow);
 
 	g_playerManager.Initiate(2048);
 	g_objectManager.Initiate();
-	g_pPhysics = DNew Physics;
 
 	g_sessionIds = DNew UINT32[2048];
 }
@@ -117,11 +116,7 @@ void GameServer::Start()
 
 		ULONGLONG dbEndTick = GetTickCount64();
 
-		// PreProcessNextMovement
-		s_PreProcessNextMovements();
-
-		// ApplyPhysics (Movement, etc..)
-		g_pPhysics->ProcessNextMovement(gameTickDiff);
+		g_pStableFlow->ProcessStableFlow(gameTickDiff);
 
 		ULONGLONG physicsEndTick = GetTickCount64();
 		
@@ -176,13 +171,13 @@ void GameServer::End()
 
 void GameServer::CleanUp()
 {
-	delete g_pPhysics;
+	
 	g_playerManager.Terminate();
 	g_objectManager.Terminate();
 	delete[] g_sessionIds;
 	DeleteNetCore(g_pNetCore);
 	TerminateJunDB(g_pJunDB);
-	DeleteCollisionManager(g_pCollisionManager);
+	DeleteStableFlow(g_pStableFlow);
 }
 
 void GameServer::Broadcast(BYTE* msg, int len)
@@ -404,12 +399,15 @@ void s_ApplyObjectLogic(ULONGLONG tickDiff)
 		}
 	}
 
-	JStack* collisionPairs = g_pCollisionManager->GetCollisionPairs();
+	JStack* collisionPairs = g_pStableFlow->GetCollisionPairs();
 	UINT32 size = collisionPairs->GetCount();
 	CollisionPair* pair = (CollisionPair*)collisionPairs->First();
 	for (UINT32 i = 0; i < size; ++i) {
-		pair->a->OnHitWith(g_currentGameTick, pair->b);
-		pair->b->OnHitWith(g_currentGameTick, pair->a);
+		GameObject* pObjA = pair->a->GetAttachedObjectPtr();
+		GameObject* pObjB = pair->b->GetAttachedObjectPtr();
+
+		pObjA->OnHitWith(g_currentGameTick, pObjB);
+		pObjB->OnHitWith(g_currentGameTick, pObjA);
 		++pair;
 	}
 }

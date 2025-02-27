@@ -24,9 +24,9 @@ StableFlow::~StableFlow()
 	delete _pCollisionManager;
 }
 
-Collider* StableFlow::GetNewColliderPtr(float radius, GameObject* pObj, const Vector3* center, UINT32 kindness)
+Collider* StableFlow::GetNewColliderPtr(GameObject* pObj, PhysicalComponent* pObjPhyComponent)
 {
-	Collider* pCollider = _pCollisionManager->GetNewColliderPtr(radius, pObj, center, kindness);
+	Collider* pCollider = _pCollisionManager->GetNewColliderPtr(pObj, pObjPhyComponent);
 	return pCollider;
 }
 
@@ -57,6 +57,7 @@ void StableFlow::ProcessStableFlow(ULONGLONG currentTick)
 	_lastProcessedTick = currentTick;
 
 	_pCollisionManager->RenewPhysicalComponents();
+	_pCollisionManager->AdvanceFreeBodyMotion();
 	_pCollisionManager->DetectCollision();
 
 	// Handle Collision
@@ -64,22 +65,37 @@ void StableFlow::ProcessStableFlow(ULONGLONG currentTick)
 	UINT32 size = collisionPairs->GetCount();
 	CollisionPair* pair = (CollisionPair*)collisionPairs->First();
 	for (UINT32 i = 0; i < size; ++i) {
-		CalculateElasticCollisionNextMovements(pair->a, pair->b, PHYSICS_TICK_RATE);
+		CalculateElasticCollisionNextMovements(pair->a, pair->b);
 		ResolvePenetration(pair->a, pair->b);
 		++pair;
 	}
 
-	// Move Uncollided colliders
-	_pCollisionManager->AdvanceFreeBodyMotion();
-	
-
-	
-
 }
 
-void StableFlow::CalculateElasticCollisionNextMovements(Collider* a, Collider* b, ULONGLONG tickDiff)
+void StableFlow::CalculateElasticCollisionNextMovements(Collider* a, Collider* b)
 {
+	
+	Vector3 n = a->_physicalComponent.transform.Position - b->_physicalComponent.transform.Position;
+	if (Vector3::Norm(n) < SAME_POSITION_THRESHOLD) {
+		// Penetration
+		return;
+	}
+	Vector3::Normalize(&n, n);
 
+	Vector3 v = a->_physicalComponent.velocity * PHYSICS_TICK_RATE;
+	Vector3 w = b->_physicalComponent.velocity * PHYSICS_TICK_RATE;
+
+	Vector3 v_n = n * Vector3::DotProduct(n, v);
+	Vector3 v_t = v - v_n;
+
+	Vector3 w_n = n * Vector3::DotProduct(n, w);
+	Vector3 w_t = w - w_n;
+
+	Vector3 v_np = (v_n * (a->_physicalComponent.mass - b->_physicalComponent.mass) + w_n * (2.0f * b->_physicalComponent.mass)) * (1.0f / (a->_physicalComponent.mass + b->_physicalComponent.mass));
+	Vector3 w_np = (w_n * (b->_physicalComponent.mass - a->_physicalComponent.mass) + v_n * (2.0f * a->_physicalComponent.mass)) * (1.0f / (a->_physicalComponent.mass + b->_physicalComponent.mass));
+
+	a->_nextTransform.Position = a->_physicalComponent.transform.Position + v_n + v_t;
+	b->_nextTransform.Position = b->_physicalComponent.transform.Position + w_np + w_t;
 }
 
 void StableFlow::ResolvePenetration(Collider* a, Collider* b)

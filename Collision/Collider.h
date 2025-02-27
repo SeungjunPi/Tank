@@ -5,6 +5,7 @@
 #include "GameMath.h"
 #include "StableFlowStaticData.h"
 
+class StableFlow;
 class CollisionManager;
 class GameObject;
 
@@ -12,6 +13,7 @@ class GameObject;
 class Collider
 {
 	friend CollisionManager;
+	friend StableFlow;
 public:
 	Collider();
 	~Collider() = default;

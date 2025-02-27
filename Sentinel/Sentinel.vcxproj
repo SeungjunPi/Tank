@@ -147,7 +147,6 @@
     <ClCompile Include="JunDB.cpp" />
     <ClCompile Include="LiteWString.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
-    <ClCompile Include="Physics.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayerManager.cpp" />
     <ClCompile Include="Projectile.cpp" />
@@ -165,11 +164,9 @@
     <ClInclude Include="GameStruct.h" />
     <ClInclude Include="Global.h" />
     <ClInclude Include="IJunDB.h" />
-    <ClInclude Include="Impulse.h" />
     <ClInclude Include="JunDB.h" />
     <ClInclude Include="LiteWString.h" />
     <ClInclude Include="ObjectManager.h" />
-    <ClInclude Include="Physics.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerManager.h" />
     <ClInclude Include="Projectile.h" />

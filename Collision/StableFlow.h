@@ -11,7 +11,7 @@ public:
 	StableFlow();
 	virtual ~StableFlow();
 
-	virtual Collider* GetNewColliderPtr(float radius, GameObject* pObj, const Vector3* center, UINT32 kindness) override;
+	virtual Collider* GetNewColliderPtr(GameObject* pObj, PhysicalComponent* pObjPhyComponent) override;
 	virtual Collider* GetAttachedColliderPtr(ColliderID id) override;
 	virtual void ReturnCollider(Collider* pColloder) override;
 
@@ -25,7 +25,10 @@ private:
 	ULONGLONG _lastProcessedTick = 0;
 	CollisionManager* _pCollisionManager;
 
-	void CalculateElasticCollisionNextMovements(Collider* a, Collider *b, ULONGLONG tickDiff);
+	// 현재 Z=0 평면에서만 처리함.
+	void CalculateElasticCollisionNextMovements(Collider* a, Collider* b);
+
+	// 현재 Z=0 평면에서만 처리함.
 	void ResolvePenetration(Collider* a, Collider* b);
 };
 

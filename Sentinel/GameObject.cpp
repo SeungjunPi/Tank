@@ -3,20 +3,17 @@
 #include "Collider.h"
 
 GameObject::GameObject()
-	: _transform{ 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f }
 {
 }
 
 GameObject::GameObject(ObjectID id, UserDBIndex ownerId)
-	: _transform{ 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f }
-	, _id(id)
+	: _id(id)
 	, _ownerIndex(ownerId)
 {
 }
 
 GameObject::GameObject(ObjectID id, UserDBIndex ownerId, BOOL activatable)
-	: _transform{ 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f }
-	, _id(id)
+	: _id(id)
 	, _ownerIndex(ownerId)
 	, _isActivatable(activatable)
 {
@@ -33,24 +30,24 @@ ObjectID GameObject::GetID() const
 
 Transform GameObject::GetTransform() const
 {
-	return _transform;
+	return _physicalComponent.transform;
 }
 
 const Transform* GameObject::GetTransformPtr() const
 {
-	return &_transform;
+	return &_physicalComponent.transform;
 }
 
 Vector3 GameObject::GetPosition() const
 {
-	return _transform.Position;
+	return _physicalComponent.transform.Position;
 }
 
 BOOL GameObject::UpdateTransformIfValid(const Transform* pTransform)
 {
 	BOOL isClosed = IsTransformCloseEnough(pTransform);
 	if (isClosed) {
-		memcpy(&_transform, pTransform, sizeof(Transform));
+		memcpy(&_physicalComponent.transform, pTransform, sizeof(Transform));
 		SyncTransformWithCollider();
 		return true;
 	}
@@ -79,7 +76,7 @@ void GameObject::Respawn()
 		__debugbreak();
 	}
 	_isAlive = true;
-	_transform = { 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f };
+	_physicalComponent.transform = Transform();
 	_hitTick = 0;
 }
 
@@ -93,13 +90,6 @@ void GameObject::AttachCollider(Collider* pCollider)
 	assert(_pCollider == nullptr);
 
 	_pCollider = pCollider;
-}
-
-void GameObject::SyncTransformWithCollider()
-{
-	if (_pCollider != nullptr) {
-		_pCollider->UpdateCenter(_transform.Position);
-	}
 }
 
 void GameObject::ApplyNextMovement(ULONGLONG tickDiff)

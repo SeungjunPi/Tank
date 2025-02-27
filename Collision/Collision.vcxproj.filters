@@ -30,9 +30,6 @@
     <ClInclude Include="CollisionAlias.h">
       <Filter>pch</Filter>
     </ClInclude>
-    <ClInclude Include="ICollisionManager.h">
-      <Filter>Collision</Filter>
-    </ClInclude>
     <ClInclude Include="Collider.h">
       <Filter>Collision</Filter>
     </ClInclude>
@@ -54,9 +51,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Collider.cpp">
-      <Filter>Collision</Filter>
-    </ClCompile>
-    <ClCompile Include="ICollisionManager.cpp">
       <Filter>Collision</Filter>
     </ClCompile>
     <ClCompile Include="CollisionManager.cpp">

@@ -5,10 +5,9 @@
 
 class INetCore;
 class IJunDB;
-class ICollisionManager;
 class PlayerManager;
 class ObjectManager;
-class Physics;
+class IStableFlow;
 
 const ULONGLONG GAME_FPS = 60;
 const ULONGLONG TICK_PER_GAME_FRAME = 1000 / GAME_FPS;
@@ -23,9 +22,7 @@ extern ULONGLONG g_previousGameTick;
 extern ULONGLONG g_diffGameTick;
 
 extern IJunDB* g_pJunDB;
-extern ICollisionManager* g_pCollisionManager;
+extern IStableFlow* g_pStableFlow;
 extern PlayerManager g_playerManager;
 extern ObjectManager g_objectManager;
-
-extern Physics* g_pPhysics;
 

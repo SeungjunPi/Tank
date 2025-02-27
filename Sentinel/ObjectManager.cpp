@@ -4,6 +4,7 @@
 #include "Projectile.h"
 #include "Global.h"
 #include "StaticData.h"
+#include "IStableFlow.h"
 
 void ObjectManager::Initiate()
 {
@@ -66,7 +67,7 @@ Tank* ObjectManager::CreateTank(UserDBIndex ownerIndex)
 
 	Tank* pTank = DNew Tank(objectId, ownerIndex);
 	const Transform* pTankTransform = pTank->GetTransformPtr();
-	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(TANK_COLLIDER_RADIUS, pTank, &pTankTransform->Position, COLLIDER_KINDNESS_TANK);
+	Collider* pCollider = g_pStableFlow->GetNewColliderPtr(TANK_COLLIDER_RADIUS, pTank, &pTankTransform->Position, COLLIDER_KINDNESS_TANK);
 	pTank->AttachCollider(pCollider);
 	bool res = _tankTable.Insert(objectId.key, pTank);
 	assert(res);

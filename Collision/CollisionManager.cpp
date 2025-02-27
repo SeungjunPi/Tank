@@ -7,8 +7,6 @@
 #include <time.h>
 #include <cmath>
 
-const float SAME_POSITION_THRESHOLD = 1E-04f;
-
 
 CollisionManager::CollisionManager()
 	: _collisionPairs(sizeof(CollisionPair), MAX_NUM_COLLIDERS * 10)
@@ -88,17 +86,11 @@ void CollisionManager::AdvanceFreeBodyMotion()
 	for (size_t i = 0; i < _countActiveColliders; ++i) {
 		ColliderID id = _usedIDs[i];
 		Collider* pCollider = _colliders + id;
-
-		if (pCollider->IsCollided()) {
-			continue;
-		}
-
 		
 		// FreeBodyMotion
 		pCollider->_nextTransform.Position = pCollider->_physicalComponent.transform.Position + pCollider->_physicalComponent.velocity * PHYSICS_TICK_RATE;
 		// Rotation
-		Quaternion angularVelocityQ;
-		// angularVelocityQ = Quaternion::ConvertFromVector3(pCollider->_physicalComponent.angularVelocity * PHYSICS_TICK_RATE); // 이거 구현 안하면 탱크 안돌아감..
+		Quaternion angularVelocityQ = Quaternion::ConvertFromAngle(pCollider->_physicalComponent.angularVelocity * PHYSICS_TICK_RATE);
 		pCollider->_nextTransform.Rotation = Quaternion::Product(pCollider->_physicalComponent.transform.Rotation, angularVelocityQ);
 
 		pCollider->_nextVelocity = pCollider->_physicalComponent.velocity;

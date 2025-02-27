@@ -67,6 +67,28 @@ Quaternion Quaternion::RotateZM90(Quaternion v)
     return w;
 }
 
+Quaternion Quaternion::ConvertFromAngle(Vector3 angle)
+{
+    float theta = Vector3::Norm(angle);
+    Vector3 normalV;
+    
+    if (theta < EPSILON) {
+        return Quaternion();
+    }
+
+    Vector3::Normalize(&normalV, angle);
+
+    float halfTheta = theta * 0.5f;
+    Quaternion q;
+    q.w = cosf(halfTheta);
+    float s = sinf(halfTheta);
+    q.x = normalV.x * s;
+    q.y = normalV.y * s;
+    q.z = normalV.z * s;
+    
+    return q;
+}
+
 float Quaternion::AngularDistance(Quaternion q1, Quaternion q2)
 {
     float dotProduct = q1.w * q2.w + q1.x * q2.x + q1.y * q2.y + q1.z * q2.z;

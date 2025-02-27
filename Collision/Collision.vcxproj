@@ -137,7 +137,6 @@
     <ClInclude Include="CollisionAlias.h" />
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="CollisionPch.h" />
-    <ClInclude Include="ICollisionManager.h" />
     <ClInclude Include="IStableFlow.h" />
     <ClInclude Include="StableFlow.h" />
     <ClInclude Include="StableFlowStaticData.h" />
@@ -146,7 +145,6 @@
     <ClCompile Include="Collider.cpp" />
     <ClCompile Include="collisionMain.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
-    <ClCompile Include="ICollisionManager.cpp" />
     <ClCompile Include="StableFlow.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
