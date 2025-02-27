@@ -40,7 +40,6 @@ void Collider::Initiate(GameObject* pObj, PhysicalComponent* objectPhysicalCompo
 
 void Collider::Clear()
 {
-	_id = INVALID_COLLIDER_ID;
 	_isActive = FALSE;
 	_collisionKindnessFlag = 0;
 	_pObject = nullptr;

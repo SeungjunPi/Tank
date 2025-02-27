@@ -1,23 +1,20 @@
-﻿#include "GameObject.h"
+#include "GameObject.h"
 #include "Collider.h"
 
 GameObject::GameObject()
-	: _transform{ 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f }
-	, _model{ nullptr, 0 }
+	: _model{ nullptr, 0 }
 {
 }
 
 GameObject::GameObject(ObjectID id, UserDBIndex ownerID)
-	: _transform{ 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f }
-	, _id(id)
+	: _id(id)
 	, _model{ nullptr, 0 }
 	, _ownerID(ownerID)
 {
 }
 
 GameObject::GameObject(ObjectID id, UserDBIndex ownerID, BOOL activatable)
-	: _transform{ 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f }
-	, _id(id)
+	: _id(id)
 	, _isActivatable(activatable)
 	, _model{ nullptr, 0 }
 	, _ownerID(ownerID)
@@ -35,7 +32,7 @@ ObjectID GameObject::GetID() const
 
 Transform GameObject::GetTransform() const
 {
-	return _transform;
+	return _physicalComponent.transform;
 }
 
 UserDBIndex GameObject::GetOwnerID() const
@@ -45,19 +42,19 @@ UserDBIndex GameObject::GetOwnerID() const
 
 const Transform* GameObject::GetTransformPtr() const
 {
-	return &_transform;
+	return &_physicalComponent.transform;
 }
 
 Vector3 GameObject::GetPosition() const
 {
-	return _transform.Position;
+	return _physicalComponent.transform.Position;
 }
 
 
 UINT GameObject::GetTransformedModel(Vertex* out_vertices)
 {
-	Vector3 position = _transform.Position;
-	Quaternion rotation = _transform.Rotation;
+	Vector3 position = _physicalComponent.transform.Position;
+	Quaternion rotation = _physicalComponent.transform.Rotation;
 	for (UINT i = 0; i < _model.numVertices; ++i) {
 		Vector3 v = _model.vertices[i].v;
 
@@ -73,9 +70,8 @@ UINT GameObject::GetTransformedModel(Vertex* out_vertices)
 
 void GameObject::SetTransformByServer(const Transform* pTransform)
 {
-	memcpy(&_transform, pTransform, sizeof(Transform));
+	memcpy(&_physicalComponent.transform, pTransform, sizeof(Transform));
 	OnUpdateTransform();
-	SyncTransformWithCollider();
 }
 
 void GameObject::OnRespawn()
@@ -84,7 +80,7 @@ void GameObject::OnRespawn()
 		__debugbreak();
 	}
 	_isAlive = true;
-	_transform = { 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f };
+	_physicalComponent.transform = { 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f };
 	_hitTick = 0;
 }
 
@@ -107,24 +103,10 @@ void GameObject::AttachCollider(Collider* pCollider)
 	_pCollider = pCollider;
 }
 
-void GameObject::SyncTransformWithCollider()
+void GameObject::ApplyStableFlowResult(ULONGLONG tickDiff)
 {
-	if (_pCollider != nullptr) {
-		_pCollider->UpdateCenter(_transform.Position);
-	}
-}
-
-void GameObject::ApplyNextMovement(ULONGLONG tickDiff)
-{
-	
-	_transform.Position = _nextPosition;
-	_transform.Rotation = Quaternion::RotateZP(_nextRotationAngle, _transform.Rotation);
-
-	// printf("P[%f, %f, %f], R[%f, %f, %f, %f]\n", _transform.Position.x, _transform.Position.y, _transform.Position.z, _transform.Rotation.w, _transform.Rotation.x, _transform.Rotation.y, _transform.Rotation.z);
-
+	_pCollider->OverwriteComputedResultsToGameObject();
 	OnUpdateTransform();
-	SyncTransformWithCollider();
-
 }
 
 void GameObject::Tick(ULONGLONG tickDiff)
@@ -132,7 +114,7 @@ void GameObject::Tick(ULONGLONG tickDiff)
 	if (!IsAlive()) {
 		return;
 	}
-	ApplyNextMovement(tickDiff);
+	ApplyStableFlowResult(tickDiff);
 }
 
 

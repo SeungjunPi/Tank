@@ -5,8 +5,8 @@
 #include "INetCore.h"
 #include "Tank.h"
 #include "AllocObjectManager.h"
-#include "ICollisionManager.h"
-#include "Physics.h"
+#include "IStableFlow.h"
+
 
 
 ULONGLONG g_previousGameTick = 0;
@@ -27,9 +27,7 @@ UINT32 g_playerId;
 std::wstring g_userName;
 std::wstring g_password;
 
-ICollisionManager* g_pCollisionManager;
-
-Physics* g_pPhysics;
+IStableFlow* g_pStableFlow;
 
 GameCamera* g_pCamera;
 

@@ -94,6 +94,7 @@ void GameObject::AttachCollider(Collider* pCollider)
 void GameObject::ApplyStableFlowResult()
 {
 	_pCollider->OverwriteComputedResultsToGameObject();
+	OnUpdateTransform();
 }
 
 BOOL GameObject::IsTransformCloseEnough(const Transform* other)

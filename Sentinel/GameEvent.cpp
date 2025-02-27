@@ -362,7 +362,7 @@ void GamePacket::HandleFireMachineGun(BYTE* pGameEvent, SessionID senderId)
 	pScShoot->ownerId = userIndex;
 	
 	memcpy(&pScShoot->transform, pProjectile->GetTransformPtr(), sizeof(Transform));
-	printf("Shoot by: owner=%u, projectileId=%u\n", userIndex, pScShoot->objectId.key);
+	printf("Shoot by: owner=%u, projectileId=%u, at [%f, %f, %f]\n", userIndex, pScShoot->objectId.key, pScShoot->transform.Position.x, pScShoot->transform.Position.y, pScShoot->transform.Position.z);
 
 	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
 }

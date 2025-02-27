@@ -24,7 +24,7 @@ public:
 	virtual void ReturnCollider(Collider* pColloder) = 0;
 
 	// 물리 계산 시작
-	virtual void ProcessStableFlow(ULONGLONG tickDiff) = 0;
+	virtual void ProcessStableFlow(ULONGLONG currentTick) = 0;
 };
 
 void CreateStableFlow(IStableFlow** dst);

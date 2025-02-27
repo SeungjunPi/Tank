@@ -54,61 +54,31 @@ void Tank::AdvancePlayerInput(PlayerInputState inputState)
 	_prevInputState = _crntInputState;
 	_crntInputState = inputState;
 
-	if (_crntInputState & PLAYER_INPUT_FLAG_UP) {
-		if (!(_crntInputState & PLAYER_INPUT_FLAG_DOWN)) {
-			_physicalComponent.velocity = Vector3::Rotate(FORWARD_DIRECTION, _physicalComponent.transform.Rotation) * TANK_TRANSLATION_SPEED;
-		}
+	if ((_crntInputState & PLAYER_INPUT_FLAG_UP) && !(_crntInputState & PLAYER_INPUT_FLAG_DOWN)) {
+		_physicalComponent.velocity = Vector3::Rotate(FORWARD_DIRECTION, _physicalComponent.transform.Rotation) * TANK_TRANSLATION_SPEED;
 	}
-	else if (_crntInputState & PLAYER_INPUT_FLAG_DOWN) {
-		_physicalComponent.velocity = Vector3::Rotate(FORWARD_DIRECTION, _physicalComponent.transform.Rotation) * TANK_TRANSLATION_SPEED * -1.f;
+	else if ((_crntInputState & PLAYER_INPUT_FLAG_DOWN) && !(_crntInputState & PLAYER_INPUT_FLAG_UP)) {
+		_physicalComponent.velocity = Vector3::Rotate(BACKWARD_DIRECTION, _physicalComponent.transform.Rotation) * TANK_TRANSLATION_SPEED;
 	}
 	else {
-		
+		_physicalComponent.velocity = Vector3();
 	}
 
 	if (_crntInputState & PLAYER_INPUT_FLAG_LEFT) {
 		if (!(_crntInputState & PLAYER_INPUT_FLAG_RIGHT)) {
 			_physicalComponent.angularVelocity = { 0, 0, -TANK_ROTATION_SPEED };
 		}
+		else {
+			_physicalComponent.angularVelocity = Vector3();
+		}
 	}
 	else if (_crntInputState & PLAYER_INPUT_FLAG_RIGHT) {
 		_physicalComponent.angularVelocity = { 0, 0, TANK_ROTATION_SPEED };
 	}
 	else {
-		
+		_physicalComponent.angularVelocity = Vector3();
 	}
 }
-//
-//void Tank::PreProcessMovementState()
-//{
-//	_translationSpeed = 0.0f;
-//	_rotationAngle = 0.0f;
-//	if (_crntInputState & PLAYER_INPUT_FLAG_UP) {
-//		if (!(_crntInputState & PLAYER_INPUT_FLAG_DOWN)) {
-//			_translationDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
-//			_translationSpeed = TANK_TRANSLATION_SPEED;
-//		}
-//	}
-//	else if (_crntInputState & PLAYER_INPUT_FLAG_DOWN) {
-//		_translationDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation) * -1.f;
-//		_translationSpeed = TANK_TRANSLATION_SPEED;
-//	}
-//	else {
-//		
-//	}
-//
-//	if (_crntInputState & PLAYER_INPUT_FLAG_LEFT) {
-//		if (!(_crntInputState & PLAYER_INPUT_FLAG_RIGHT)) {
-//			_rotationAngle = -TANK_ROTATION_SPEED;
-//		}
-//	}
-//	else if (_crntInputState & PLAYER_INPUT_FLAG_RIGHT) {
-//		_rotationAngle = TANK_ROTATION_SPEED;
-//	}
-//	else {
-//		
-//	}
-//}
 
 void Tank::Tick(ULONGLONG tickDiff)
 {
@@ -149,6 +119,7 @@ void Tank::OnHitWith(ULONGLONG currentTick, GameObject* other)
 
 void Tank::OnUpdateTransform()
 {
+	// printf("P[%f, %f, %f], R[%f, %f, %f, %f]\n", _physicalComponent.transform.Position.x, _physicalComponent.transform.Position.y, _physicalComponent.transform.Position.z, _physicalComponent.transform.Rotation.w, _physicalComponent.transform.Rotation.x, _physicalComponent.transform.Rotation.y, _physicalComponent.transform.Rotation.z);
 }
 
 void Tank::Respawn()

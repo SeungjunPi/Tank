@@ -115,10 +115,8 @@ void GameServer::Start()
 
 		ULONGLONG dbEndTick = GetTickCount64();
 
-		g_pStableFlow->ProcessStableFlow(gameTickDiff);
-
-		// Apply Hit process
-
+		// Physics
+		g_pStableFlow->ProcessStableFlow(g_currentGameTick);
 		ULONGLONG physicsEndTick = GetTickCount64();
 		
 		// Game Logic(DB, Apply Collision, )
@@ -146,13 +144,13 @@ void GameServer::Start()
 		{
 			// Todo: WaitForSingleObject
 
-			//ULONGLONG tick = GetTickCount64() + 1;
-			//ULONGLONG tickDiff = tick - currentTick;
-			//ULONGLONG sleepTick = tickDiff >= TICK_PER_GAME_FRAME ? 0 : TICK_PER_GAME_FRAME - tickDiff;
-			//if (tickDiff < TICK_PER_GAME_FRAME) {
-			//	Sleep(TICK_PER_GAME_FRAME - tickDiff);	
-			//	continue;
-			//}
+			ULONGLONG tick = GetTickCount64() + 1;
+			ULONGLONG tickDiff = tick - loopInitTick;
+			ULONGLONG sleepTick = tickDiff >= TICK_PER_GAME_FRAME ? 0 : TICK_PER_GAME_FRAME - tickDiff;
+			if (tickDiff < TICK_PER_GAME_FRAME) {
+				Sleep(TICK_PER_GAME_FRAME - tickDiff);	
+				continue;
+			}
 		}
 	}
 

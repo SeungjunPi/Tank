@@ -1,10 +1,10 @@
-﻿
+
 #include "Obstacle.h"
 #include "StaticData.h"
 
 void Obstacle::Initiate(ObjectID id, Transform* pInitTransform)
 {
-	memcpy(&_transform, pInitTransform, sizeof(Transform));
+	// memcpy(&_transform, pInitTransform, sizeof(Transform));
 	_id = id;
 	_model = g_pObstacleModel;
 	_hitTick = 0;

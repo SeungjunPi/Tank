@@ -5,13 +5,12 @@
 #include "StableFlowStaticData.h"
 
 const Vector3 FORWARD_DIRECTION = { .0f, -1.0f, .0f };
+const Vector3 BACKWARD_DIRECTION = { .0f, 1.0f, .0f };
 
 class Collider;
-class Physics;
 
 class GameObject
 {
-	friend Physics;
 public:
 	GameObject();
 	GameObject(ObjectID id, UserDBIndex ownerId);

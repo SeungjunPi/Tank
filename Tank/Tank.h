@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "GameObject.h"
 #include "CommonData.h"
@@ -17,9 +17,8 @@ public:
 	void ResetHP();
 
 	void UpdatePlayerInputStateFromServer(PlayerInputState inputState);
-	void UpdatePlayerInputState(PlayerInputState inputState);
+	void AdvancePlayerInput(PlayerInputState inputState);
 
-	virtual void PreProcessMovementState() override;
 	virtual void Tick(ULONGLONG tickDiff) override;
 
 	virtual BOOL IsDestroyed(ULONGLONG currentTick) const override;
@@ -30,8 +29,8 @@ public:
 
 	virtual void OnHitServer(ULONGLONG currentTick, GameObject* other) override;
 private:
-	PlayerInputState _currentInputState = PLAYER_INPUT_NONE;
-	PlayerInputState _previousInputState = PLAYER_INPUT_NONE;
+	PlayerInputState _crntInputState = PLAYER_INPUT_NONE;
+	PlayerInputState _prevInputState = PLAYER_INPUT_NONE;
 	
 	ULONGLONG _lastTransformSyncTick = 0;
 	ULONGLONG _lastMachineGunFiringTick = 0;

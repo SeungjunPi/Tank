@@ -50,11 +50,12 @@ JStack* StableFlow::GetCollisionPairs()
 
 void StableFlow::ProcessStableFlow(ULONGLONG currentTick)
 {
-	ULONGLONG tickDiff = currentTick - _lastProcessedTick;
-	if (tickDiff < PHYSICS_TICK_RATE) {
-		return;
-	}
-	_lastProcessedTick = currentTick;
+
+	//ULONGLONG tickDiff = currentTick - _lastProcessedTick;
+	//if (tickDiff < PHYSICS_TICK_RATE) {
+	//	return;
+	//}
+	//_lastProcessedTick = currentTick;
 
 	_pCollisionManager->RenewPhysicalComponents();
 	_pCollisionManager->AdvanceFreeBodyMotion();

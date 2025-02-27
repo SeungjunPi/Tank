@@ -1,8 +1,7 @@
 #pragma once
 
 
-#include "CollisionPch.h"
-
+#include "CollisionAlias.h"
 
 
 const ULONGLONG PHYSICS_TICK_RATE = 16;
