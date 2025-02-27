@@ -137,8 +137,8 @@ void s_ApplyObjectLogic(ULONGLONG tickDiff)
 	UINT32 keys[1024];
 	UINT32 countKeys;
 
-	int objectKindEnumMax = (int)GAME_OBJECT_TYPE_OBSTACLE;
-	for (int i = 0; i <= objectKindEnumMax; ++i) {
+	int objectKindEnumMax = (int)GAME_OBJECT_TYPE_MAX;
+	for (int i = 0; i < objectKindEnumMax; ++i) {
 		EGameObjectType kind = (EGameObjectType)i;
 		g_objectManager.GetKeys(kind, keys, &countKeys);
 		for (int j = 0; j < countKeys; ++j) {

@@ -2,6 +2,7 @@
 
 #include "Global.h"
 #include "ConsoleRenderer.h"
+#include "CollisionManager.h"
 #include "KeyboardEventListener.h"
 #include "AllocObjectManager.h"
 
@@ -14,16 +15,14 @@
 #include "NetMessageQueue.h"
 
 #include "GameEvent.h"
-#include "ICollisionManager.h"
+#include "IStableFlow.h"
 #include "Collider.h"
 #include "Player.h"
 #include "Camera.h"
-#include "Physics.h"
 
 #include "DummyManager.h"
 
 static void s_ApplyKeyboardEvents(ULONGLONG tickDiff);
-static void s_PreProcessNextMovements();
 static void s_ApplyObjectLogic(ULONGLONG tickDiff);
 static void s_HandleNetEvents();
 static void s_CleanupDestroyedObjects(ULONGLONG curTick);
@@ -45,10 +44,9 @@ void Game::Initialize()
 		__debugbreak();
 	}
 
-	CreateCollisionManager(&g_pCollisionManager);
+	CreateStableFlow(&g_pStableFlow);
 
 	g_pCamera = DNew GameCamera;
-	g_pPhysics = DNew Physics;
 	g_pDummyManager = DNew DummyManager();
 	g_pDummyManager->Initiate();
 }
@@ -60,14 +58,14 @@ void Game::CleanUp()
 
 	g_pNetCore->EndNetCore();
 
-	DeleteCollisionManager(g_pCollisionManager);
+	DeleteStableFlow(g_pStableFlow);
 	DeleteNetCore(g_pNetCore);
 	
 	ConsoleRenderer::Terminate();
 	KeyboardEventListener::Terminate();
 	g_objectManager.Terminate();
 	g_pDummyManager->Shutdown();
-	delete g_pPhysics;
+	
 	delete g_pDummyManager;
 	delete g_pCamera;
 }
@@ -91,11 +89,9 @@ void Game::Start()
 
 			g_pDummyManager->Tick();
 
-			// PreProcessNextMovement
-			s_PreProcessNextMovements();
 
 			// Physics(Detect Collision, Decide Next Movement)
-			g_pPhysics->ProcessNextMovement(gameTickDiff);
+			g_pStableFlow->ProcessStableFlow(g_currentGameTick);
 
 			// Game Logic()
 			s_ApplyObjectLogic(gameTickDiff);
@@ -136,34 +132,13 @@ void s_ApplyKeyboardEvents(ULONGLONG tickDiff)
 	}
 }
 
-void s_PreProcessNextMovements()
-{
-	// 유저와 네트워크 입력에 따라 객체의 이동 상태 변경에 대응하기 위함
-	UINT32 keys[1024];
-	UINT32 countKeys;
-
-	int objectKindEnumMax = (int)GAME_OBJECT_TYPE_OBSTACLE;
-	for (int i = 0; i <= objectKindEnumMax; ++i) {
-		EGameObjectType kind = (EGameObjectType)i;
-		g_objectManager.GetKeys(kind, keys, &countKeys);
-		for (int j = 0; j < countKeys; ++j) {
-			GameObject* pObject = g_objectManager.GetObjectPtrOrNull(kind, keys[j]);
-			if (pObject == NULL) {
-				__debugbreak();
-			}
-
-			pObject->PreProcessMovementState();
-		}
-	}
-}
-
 void s_ApplyObjectLogic(ULONGLONG tickDiff)
 {
 	UINT32 keys[1024];
 	UINT32 countKeys;
 
-	int objectKindEnumMax = (int)GAME_OBJECT_TYPE_OBSTACLE;
-	for (int i = 0; i <= objectKindEnumMax; ++i) {
+	int objectKindEnumMax = (int)GAME_OBJECT_TYPE_MAX;
+	for (int i = 0; i < objectKindEnumMax; ++i) {
 		EGameObjectType kind = (EGameObjectType)i;
 		g_objectManager.GetKeys(kind, keys, &countKeys);
 		for (int j = 0; j < countKeys; ++j) {
@@ -177,12 +152,15 @@ void s_ApplyObjectLogic(ULONGLONG tickDiff)
 	}
 
 
-	JStack* collisionPairs = g_pCollisionManager->GetCollisionPairs();
+	JStack* collisionPairs = g_pStableFlow->GetCollisionPairs();
 	UINT32 size = collisionPairs->GetCount();
 	CollisionPair* pair = (CollisionPair*)collisionPairs->First();
 	for (UINT32 i = 0; i < size; ++i) {
-		pair->a->OnHitWith(g_currentGameTick, pair->b);
-		pair->b->OnHitWith(g_currentGameTick, pair->a);
+		GameObject* pObjA = pair->a->GetAttachedObjectPtr();
+		GameObject* pObjB = pair->b->GetAttachedObjectPtr();
+
+		pObjA->OnHitWith(g_currentGameTick, pObjB);
+		pObjB->OnHitWith(g_currentGameTick, pObjA);
 		++pair;
 	}
 }

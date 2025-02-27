@@ -1,7 +1,7 @@
 #include "AllocObjectManager.h"
 #include "GameObject.h"
 #include "Global.h"
-#include "ICollisionManager.h"
+#include "IStableFlow.h"
 #include "CommonData.h"
 
 static const int MAX_NUM_OBJECT = 4096;
@@ -59,7 +59,7 @@ Tank* AllocObjectManager::CreateTank(ObjectID objectID, UserDBIndex ownerIndex)
 	const Transform* pTankTransform = pTank->GetTransformPtr();
 
 
-	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(TANK_COLLIDER_RADIUS, pTank, &pTankTransform->Position, COLLIDER_KINDNESS_TANK);
+	Collider* pCollider = g_pStableFlow->GetNewColliderPtr(pTank, pTank->GetPhysicalComponentPtr());
 	pTank->AttachCollider(pCollider);
 
 	bool res = _tankTable.Insert(objectID.key, pTank);
@@ -79,7 +79,7 @@ Projectile* AllocObjectManager::CreateProjectile(ObjectID objectID, Transform* p
 {
 	Projectile* pProjectile = DNew Projectile();
 	const Transform* pProjectileTransform = pProjectile->GetTransformPtr();
-	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(PROJECTILE_COLLIDER_RADIUS, pProjectile, &pProjectileTransform->Position, COLLIDER_KINDNESS_PROJECTILE);
+	Collider* pCollider = g_pStableFlow->GetNewColliderPtr(pProjectile, pProjectile->GetPhysicalComponentPtr());
 	pProjectile->AttachCollider(pCollider);
 	pProjectile->Initiate(objectID, pInitTransform, ownerIndex);
 	_projectileTable.Insert(objectID.key, pProjectile);
@@ -107,7 +107,7 @@ void AllocObjectManager::RemoveObject(EGameObjectType objectKind, ObjectKey obje
 		Tank* pTank = (Tank*)ptr;
 		_tankTableByOwner.Pop(pTank->GetOwnerID());
 		Collider* pCollider = pTank->GetColliderPtr();
-		g_pCollisionManager->ReturnCollider(pCollider);
+		g_pStableFlow->ReturnCollider(pCollider);
 		break;
 	}
 	case GAME_OBJECT_TYPE_PROJECTILE:
@@ -115,7 +115,7 @@ void AllocObjectManager::RemoveObject(EGameObjectType objectKind, ObjectKey obje
 		ptr = _projectileTable.Pop(objectKey);
 		Projectile* pProjectile = (Projectile*)ptr;
 		Collider* pCollider = pProjectile->GetColliderPtr();
-		g_pCollisionManager->ReturnCollider(pCollider);
+		g_pStableFlow->ReturnCollider(pCollider);
 		break;
 	}
 	case GAME_OBJECT_TYPE_OBSTACLE:

@@ -4,11 +4,11 @@
 
 class INetCore;
 class AllocObjectManager;
-class ICollisionManager;
 class GameCamera;
 class Player;
 class DummyManager;
-class Physics;
+class IStableFlow;
+
 
 struct Score
 {
@@ -31,8 +31,7 @@ extern DWORD g_currentFPS;
 extern INetCore* g_pNetCore;
 
 extern AllocObjectManager g_objectManager;
-extern ICollisionManager* g_pCollisionManager;
-extern Physics* g_pPhysics;
+extern IStableFlow* g_pStableFlow;
 
 extern GameCamera* g_pCamera;
 extern DummyManager* g_pDummyManager;
