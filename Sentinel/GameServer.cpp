@@ -12,7 +12,6 @@
 #include "ObjectManager.h"
 #include "PlayerManager.h"
 #include "Tank.h"
-#include "Physics.h"
 
 // NetCore
 #include "INetCore.h"
@@ -29,7 +28,7 @@ static void s_ApplyObjectLogic(ULONGLONG tickDiff);
 static void s_CleanupDestroyedObjects(ULONGLONG curTick);
 static void s_OnSessionEvent(UINT32 sessionID, ESessionEvent sessionEvent);
 static void s_ProcessDBQueryResults();
-static void s_PreProcessNextMovements();
+// static void s_PreProcessNextMovements();
 
 static void s_ProcessDBResultValidation(DBQueryValidation* pQueryValidation);
 static void s_ProcessDBResultLoadScore(DBQueryLoadStat* pQueryLoadStat); // 현재 이 함수는 Validation이 성공한 직후에만 불린다고 가정.
@@ -118,6 +117,8 @@ void GameServer::Start()
 
 		g_pStableFlow->ProcessStableFlow(gameTickDiff);
 
+		// Apply Hit process
+
 		ULONGLONG physicsEndTick = GetTickCount64();
 		
 		// Game Logic(DB, Apply Collision, )
@@ -175,6 +176,7 @@ void GameServer::CleanUp()
 	g_playerManager.Terminate();
 	g_objectManager.Terminate();
 	delete[] g_sessionIds;
+	
 	DeleteNetCore(g_pNetCore);
 	TerminateJunDB(g_pJunDB);
 	DeleteStableFlow(g_pStableFlow);
@@ -286,25 +288,25 @@ void s_ProcessDBQueryResults()
 	g_pJunDB->EndHandleResult();
 }
 
-void s_PreProcessNextMovements()
-{
-	UINT32 keys[1024];
-	UINT32 countKeys;
-
-	int objectKindEnumMax = (int)GAME_OBJECT_TYPE_OBSTACLE;
-	for (int i = 0; i <= objectKindEnumMax; ++i) {
-		EGameObjectType kind = (EGameObjectType)i;
-		g_objectManager.GetKeys(kind, keys, &countKeys);
-		for (int j = 0; j < countKeys; ++j) {
-			GameObject* pObject = g_objectManager.GetObjectPtrOrNull(kind, keys[j]);
-			if (pObject == NULL) {
-				__debugbreak();
-			}
-
-			pObject->PreProcessMovementState();
-		}
-	}
-}
+//void s_PreProcessNextMovements()
+//{
+//	UINT32 keys[1024];
+//	UINT32 countKeys;
+//
+//	int objectKindEnumMax = (int)GAME_OBJECT_TYPE_OBSTACLE;
+//	for (int i = 0; i <= objectKindEnumMax; ++i) {
+//		EGameObjectType kind = (EGameObjectType)i;
+//		g_objectManager.GetKeys(kind, keys, &countKeys);
+//		for (int j = 0; j < countKeys; ++j) {
+//			GameObject* pObject = g_objectManager.GetObjectPtrOrNull(kind, keys[j]);
+//			if (pObject == NULL) {
+//				__debugbreak();
+//			}
+//
+//			pObject->PreProcessMovementState();
+//		}
+//	}
+//}
 
 void s_ProcessDBResultValidation(DBQueryValidation* pQueryValidation)
 {

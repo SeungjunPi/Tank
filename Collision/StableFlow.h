@@ -9,7 +9,7 @@ class StableFlow : public IStableFlow
 {
 public:
 	StableFlow();
-	virtual ~StableFlow();
+	virtual ~StableFlow() override;
 
 	virtual Collider* GetNewColliderPtr(GameObject* pObj, PhysicalComponent* pObjPhyComponent) override;
 	virtual Collider* GetAttachedColliderPtr(ColliderID id) override;

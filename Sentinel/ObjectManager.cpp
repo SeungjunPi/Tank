@@ -66,8 +66,7 @@ Tank* ObjectManager::CreateTank(UserDBIndex ownerIndex)
 	assert(objectId.key != INVALID_OBJECT_KEY);
 
 	Tank* pTank = DNew Tank(objectId, ownerIndex);
-	const Transform* pTankTransform = pTank->GetTransformPtr();
-	Collider* pCollider = g_pStableFlow->GetNewColliderPtr(TANK_COLLIDER_RADIUS, pTank, &pTankTransform->Position, COLLIDER_KINDNESS_TANK);
+	Collider* pCollider = g_pStableFlow->GetNewColliderPtr(pTank, pTank->GetPhysicalComponentPtr());
 	pTank->AttachCollider(pCollider);
 	bool res = _tankTable.Insert(objectId.key, pTank);
 	assert(res);
@@ -85,7 +84,7 @@ void ObjectManager::RemoveTank(ObjectID objectId, UserDBIndex ownerId)
 	assert(pTank != nullptr);
 
 	Collider* pCollider = pTank->GetColliderPtr();
-	g_pCollisionManager->ReturnCollider(pCollider);
+	g_pStableFlow->ReturnCollider(pCollider);
 
 	auto res = _unusedObjectIdQueue.Push(&objectId.key);
 	assert(res);
@@ -102,7 +101,7 @@ Projectile* ObjectManager::CreateProjectile(UserDBIndex ownerId, Transform* pTra
 
 	Projectile* pProjectile = DNew Projectile;
 	const Transform* pProjectileTransform = pProjectile->GetTransformPtr();
-	Collider* pCollider = g_pCollisionManager->GetNewColliderPtr(PROJECTILE_COLLIDER_RADIUS, pProjectile, &pProjectileTransform->Position, COLLIDER_KINDNESS_PROJECTILE);
+	Collider* pCollider = g_pStableFlow->GetNewColliderPtr(pProjectile, pProjectile->GetPhysicalComponentPtr());
 	pProjectile->AttachCollider(pCollider);
 	pProjectile->Initiate(objectId, pTransform, ownerId);
 	
@@ -117,7 +116,7 @@ void ObjectManager::RemoveProjectile(ObjectID objectId)
 	assert(pProjectile != nullptr);
 
 	Collider* pCollider = pProjectile->GetColliderPtr();
-	g_pCollisionManager->ReturnCollider(pCollider);
+	g_pStableFlow->ReturnCollider(pCollider);
 
 	auto res = _unusedObjectIdQueue.Push(&objectId.key);
 	assert(res);
@@ -248,5 +247,5 @@ void ObjectManager::SetObjectInputState(ObjectID objectID, PlayerInputState inpu
 	if (pTank == nullptr) {
 		return;
 	}
-	pTank->UpdatePlayerInputState(inputState);
+	pTank->AdvancePlayerInput(inputState);
 }

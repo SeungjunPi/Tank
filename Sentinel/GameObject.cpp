@@ -48,7 +48,6 @@ BOOL GameObject::UpdateTransformIfValid(const Transform* pTransform)
 	BOOL isClosed = IsTransformCloseEnough(pTransform);
 	if (isClosed) {
 		memcpy(&_physicalComponent.transform, pTransform, sizeof(Transform));
-		SyncTransformWithCollider();
 		return true;
 	}
 	
@@ -62,7 +61,7 @@ void GameObject::Tick(ULONGLONG tickDiff)
 		return;
 	}
 
-	ApplyNextMovement(tickDiff);
+	ApplyStableFlowResult();
 }
 
 UserDBIndex GameObject::GetOwnerId() const
@@ -92,20 +91,14 @@ void GameObject::AttachCollider(Collider* pCollider)
 	_pCollider = pCollider;
 }
 
-void GameObject::ApplyNextMovement(ULONGLONG tickDiff)
+void GameObject::ApplyStableFlowResult()
 {
-	_transform.Position = _nextPosition;
-	_transform.Rotation = Quaternion::RotateZP(_nextRotationAngle, _transform.Rotation);
-
-	// printf("P[%f, %f, %f], R[%f, %f, %f, %f]\n", _transform.Position.x, _transform.Position.y, _transform.Position.z, _transform.Rotation.w, _transform.Rotation.x, _transform.Rotation.y, _transform.Rotation.z);
-
-	OnUpdateTransform();
-	SyncTransformWithCollider();
+	_pCollider->OverwriteComputedResultsToGameObject();
 }
 
 BOOL GameObject::IsTransformCloseEnough(const Transform* other)
 {
-	if (memcmp(&_transform, other, sizeof(Transform)) == 0) {
+	if (memcmp(&_physicalComponent.transform, other, sizeof(Transform)) == 0) {
 		return true;
 	}
 	

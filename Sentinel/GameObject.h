@@ -40,8 +40,11 @@ public:
 	BOOL IsCollidable() { return _pCollider != nullptr; }
 
 	Collider* GetColliderPtr() const { return _pCollider; }
+	PhysicalComponent* GetPhysicalComponentPtr() { return &_physicalComponent; }
 	ULONGLONG GetHitTick() const { return _hitTick; }
-	void ApplyNextMovement(ULONGLONG tickDiff);
+	void ApplyStableFlowResult();
+
+
 
 	
 	virtual void OnUpdateTransform() = 0;

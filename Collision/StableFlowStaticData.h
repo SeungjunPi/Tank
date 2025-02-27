@@ -1,13 +1,13 @@
 #pragma once
 
+
 #include "CollisionPch.h"
+
 
 
 const ULONGLONG PHYSICS_TICK_RATE = 16;
 
 const ColliderID INVALID_COLLIDER_ID = 0xffff;
-
-const float SAME_POSITION_THRESHOLD = 1E-04f;
 
 
 enum ColliderType

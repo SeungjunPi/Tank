@@ -76,7 +76,7 @@ void StableFlow::CalculateElasticCollisionNextMovements(Collider* a, Collider* b
 {
 	
 	Vector3 n = a->_physicalComponent.transform.Position - b->_physicalComponent.transform.Position;
-	if (Vector3::Norm(n) < SAME_POSITION_THRESHOLD) {
+	if (Vector3::Norm(n) < EPSILON) {
 		// Penetration
 		return;
 	}

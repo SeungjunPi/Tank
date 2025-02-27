@@ -14,6 +14,7 @@ class GameObject;
 class IStableFlow
 {
 public:
+	virtual ~IStableFlow() {}
 
 	// Collider 관련 
 	// 사용 종료 시 반드시 ReturnCollider를 통해 반환해야 함.

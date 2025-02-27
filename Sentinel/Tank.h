@@ -18,9 +18,8 @@ public:
 
 	void ResetHP();
 
-	void UpdatePlayerInputState(PlayerInputState inputState);
+	void AdvancePlayerInput(PlayerInputState inputState);
 
-	virtual void PreProcessMovementState() override;
 	virtual void Tick(ULONGLONG tickDiff) override;
 
 	virtual BOOL IsDestroyed(ULONGLONG currentTick) const;

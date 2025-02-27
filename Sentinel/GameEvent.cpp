@@ -211,7 +211,7 @@ void GamePacket::HandleStartMove(BYTE* pGameEvent, SessionID senderId)
 		return;
 	}
 
-	pTank->UpdatePlayerInputState(pCsStartMove->inputState);
+	pTank->AdvancePlayerInput(pCsStartMove->inputState);
 
 	const size_t PACKET_SIZE = sizeof(PACKET_SC_START_MOVE) + sizeof(EGameEventCode);
 	BYTE pRawPacket[PACKET_SIZE] = { 0, };
@@ -253,7 +253,7 @@ void GamePacket::HandleEndMove(BYTE* pGameEvent, SessionID senderId)
 		return;
 	}
 
-	pTank->UpdatePlayerInputState(PLAYER_INPUT_NONE);
+	pTank->AdvancePlayerInput(PLAYER_INPUT_NONE);
 
 	BOOL isChanged = pTank->UpdateTransformIfValid(&pCsEndMove->transform);
 
@@ -302,7 +302,7 @@ void GamePacket::HandleMoving(BYTE* pGameEvent, SessionID senderId)
 		return;
 	}
 
-	pTank->UpdatePlayerInputState(pCsMoving->inputState);
+	pTank->AdvancePlayerInput(pCsMoving->inputState);
 	BOOL isChanged = pTank->UpdateTransformIfValid(&pCsMoving->transform);
 
 	const size_t PACKET_SIZE = sizeof(PACKET_SC_MOVING) + sizeof(EGameEventCode);
