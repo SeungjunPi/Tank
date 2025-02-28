@@ -1,7 +1,9 @@
 
+
 #include "StableFlow.h"
 #include "CollisionManager.h"
 #include "Collider.h"
+
 
 void CreateStableFlow(IStableFlow** dst)
 {
@@ -101,5 +103,23 @@ void StableFlow::CalculateElasticCollisionNextMovements(Collider* a, Collider* b
 
 void StableFlow::ResolvePenetration(Collider* a, Collider* b)
 {
+	Vector3 n = a->_physicalComponent.transform.Position - b->_physicalComponent.transform.Position;
+	float distance = Vector3::Norm(n);
+	float penetrationDepth = (a->_physicalComponent.radius + b->_physicalComponent.radius) - distance;
+	if (penetrationDepth <= PENETRATION_THRESHOLD) {
+		return;
+	}
 
+	if (distance < SAME_POSITION_THRESHOLD) {
+		// 완전히 겹쳤을 시 
+		n = { 1.0f, 0.f, 0.f };
+	}
+
+	Vector3::Normalize(&n, n);
+
+	float weight1 = b->_physicalComponent.mass / (a->_physicalComponent.mass + b->_physicalComponent.mass);
+	float weight2 = a->_physicalComponent.mass / (a->_physicalComponent.mass + b->_physicalComponent.mass);
+
+	a->_nextTransform.Position = a->_physicalComponent.transform.Position + n * (penetrationDepth * weight1);
+	b->_nextTransform.Position = b->_physicalComponent.transform.Position + n * (penetrationDepth * weight2) * -1.f;
 }

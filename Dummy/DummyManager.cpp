@@ -47,6 +47,9 @@ void DummyManager::Shutdown()
 	}
 	_dummyMap.clear();
 
+	delete[] pws;
+	delete[] ids;
+
 	delete _pDummyMaster;
 }
 
