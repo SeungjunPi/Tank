@@ -17,7 +17,6 @@ public:
 
 	BOOL IsDestroyed(ULONGLONG currentTick) const override;
 
-	virtual void PreProcessMovementState() override;
 	virtual void OnHitWith(ULONGLONG currentTick, GameObject* other) override;
 	virtual void OnUpdateTransform() override;
 

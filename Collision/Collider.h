@@ -3,9 +3,9 @@
 #include "CollisionPch.h"
 #include "CollisionAlias.h"
 #include "GameMath.h"
+#include "StableFlowStaticData.h"
 
-const ColliderID INVALID_COLLIDER_ID = 0xffff;
-
+class StableFlow;
 class CollisionManager;
 class GameObject;
 
@@ -13,14 +13,13 @@ class GameObject;
 class Collider
 {
 	friend CollisionManager;
+	friend StableFlow;
 public:
 	Collider();
 	~Collider() = default;
 
  	ColliderID GetID() const { return _id; }
-	Vector3 GetCenter() const { return _center; }
-
-	void UpdateCenter(const Vector3& position);
+	Vector3 GetCenter() const { return _physicalComponent.transform.Position; }
 
 	GameObject* GetAttachedObjectPtr() const { return _pObject; }
 
@@ -29,24 +28,30 @@ public:
 	
 	void ResetCollisionFlag();
 
-	BOOL IsActive() { return _isActive; }
+	BOOL IsActive() const { return _isActive; }
 	void Activate() { _isActive = TRUE; }
 	void Deactivate() { _isActive = FALSE; }
+
+	void UpdatePhysicsComponentFromGameObject();
+	void OverwriteComputedResultsToGameObject();
+	void GetComputedResults(Transform* out_transform, Vector3* out_velocity, Vector3* out_angularVelocity) const;
 	
 private:
 	ColliderID _id = INVALID_COLLIDER_ID;
 
-	// Decide Collider
-	Vector3 _center;
-	float _radius = 0.0f;
+	PhysicalComponent _physicalComponent;
 
-	UINT32 _kindness = 0;
+	Transform _nextTransform;
+	Vector3 _nextVelocity;
+	Vector3 _nextAngularVelocity;
+
 	UINT32 _collisionKindnessFlag = 0;
 	
 	GameObject* _pObject = nullptr;
+	PhysicalComponent* _pObjectPhysicalComponent = nullptr;
 	BOOL _isActive = FALSE;
 
-	void Initiate(float radius, GameObject* pObj, const Vector3* center, UINT32 kindness);
+	void Initiate(GameObject* pObj, PhysicalComponent* objectPhysicalComponent);
 
 	// 반환하기 위해 내부를 모두 초기화하는 용도로 사용
 	void Clear();

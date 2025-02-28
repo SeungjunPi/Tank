@@ -4,10 +4,9 @@
 
 class INetCore;
 class AllocObjectManager;
-class ICollisionManager;
+class IStableFlow;
 class GameCamera;
 class Player;
-class Physics;
 
 struct Score
 {
@@ -37,8 +36,7 @@ extern AllocObjectManager g_objectManager;
 extern std::wstring g_userName;
 extern std::wstring g_password;
 
-extern ICollisionManager* g_pCollisionManager;
-extern Physics* g_pPhysics;
+extern IStableFlow* g_pStableFlow;
 
 extern GameCamera* g_pCamera;
 

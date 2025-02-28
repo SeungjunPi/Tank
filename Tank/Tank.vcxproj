@@ -154,7 +154,6 @@
     <ClCompile Include="KeyboardEventListener.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Obstacle.cpp" />
-    <ClCompile Include="Physics.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Projectile.cpp" />
     <ClCompile Include="StaticData.cpp" />
@@ -173,7 +172,6 @@
     <ClInclude Include="Global.h" />
     <ClInclude Include="KeyboardEventListener.h" />
     <ClInclude Include="Obstacle.h" />
-    <ClInclude Include="Physics.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Projectile.h" />
     <ClInclude Include="StaticData.h" />

@@ -13,10 +13,9 @@
 Tank::Tank(ObjectID id, UserDBIndex ownerId)
 	: GameObject(id, ownerId, true)
 {
-	
-	_mass = TANK_COLLIDER_MASS;
-	_radius = TANK_COLLIDER_RADIUS;
-
+	_physicalComponent.mass = TANK_COLLIDER_MASS;
+	_physicalComponent.radius = TANK_COLLIDER_RADIUS;
+	_physicalComponent.colliderType = COLLIDER_TYPE_SPHERE;
 	ResetHP();
 }
 
@@ -26,8 +25,8 @@ Tank::~Tank()
 
 void Tank::GetTurretInfo(Transform* out_position, Vector3* out_direction) const
 {
-	Vector3 position = _transform.Position;
-	Quaternion rotation = _transform.Rotation;
+	Vector3 position = _physicalComponent.transform.Position;
+	Quaternion rotation = _physicalComponent.transform.Rotation;
 
 	Vector3 v = { 0.0f, -1.0f, 0.0f };
 	v = Vector3::Rotate(v, rotation);
@@ -35,10 +34,10 @@ void Tank::GetTurretInfo(Transform* out_position, Vector3* out_direction) const
 	v.y += position.y;
 	v.z += position.z;
 	out_position->Position = v;
-	out_position->Rotation = _transform.Rotation;
+	out_position->Rotation = _physicalComponent.transform.Rotation;
 
 	Vector3 direction = FORWARD_DIRECTION;
-	direction = direction * (_radius + PROJECTILE_COLLIDER_RADIUS) * 1.03125f;
+	direction = direction * (_physicalComponent.radius + PROJECTILE_COLLIDER_RADIUS) * 1.03125f;
 
 	const Vector3 forwardDirection = Vector3::Rotate(direction, rotation);
 
@@ -50,41 +49,34 @@ void Tank::ResetHP()
 	_hp = 5;
 }
 
-void Tank::UpdatePlayerInputState(PlayerInputState inputState)
+void Tank::AdvancePlayerInput(PlayerInputState inputState)
 {
-	// Hmmm........
 	_prevInputState = _crntInputState;
 	_crntInputState = inputState;
-}
 
-void Tank::PreProcessMovementState()
-{
-	_translationSpeed = 0.0f;
-	_rotationAngle = 0.0f;
-	if (_crntInputState & PLAYER_INPUT_FLAG_UP) {
-		if (!(_crntInputState & PLAYER_INPUT_FLAG_DOWN)) {
-			_translationDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
-			_translationSpeed = TANK_TRANSLATION_SPEED;
-		}
+	if ((_crntInputState & PLAYER_INPUT_FLAG_UP) && !(_crntInputState & PLAYER_INPUT_FLAG_DOWN)) {
+		_physicalComponent.velocity = Vector3::Rotate(FORWARD_DIRECTION, _physicalComponent.transform.Rotation) * TANK_TRANSLATION_SPEED;
 	}
-	else if (_crntInputState & PLAYER_INPUT_FLAG_DOWN) {
-		_translationDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation) * -1.f;
-		_translationSpeed = TANK_TRANSLATION_SPEED;
+	else if ((_crntInputState & PLAYER_INPUT_FLAG_DOWN) && !(_crntInputState & PLAYER_INPUT_FLAG_UP)) {
+		_physicalComponent.velocity = Vector3::Rotate(BACKWARD_DIRECTION, _physicalComponent.transform.Rotation) * TANK_TRANSLATION_SPEED;
 	}
 	else {
-		
+		_physicalComponent.velocity = Vector3();
 	}
 
 	if (_crntInputState & PLAYER_INPUT_FLAG_LEFT) {
 		if (!(_crntInputState & PLAYER_INPUT_FLAG_RIGHT)) {
-			_rotationAngle = -TANK_ROTATION_SPEED;
+			_physicalComponent.angularVelocity = { 0, 0, -TANK_ROTATION_SPEED };
+		}
+		else {
+			_physicalComponent.angularVelocity = Vector3();
 		}
 	}
 	else if (_crntInputState & PLAYER_INPUT_FLAG_RIGHT) {
-		_rotationAngle = TANK_ROTATION_SPEED;
+		_physicalComponent.angularVelocity = { 0, 0, TANK_ROTATION_SPEED };
 	}
 	else {
-		
+		_physicalComponent.angularVelocity = Vector3();
 	}
 }
 
@@ -127,6 +119,7 @@ void Tank::OnHitWith(ULONGLONG currentTick, GameObject* other)
 
 void Tank::OnUpdateTransform()
 {
+	// printf("P[%f, %f, %f], R[%f, %f, %f, %f]\n", _physicalComponent.transform.Position.x, _physicalComponent.transform.Position.y, _physicalComponent.transform.Position.z, _physicalComponent.transform.Rotation.w, _physicalComponent.transform.Rotation.x, _physicalComponent.transform.Rotation.y, _physicalComponent.transform.Rotation.z);
 }
 
 void Tank::Respawn()
@@ -134,7 +127,6 @@ void Tank::Respawn()
 	GameObject::Respawn();
 	_hitTick = 0;
 	_pCollider->Activate();
-	SyncTransformWithCollider();
 	ResetHP();
 }
 
@@ -143,8 +135,8 @@ BOOL Tank::IsTransformCloseEnough(const Transform* other)
 	const float TOLERANCE_POSITION_SQUARE = 0.5f; // x, y, z의 차이가 각 1.0 미만인 경우를 간단하게 판단
 	const float TOLERANCE_ROTATION = 0.13f; // 15도 미만
 
-	float posDistanceSq = Vector3::DistanceSquared(_transform.Position, other->Position);
-	float rotDisctance = Quaternion::AngularDistance(_transform.Rotation, other->Rotation);
+	float posDistanceSq = Vector3::DistanceSquared(_physicalComponent.transform.Position, other->Position);
+	float rotDisctance = Quaternion::AngularDistance(_physicalComponent.transform.Rotation, other->Rotation);
 
 	if (posDistanceSq < TOLERANCE_POSITION_SQUARE && rotDisctance < TOLERANCE_ROTATION) {
 		// printf("Accept Client's Transform, Diff: [%f, %f]\n", posDistanceSq, rotDisctance);

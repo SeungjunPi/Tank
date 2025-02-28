@@ -14,14 +14,13 @@ void Projectile::Initiate(ObjectID id, Transform* transform, UserDBIndex ownerId
 	assert(_pCollider != nullptr);
 	_id = id;
 	_ownerIndex = ownerId;
-	memcpy(&_transform, transform, sizeof(Transform));
+	memcpy(&_physicalComponent.transform, transform, sizeof(Transform));
 	
 	_genTick = g_previousGameTick;
 
-	_translationSpeed = PROJECTILE_TRANSLATION_SPEED;
-	_mass = PROJECTILE_COLLIDER_MASS;
-	_radius = PROJECTILE_COLLIDER_RADIUS;
-	SyncTransformWithCollider();
+	_physicalComponent.velocity = Vector3::Rotate(FORWARD_DIRECTION, _physicalComponent.transform.Rotation) * PROJECTILE_TRANSLATION_SPEED;
+	_physicalComponent.mass = PROJECTILE_COLLIDER_MASS;
+	_physicalComponent.radius = PROJECTILE_COLLIDER_RADIUS;
 }
 
 void Projectile::Terminate()
@@ -42,13 +41,6 @@ void Projectile::Tick(ULONGLONG tickDiff)
 BOOL Projectile::IsDestroyed(ULONGLONG currentTick) const
 {
 	return !_isActivatable && (!_isAlive || _hitTick != 0);
-}
-
-void Projectile::PreProcessMovementState()
-{
-	_translationDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
-	_translationSpeed = PROJECTILE_TRANSLATION_SPEED;
-	_rotationAngle = 0.f;
 }
 
 void Projectile::OnHitWith(ULONGLONG currentTick, GameObject* other)

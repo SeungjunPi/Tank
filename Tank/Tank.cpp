@@ -1,9 +1,9 @@
-﻿#include "Tank.h"
+#include "Tank.h"
 #include "StaticData.h"
 #include "Global.h"
 #include "GameEvent.h"
 #include "Collider.h"
-#include "ICollisionManager.h"
+#include "IStableFlow.h"
 #include "AllocObjectManager.h"
 #include "Camera.h"
 #include "Player.h"
@@ -12,8 +12,9 @@ Tank::Tank(ObjectID id, UserDBIndex ownerID)
 	: GameObject(id, ownerID, true)
 {	
 	_model = g_pTankModel;
-	_mass = TANK_COLLIDER_MASS;
-	_radius = TANK_COLLIDER_RADIUS;
+	_physicalComponent.mass = TANK_COLLIDER_MASS;
+	_physicalComponent.radius = TANK_COLLIDER_RADIUS;
+	_physicalComponent.colliderType = COLLIDER_TYPE_SPHERE;
 
 	ResetHP();
 }
@@ -24,8 +25,8 @@ Tank::~Tank()
 
 void Tank::GetTurretInfo(Transform* out_position, Vector3* out_direction) const
 {
-	Vector3 position = _transform.Position;
-	Quaternion rotation = _transform.Rotation;
+	Vector3 position = _physicalComponent.transform.Position;
+	Quaternion rotation = _physicalComponent.transform.Rotation;
 
 	Vector3 v = _model.vertices[0].v;
 	v = Vector3::Rotate(v, rotation);
@@ -33,10 +34,12 @@ void Tank::GetTurretInfo(Transform* out_position, Vector3* out_direction) const
 	v.y += position.y;
 	v.z += position.z;
 	out_position->Position = v;
-	out_position->Rotation = _transform.Rotation;
+	out_position->Rotation = _physicalComponent.transform.Rotation;
 
+	Vector3 direction = FORWARD_DIRECTION;
+	direction = direction * (_physicalComponent.radius + PROJECTILE_COLLIDER_RADIUS) * 1.03125f;
 
-	const Vector3 forwardDirection = Vector3::Rotate(FORWARD_DIRECTION, rotation);
+	const Vector3 forwardDirection = Vector3::Rotate(direction, rotation);
 
 	memcpy(out_direction, &forwardDirection, sizeof(Vector3));
 }
@@ -51,50 +54,43 @@ void Tank::UpdatePlayerInputStateFromServer(PlayerInputState inputState)
 	if (_ownerID == g_pPlayer->GetUserID()) {
 		return;
 	}
-	UpdatePlayerInputState(inputState);
+	AdvancePlayerInput(inputState);
 }
 
-void Tank::UpdatePlayerInputState(PlayerInputState inputState)
+void Tank::AdvancePlayerInput(PlayerInputState inputState)
 {
-	_previousInputState = _currentInputState;
-	_currentInputState = inputState;
+	_prevInputState = _crntInputState;
+	_crntInputState = inputState;
+
+	if ((_crntInputState & PLAYER_INPUT_FLAG_UP) && !(_crntInputState & PLAYER_INPUT_FLAG_DOWN)) {
+		_physicalComponent.velocity = Vector3::Rotate(FORWARD_DIRECTION, _physicalComponent.transform.Rotation) * TANK_TRANSLATION_SPEED;
+	}
+	else if ((_crntInputState & PLAYER_INPUT_FLAG_DOWN) && !(_crntInputState & PLAYER_INPUT_FLAG_UP)) {
+		_physicalComponent.velocity = Vector3::Rotate(BACKWARD_DIRECTION, _physicalComponent.transform.Rotation) * TANK_TRANSLATION_SPEED;
+	}
+	else {
+		_physicalComponent.velocity = Vector3();
+	}
+
+	if (_crntInputState & PLAYER_INPUT_FLAG_LEFT) {
+		if (!(_crntInputState & PLAYER_INPUT_FLAG_RIGHT)) {
+			_physicalComponent.angularVelocity = { 0, 0, -TANK_ROTATION_SPEED };
+		}
+		else {
+			_physicalComponent.angularVelocity = Vector3();
+		}
+	}
+	else if (_crntInputState & PLAYER_INPUT_FLAG_RIGHT) {
+		_physicalComponent.angularVelocity = { 0, 0, TANK_ROTATION_SPEED };
+	}
+	else {
+		_physicalComponent.angularVelocity = Vector3();
+	}
 }
 
 BOOL Tank::IsDestroyed(ULONGLONG currentTick) const
 {
 	return !_isActivatable && (!_isAlive || _hitTick != 0);
-}
-
-void Tank::PreProcessMovementState()
-{
-	_translationSpeed = 0.0f;
-	_rotationAngle = 0.0f;
-	if (_currentInputState & PLAYER_INPUT_FLAG_UP) {
-		if (!(_currentInputState & PLAYER_INPUT_FLAG_DOWN)) {
-			_translationDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
-			_translationSpeed = TANK_TRANSLATION_SPEED;
-		}
-	}
-	else if (_currentInputState & PLAYER_INPUT_FLAG_DOWN) {
-		_translationDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation) * -1.f;
-		_translationSpeed = TANK_TRANSLATION_SPEED;
-	}
-	else {
-		
-	}
-
-	_rotationAngle = 0.0f;
-	if (_currentInputState & PLAYER_INPUT_FLAG_LEFT) {
-		if (!(_currentInputState & PLAYER_INPUT_FLAG_RIGHT)) {
-			_rotationAngle = -TANK_ROTATION_SPEED;
-		}
-	}
-	else if (_currentInputState & PLAYER_INPUT_FLAG_RIGHT) {
-		_rotationAngle = TANK_ROTATION_SPEED;
-	}
-	else {
-		
-	}
 }
 
 void Tank::Tick(ULONGLONG tickDiff)
@@ -115,7 +111,7 @@ void Tank::OnHitWith(ULONGLONG currentTick, GameObject* other)
 void Tank::OnUpdateTransform()
 {
 	if (g_pPlayer->GetUserID() == _ownerID) {
-		g_pCamera->UpdateTransf(&_transform);
+		g_pCamera->UpdateTransf(&_physicalComponent.transform);
 	}
 }
 
@@ -136,7 +132,7 @@ void Tank::OnHitServer(ULONGLONG currentTick, GameObject* other)
 				_pCollider->Deactivate();
 				_hitTick = currentTick;
 				_isAlive = false;
-				_currentInputState = PLAYER_INPUT_NONE;
+				_crntInputState = PLAYER_INPUT_NONE;
 
 				if (_id.equals(g_pPlayer->GetTankID())) {
 					g_pPlayer->IncreaseDeath();
@@ -165,7 +161,7 @@ BOOL Tank::TryFireMachineGun(ULONGLONG currentTick)
 	GetTurretInfo(&projectileTransform, &direction);
 
 	// 자신이 맞지 않기 위해 여유분을 1.0625만큼 줌
-	projectileTransform.Position = projectileTransform.Position + direction * _radius * 1.0625f; 
+	projectileTransform.Position = projectileTransform.Position + direction * 1.0625f; 
 	
 	GamePacket::SendFireMachineGun(&projectileTransform);
 	return true;
@@ -177,19 +173,19 @@ void Tank::ProcessInput()
 		return;
 	}
 	// Send Fire
-	if (_currentInputState & PLAYER_INPUT_FLAG_FIRE_MACHINE_GUN) {
+	if (_crntInputState & PLAYER_INPUT_FLAG_FIRE_MACHINE_GUN) {
 		BOOL fired = TryFireMachineGun(g_currentGameTick);
 		if (fired) {
 			_lastMachineGunFiringTick = g_currentGameTick;
 		}
 	}
 
-	PlayerInputState prevMoveState = _previousInputState & PLAYER_INPUT_MOVE_FLAGS;
-	PlayerInputState crntMoveState = _currentInputState & PLAYER_INPUT_MOVE_FLAGS;
+	PlayerInputState prevMoveState = _prevInputState & PLAYER_INPUT_MOVE_FLAGS;
+	PlayerInputState crntMoveState = _crntInputState & PLAYER_INPUT_MOVE_FLAGS;
 	PlayerInputState moveEdgeTrigger = prevMoveState ^ crntMoveState;
 	if (crntMoveState == 0) {
 		if (moveEdgeTrigger) {
-			GamePacket::SendEndMove(&_transform);
+			GamePacket::SendEndMove(&_physicalComponent.transform);
 			_lastTransformSyncTick = g_currentGameTick;
 			return;
 		}
@@ -198,13 +194,13 @@ void Tank::ProcessInput()
 
 	if (prevMoveState == 0) {
 		// Start Move
-		GamePacket::SendStartMove(&_transform, crntMoveState);
+		GamePacket::SendStartMove(&_physicalComponent.transform, crntMoveState);
 		_lastTransformSyncTick = g_currentGameTick;
 		return;
 	}
 
 	if (_lastTransformSyncTick + TICK_OWN_TANK_SYNC < g_currentGameTick) {
-		GamePacket::SendMoving(&_transform, crntMoveState);
+		GamePacket::SendMoving(&_physicalComponent.transform, crntMoveState);
 		_lastTransformSyncTick = g_currentGameTick;
 		
 	}

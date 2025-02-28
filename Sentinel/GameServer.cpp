@@ -6,13 +6,12 @@
 #include "GameServer.h"
 #include "GameStruct.h"
 #include "Global.h"
-#include "ICollisionManager.h"
+#include "IStableFlow.h"
 #include "JunDB.h"
 
 #include "ObjectManager.h"
 #include "PlayerManager.h"
 #include "Tank.h"
-#include "Physics.h"
 
 // NetCore
 #include "INetCore.h"
@@ -29,7 +28,7 @@ static void s_ApplyObjectLogic(ULONGLONG tickDiff);
 static void s_CleanupDestroyedObjects(ULONGLONG curTick);
 static void s_OnSessionEvent(UINT32 sessionID, ESessionEvent sessionEvent);
 static void s_ProcessDBQueryResults();
-static void s_PreProcessNextMovements();
+// static void s_PreProcessNextMovements();
 
 static void s_ProcessDBResultValidation(DBQueryValidation* pQueryValidation);
 static void s_ProcessDBResultLoadScore(DBQueryLoadStat* pQueryLoadStat); // 현재 이 함수는 Validation이 성공한 직후에만 불린다고 가정.
@@ -46,11 +45,10 @@ void GameServer::Initialize()
 {
 	CreateNetCore(&g_pNetCore);
 	CreateJunDB(&g_pJunDB);
-	CreateCollisionManager(&g_pCollisionManager);
+	CreateStableFlow(&g_pStableFlow);
 
 	g_playerManager.Initiate(2048);
 	g_objectManager.Initiate();
-	g_pPhysics = DNew Physics;
 
 	g_sessionIds = DNew UINT32[2048];
 }
@@ -117,12 +115,8 @@ void GameServer::Start()
 
 		ULONGLONG dbEndTick = GetTickCount64();
 
-		// PreProcessNextMovement
-		s_PreProcessNextMovements();
-
-		// ApplyPhysics (Movement, etc..)
-		g_pPhysics->ProcessNextMovement(gameTickDiff);
-
+		// Physics
+		g_pStableFlow->ProcessStableFlow(g_currentGameTick);
 		ULONGLONG physicsEndTick = GetTickCount64();
 		
 		// Game Logic(DB, Apply Collision, )
@@ -150,13 +144,13 @@ void GameServer::Start()
 		{
 			// Todo: WaitForSingleObject
 
-			//ULONGLONG tick = GetTickCount64() + 1;
-			//ULONGLONG tickDiff = tick - currentTick;
-			//ULONGLONG sleepTick = tickDiff >= TICK_PER_GAME_FRAME ? 0 : TICK_PER_GAME_FRAME - tickDiff;
-			//if (tickDiff < TICK_PER_GAME_FRAME) {
-			//	Sleep(TICK_PER_GAME_FRAME - tickDiff);	
-			//	continue;
-			//}
+			ULONGLONG tick = GetTickCount64() + 1;
+			ULONGLONG tickDiff = tick - loopInitTick;
+			ULONGLONG sleepTick = tickDiff >= TICK_PER_GAME_FRAME ? 0 : TICK_PER_GAME_FRAME - tickDiff;
+			if (tickDiff < TICK_PER_GAME_FRAME) {
+				Sleep(TICK_PER_GAME_FRAME - tickDiff);	
+				continue;
+			}
 		}
 	}
 
@@ -176,13 +170,14 @@ void GameServer::End()
 
 void GameServer::CleanUp()
 {
-	delete g_pPhysics;
+	
 	g_playerManager.Terminate();
 	g_objectManager.Terminate();
 	delete[] g_sessionIds;
+	
 	DeleteNetCore(g_pNetCore);
 	TerminateJunDB(g_pJunDB);
-	DeleteCollisionManager(g_pCollisionManager);
+	DeleteStableFlow(g_pStableFlow);
 }
 
 void GameServer::Broadcast(BYTE* msg, int len)
@@ -291,25 +286,25 @@ void s_ProcessDBQueryResults()
 	g_pJunDB->EndHandleResult();
 }
 
-void s_PreProcessNextMovements()
-{
-	UINT32 keys[1024];
-	UINT32 countKeys;
-
-	int objectKindEnumMax = (int)GAME_OBJECT_TYPE_OBSTACLE;
-	for (int i = 0; i <= objectKindEnumMax; ++i) {
-		EGameObjectType kind = (EGameObjectType)i;
-		g_objectManager.GetKeys(kind, keys, &countKeys);
-		for (int j = 0; j < countKeys; ++j) {
-			GameObject* pObject = g_objectManager.GetObjectPtrOrNull(kind, keys[j]);
-			if (pObject == NULL) {
-				__debugbreak();
-			}
-
-			pObject->PreProcessMovementState();
-		}
-	}
-}
+//void s_PreProcessNextMovements()
+//{
+//	UINT32 keys[1024];
+//	UINT32 countKeys;
+//
+//	int objectKindEnumMax = (int)GAME_OBJECT_TYPE_OBSTACLE;
+//	for (int i = 0; i <= objectKindEnumMax; ++i) {
+//		EGameObjectType kind = (EGameObjectType)i;
+//		g_objectManager.GetKeys(kind, keys, &countKeys);
+//		for (int j = 0; j < countKeys; ++j) {
+//			GameObject* pObject = g_objectManager.GetObjectPtrOrNull(kind, keys[j]);
+//			if (pObject == NULL) {
+//				__debugbreak();
+//			}
+//
+//			pObject->PreProcessMovementState();
+//		}
+//	}
+//}
 
 void s_ProcessDBResultValidation(DBQueryValidation* pQueryValidation)
 {
@@ -404,12 +399,15 @@ void s_ApplyObjectLogic(ULONGLONG tickDiff)
 		}
 	}
 
-	JStack* collisionPairs = g_pCollisionManager->GetCollisionPairs();
+	JStack* collisionPairs = g_pStableFlow->GetCollisionPairs();
 	UINT32 size = collisionPairs->GetCount();
 	CollisionPair* pair = (CollisionPair*)collisionPairs->First();
 	for (UINT32 i = 0; i < size; ++i) {
-		pair->a->OnHitWith(g_currentGameTick, pair->b);
-		pair->b->OnHitWith(g_currentGameTick, pair->a);
+		GameObject* pObjA = pair->a->GetAttachedObjectPtr();
+		GameObject* pObjB = pair->b->GetAttachedObjectPtr();
+
+		pObjA->OnHitWith(g_currentGameTick, pObjB);
+		pObjB->OnHitWith(g_currentGameTick, pObjA);
 		++pair;
 	}
 }

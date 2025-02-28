@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 
 #include "GameObject.h"
@@ -15,7 +15,7 @@ public:
 	void Tick(ULONGLONG tickDiff) override;
 	BOOL IsDestroyed(ULONGLONG currentTick) const override;
 
-	virtual void PreProcessMovementState() override;
+	
 	virtual void OnHitWith(ULONGLONG currentTick, GameObject* other) override;
 
 	virtual void OnHitServer(ULONGLONG currentTick, GameObject* other) override;

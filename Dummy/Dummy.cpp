@@ -72,7 +72,7 @@ void Dummy::Tick()
 	DetermineInput();
 
 	Tank* pTank = GetTank();
-	pTank->UpdatePlayerInputState(_input);
+	pTank->AdvancePlayerInput(_input);
 
 	UINT64 edgeTrigger = _input ^ _prevInput;
 	if (edgeTrigger) {

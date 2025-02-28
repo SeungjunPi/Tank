@@ -1,13 +1,13 @@
 
 
-#include "ICollisionManager.h"
+#include "CollisionManager.h"
 #include "Collider.h"
 #include "GameMath.h"
 
 int main()
 {
-	ICollisionManager* pCollisionManager;
-	CreateCollisionManager(&pCollisionManager);
+	CollisionManager* pCollisionManager = new CollisionManager();
+	
 
 	Collider* pC1;
 	Collider* pC2;
@@ -16,16 +16,17 @@ int main()
 	Vector3 v2{ 1.0f, 1.f, 0.0f };
 	Vector3 v2Velocity{ 0.f, -1.f, 0.f };
 
-	pC1 = pCollisionManager->GetNewColliderPtr(1.0, nullptr, &v1, 0b1);
-	pC2 = pCollisionManager->GetNewColliderPtr(1.0, nullptr, &v2, 0b10);
-	
-	
+	//pC1 = pCollisionManager->GetNewColliderPtr(1.0, nullptr, &v1, 0b1);
+	//pC2 = pCollisionManager->GetNewColliderPtr(1.0, nullptr, &v2, 0b10);
+	//
+	//
 	pCollisionManager->DetectCollision();
 
 	
 
 	
 	printf("Hello, Collision\n");
+	delete pCollisionManager;
 
 	//float radius, GameObject* pObj, const Vector3* center, const Vector3* velocity, float mass, UINT32 kindness
 

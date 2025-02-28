@@ -20,20 +20,20 @@ DotObject::~DotObject()
 
 void DotObject::MoveUp()
 {
-	_transform.Position.y -= 1;
+	//_transform.Position.y -= 1;
 }
 
 void DotObject::MoveDown()
 {
-	_transform.Position.y += 1;
+	//_transform.Position.y += 1;
 }
 
 void DotObject::MoveRight()
 {
-	_transform.Position.x += 1;
+	//_transform.Position.x += 1;
 }
 
 void DotObject::MoveLeft()
 {
-	_transform.Position.x -= 1;
+	//_transform.Position.x -= 1;
 }

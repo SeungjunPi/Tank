@@ -1,4 +1,4 @@
-﻿
+
 
 #include "TankPch.h"
 #include "Global.h"
@@ -76,7 +76,7 @@ void Player::HandleKeyboardEvents(UINT64 pressedKeys, UINT64 releasedKeys, UINT6
 
 	// Convert KeyboardInput to PlayerInput
 	
-	_pTank->UpdatePlayerInputState(heldKeys);
+	_pTank->AdvancePlayerInput(heldKeys);
 }
 
 INT Player::IncreaseHit()

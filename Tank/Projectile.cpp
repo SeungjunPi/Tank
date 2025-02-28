@@ -5,20 +5,20 @@
 #include "StaticData.h"
 #include "Collider.h"
 #include "AllocObjectManager.h"
-#include "ICollisionManager.h"
+#include "IStableFlow.h"
 #include "Player.h"
 
 void Projectile::Initiate(ObjectID id, Transform* transform, UserDBIndex ownerID)
 {
 	_id = id;
 	_ownerID = ownerID;
-	memcpy(&_transform, transform, sizeof(Transform));
+	memcpy(&_physicalComponent.transform, transform, sizeof(Transform));
 
 	_model = g_pProjectileModel;
 	_genTick = g_previousGameTick;
-	_mass = PROJECTILE_COLLIDER_MASS;
-	_radius = PROJECTILE_COLLIDER_RADIUS;
-	SyncTransformWithCollider();
+	_physicalComponent.velocity = Vector3::Rotate(FORWARD_DIRECTION, _physicalComponent.transform.Rotation) * PROJECTILE_TRANSLATION_SPEED;
+	_physicalComponent.mass = PROJECTILE_COLLIDER_MASS;
+	_physicalComponent.radius = PROJECTILE_COLLIDER_RADIUS;
 }
 
 void Projectile::Terminate()
@@ -50,13 +50,6 @@ BOOL Projectile::IsTimeout() const
 	}
 
 	return false;
-}
-
-void Projectile::PreProcessMovementState()
-{
-	_translationDirection = Vector3::Rotate(FORWARD_DIRECTION, _transform.Rotation);
-	_translationSpeed = PROJECTILE_TRANSLATION_SPEED;
-	_rotationAngle = 0.f;
 }
 
 void Projectile::OnHitWith(ULONGLONG currentTick, GameObject* other)

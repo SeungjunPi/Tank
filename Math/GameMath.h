@@ -7,6 +7,8 @@ struct Vector3;
 struct Quaternion;
 struct Transform;
 
+const float EPSILON = 1E-05;
+
 struct Vector2
 {
 	float x = 0.f;
@@ -68,6 +70,7 @@ struct Quaternion
 	static Quaternion RotateZM(float radian, Quaternion v);
 	static Quaternion RotateZP90(Quaternion v);
 	static Quaternion RotateZM90(Quaternion v);
+	static Quaternion ConvertFromAngle(Vector3 v);
 
 	static float AngularDistance(Quaternion q1, Quaternion q2);
 };

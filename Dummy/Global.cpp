@@ -5,9 +5,9 @@
 #include "INetCore.h"
 #include "Tank.h"
 #include "AllocObjectManager.h"
-#include "ICollisionManager.h"
+#include "IStableFlow.h"
 #include "DummyManager.h"
-#include "Physics.h"
+
 
 
 ULONGLONG g_previousGameTick = 0;
@@ -19,13 +19,11 @@ INetCore* g_pNetCore;
 
 AllocObjectManager g_objectManager;
 
-ICollisionManager* g_pCollisionManager;
+IStableFlow* g_pStableFlow;
 
 GameCamera* g_pCamera;
 
 DummyManager* g_pDummyManager;
-
-Physics* g_pPhysics;
 
 void Global::Initiate()
 {
