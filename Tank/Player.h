@@ -5,6 +5,7 @@
 #include "NetCoreAliases.h"
 #include "TankPch.h"
 #include "GameStruct.h"
+#include "NetworkAlias.h"
 
 
 

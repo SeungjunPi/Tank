@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GameObject.h"
-#include "CommonData.h"
+#include "GameStruct.h"
 
 class Collider;
 

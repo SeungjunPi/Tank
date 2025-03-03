@@ -2,7 +2,7 @@
 
 
 #include "Collider.h"
-#include "GameEvent.h"
+#include "ServerPacketHandler.h"
 #include "GameServer.h"
 #include "GameStruct.h"
 #include "Global.h"
@@ -46,6 +46,8 @@ void GameServer::Initialize()
 	CreateNetCore(&g_pNetCore);
 	CreateJunDB(&g_pJunDB);
 	CreateStableFlow(&g_pStableFlow);
+
+	ServerPacketHandler::RegisterCallbacks();
 
 	g_playerManager.Initiate(2048);
 	g_objectManager.Initiate();
@@ -102,7 +104,7 @@ void GameServer::Start()
 
 		NetMessage* pMsg = msgs->GetNetMessageOrNull(&senderID);
 		while (pMsg != NULL) {
-			GamePacket::HandlePacket((BYTE*)pMsg->body, senderID);
+			PacketHandler::DispatchPacket((BYTE*)pMsg->body, senderID);
 			pMsg = msgs->GetNetMessageOrNull(&senderID);
 		}
 		g_pNetCore->EndHandleReceivedMessages();
@@ -223,7 +225,7 @@ void OnSessionDisconnect(UINT32 sessionID)
 	Tank* pTank = g_objectManager.GetTankByOwnerId(userDBIndex);
 	if (pTank != nullptr) {
 		printf("RemoveTank: owner=%u, tankId=%u\n", userDBIndex, pTank->GetID().key);
-		GamePacket::BroadcastDeleteTank(pTank->GetID());
+		ServerPacketHandler::BroadcastDeleteTank(pTank->GetID());
 		g_objectManager.RemoveTank(pTank->GetID(), userDBIndex);
 	}
 }
@@ -339,40 +341,14 @@ void s_ProcessDBResultLoadScore(DBQueryLoadStat* pQueryLoadStat)
 	Player* pPlayer = g_playerManager.TryCreatePlayer(sessionID, dbIndex, loadScoreResult.hitCount, loadScoreResult.killCount, loadScoreResult.deathCount);
 
 	// Send Success to Login Message
-	const size_t msgSize = sizeof(EGameEventCode) + sizeof(PACKET_SC_LOGIN);
-	BYTE pRawMsg[msgSize] = { 0, };
-	EGameEventCode* pEvCode = (EGameEventCode*)pRawMsg;
-	*pEvCode = GAME_EVENT_CODE_SC_LOGIN;
-	PACKET_SC_LOGIN* pScLogin = (PACKET_SC_LOGIN*)(pRawMsg + sizeof(EGameEventCode));
-	pScLogin->result = true;
-	pScLogin->userDBIndex = dbIndex;
-	pScLogin->hitCount = loadScoreResult.hitCount;
-	pScLogin->killCount = loadScoreResult.killCount;
-	pScLogin->deathCount = loadScoreResult.deathCount;
-	g_pNetCore->SendMessageTo(sessionID, pRawMsg, msgSize);
+	ServerPacketHandler::SendLogin(sessionID, true, dbIndex, loadScoreResult.hitCount, loadScoreResult.killCount, loadScoreResult.deathCount);
 	
 	// Send snapshot
-	GamePacket::SendSnapshot(sessionID);
+	ServerPacketHandler::SendSnapshot(sessionID);
 
-	
-	{
-		// Create players tank
-		Tank* pTank = g_objectManager.CreateTank(dbIndex);
-		const size_t PACKET_SIZE = sizeof(EGameEventCode) + sizeof(PACKET_SC_CREATE_TANK);
-		BYTE pRawPacket[PACKET_SIZE] = { 0, };
-
-		EGameEventCode* pEvCode = (EGameEventCode*)pRawPacket;
-		*pEvCode = GAME_EVENT_CODE_SC_CREATE_TANK;
-		PACKET_SC_CREATE_TANK* pSCCreateTank = (PACKET_SC_CREATE_TANK*)(pRawPacket + sizeof(EGameEventCode));
-		pSCCreateTank->objectId = pTank->GetID();
-		pSCCreateTank->ownerId = dbIndex;
-		// 
-		memcpy(&pSCCreateTank->transform, pTank->GetTransformPtr(), sizeof(Transform));
-
-		printf("CreateTank: owner=%u, tankId=%u\n", dbIndex, pSCCreateTank->objectId.key);
-
-		GameServer::Broadcast(pRawPacket, PACKET_SIZE);
-	}
+	// Create players tank
+	Tank* pTank = g_objectManager.CreateTank(dbIndex);
+	ServerPacketHandler::BroadcastCreateTank(pTank->GetID(), dbIndex, pTank->GetTransformPtr());
 }
 
 void s_ProcessDBResultUpdateScore(DBQueryUpdateStat* pQueryUpdateStat)

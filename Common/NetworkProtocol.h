@@ -1,7 +1,10 @@
-#pragma once
+﻿#pragma once
+
+#include "pch.h"
 
 #include "GameStruct.h"
-#include "StaticData.h"
+
+#include "NetworkAlias.h"
 
 
 const int ID_LENGTH_MAX = 16;
@@ -172,7 +175,7 @@ struct PACKET_SC_RESPAWN_TANK
 };
 
 // Client -> Server
-typedef void (*CSLoginCallback)(const PACKET_SC_LOGIN* login, UINT32 senderId);
+typedef void (*CSLoginCallback)(const PACKET_CS_LOGIN* login, UINT32 senderId);
 typedef void (*CSStartMoveCallback)(const PACKET_CS_START_MOVE* startMove, UINT32 senderId);
 typedef void (*CSEndMoveCallback)(const PACKET_CS_END_MOVE* endMove, UINT32 senderId);
 typedef void (*CSMovingCallback)(const PACKET_CS_MOVING* moving, UINT32 senderId);

@@ -1,6 +1,7 @@
 #include "Global.h"
 
-#include <windows.h>
+#include "TankPch.h"
+
 #include <thread>
 #include <ctime>
 

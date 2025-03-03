@@ -1,4 +1,4 @@
-#include "NetworkProtocol.h"
+﻿#include "NetworkProtocol.h"
 
 CSLoginCallback PacketHandler::s_CSLoginCallback = nullptr;
 CSStartMoveCallback PacketHandler::s_CSStartMoveCallback = nullptr;
@@ -26,66 +26,99 @@ void PacketHandler::DispatchPacket(BYTE* pGameEvent, UINT32 senderId)
 {
 	ENetworkMessageType* evCode = (ENetworkMessageType*)pGameEvent;
 	switch (*evCode) {
+	// Server -> Client
 	case GAME_MESSAGE_TYPE_SC_LOGIN:
 	{
 		PACKET_SC_LOGIN* pScLogin = (PACKET_SC_LOGIN*)(pGameEvent + sizeof(ENetworkMessageType));
 		s_SCLoginCallback(pScLogin, senderId);
 	}
-		break;
+	break;
 	case GAME_MESSAGE_TYPE_SC_SNAPSHOT:
 	{
 		PACKET_SC_SNAPSHOT* pScSnapshot = (PACKET_SC_SNAPSHOT*)(pGameEvent + sizeof(ENetworkMessageType));
 		s_SCSnapshotCallback(pScSnapshot, senderId);
 	}
-		break;
+	break;
 	case GAME_MESSAGE_TYPE_SC_CREATE_TANK:
 	{
 		PACKET_SC_CREATE_TANK* pScCreateTank = (PACKET_SC_CREATE_TANK*)(pGameEvent + sizeof(ENetworkMessageType));
 		s_SCCreateTankCallback(pScCreateTank, senderId);
 	}
-		break;
+	break;
 	case GAME_MESSAGE_TYPE_SC_DELETE_TANK:
 	{
 		PACKET_SC_DELETE_TANK* pScDeleteTank = (PACKET_SC_DELETE_TANK*)(pGameEvent + sizeof(ENetworkMessageType));
 		s_SCDeleteTankCallback(pScDeleteTank, senderId);
 	}
-		break;
+	break;
 	case GAME_MESSAGE_TYPE_SC_START_MOVE:
 	{
 		PACKET_SC_START_MOVE* pScStartMove = (PACKET_SC_START_MOVE*)(pGameEvent + sizeof(ENetworkMessageType));
 		s_SCStartMoveCallback(pScStartMove, senderId);
 	}
-		break;
+	break;
 	case GAME_MESSAGE_TYPE_SC_END_MOVE:
 	{
 		PACKET_SC_END_MOVE* pScEndMove = (PACKET_SC_END_MOVE*)(pGameEvent + sizeof(ENetworkMessageType));
 		s_SCEndMoveCallback(pScEndMove, senderId);
 	}
-		break;
+	break;
 	case GAME_MESSAGE_TYPE_SC_MOVING:
 	{
 		PACKET_SC_MOVING* pScMoving = (PACKET_SC_MOVING*)(pGameEvent + sizeof(ENetworkMessageType));
 		s_SCMovingCallback(pScMoving, senderId);
 	}
-		break;
+	break;
 	case GAME_MESSAGE_TYPE_SC_FIRE_MACHINE_GUN:
 	{
 		PACKET_SC_FIRE_MACHINE_GUN* pScFireMachineGun = (PACKET_SC_FIRE_MACHINE_GUN*)(pGameEvent + sizeof(ENetworkMessageType));
 		s_SCFireMachineGunCallback(pScFireMachineGun, senderId);
 	}
-		break;	
+	break;
 	case GAME_MESSAGE_TYPE_SC_RESPAWN_TANK:
 	{
 		PACKET_SC_RESPAWN_TANK* pScRespawnTank = (PACKET_SC_RESPAWN_TANK*)(pGameEvent + sizeof(ENetworkMessageType));
 		s_SCRespawnTankCallback(pScRespawnTank, senderId);
 	}
-		break;
+	break;
 	case GAME_MESSAGE_TYPE_SC_OBJECT_HIT:
 	{
 		PACKET_SC_OBJECT_HIT* pScObjectHit = (PACKET_SC_OBJECT_HIT*)(pGameEvent + sizeof(ENetworkMessageType));
 		s_SCObjectHitCallback(pScObjectHit, senderId);
 	}
-		break;		
+	break;
+	
+	// Client -> Server
+	case GAME_MESSAGE_TYPE_CS_LOGIN:
+	{
+		PACKET_CS_LOGIN* pCsLogin = (PACKET_CS_LOGIN*)(pGameEvent + sizeof(ENetworkMessageType));
+		s_CSLoginCallback(pCsLogin, senderId);
+	}
+	break;
+	case GAME_MESSAGE_TYPE_CS_START_MOVE:
+	{
+		PACKET_CS_START_MOVE* pCsStartMove = (PACKET_CS_START_MOVE*)(pGameEvent + sizeof(ENetworkMessageType));
+		s_CSStartMoveCallback(pCsStartMove, senderId);
+	}
+	break;
+	case GAME_MESSAGE_TYPE_CS_END_MOVE:
+	{
+		PACKET_CS_END_MOVE* pCsEndMove = (PACKET_CS_END_MOVE*)(pGameEvent + sizeof(ENetworkMessageType));
+		s_CSEndMoveCallback(pCsEndMove, senderId);
+	}
+	break;
+	case GAME_MESSAGE_TYPE_CS_MOVING:
+	{
+		PACKET_CS_MOVING* pCsMoving = (PACKET_CS_MOVING*)(pGameEvent + sizeof(ENetworkMessageType));
+		s_CSMovingCallback(pCsMoving, senderId);
+	}
+	break;
+	case GAME_MESSAGE_TYPE_CS_FIRE_MACHINE_GUN:
+	{
+		PACKET_CS_FIRE_MACHINE_GUN* pCsFireMachineGun = (PACKET_CS_FIRE_MACHINE_GUN*)(pGameEvent + sizeof(ENetworkMessageType));
+		s_CSFireMachineGunCallback(pCsFireMachineGun, senderId);
+	}
+	break;	
 	default:
 		__debugbreak();
 		break;

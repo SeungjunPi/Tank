@@ -2,7 +2,8 @@
 #include "GameObject.h"
 #include "Global.h"
 #include "IStableFlow.h"
-#include "CommonData.h"
+#include "GameStruct.h"
+#include "NetworkAlias.h"
 
 static const int MAX_NUM_OBJECT = 4096;
 

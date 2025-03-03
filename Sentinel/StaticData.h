@@ -1,4 +1,4 @@
 #pragma once
 
 #include "SentinelPch.h"
-#include "CommonData.h"
+#include "GameStruct.h"

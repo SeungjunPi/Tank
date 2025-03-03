@@ -9,7 +9,7 @@
 #endif
 
 #include <SDKDDKVer.h>
-
+#include <winsock2.h>
 #include <windows.h>
 #include <atomic>
 #include <cstdio>

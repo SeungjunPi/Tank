@@ -5,7 +5,7 @@
 #include "LinearQueue.h"
 #include "SentinelAliases.h"
 #include "CollisionManager.h"
-#include "CommonData.h"
+#include "GameStruct.h"
 
 class Tank;
 class Projectile;
@@ -22,7 +22,7 @@ public:
 	Tank* CreateTank(UserDBIndex ownerId);
 	void RemoveTank(ObjectID objectId, UserDBIndex ownerId);
 
-	Projectile* CreateProjectile(UserDBIndex ownerId, Transform* pTransform);
+	Projectile* CreateProjectile(UserDBIndex ownerId, const Transform* pTransform);
 	void RemoveProjectile(ObjectID objectId);
 
 	Tank* GetTankByObjectId(ObjectID objectId);

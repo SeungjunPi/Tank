@@ -1,9 +1,9 @@
-﻿#include <memory>
-
-#include <windows.h>
+#include <memory>
 #include <conio.h>
 #include <cstdio>
 #include <thread>
+
+#include "TankPch.h"
 #include "KeyboardEventListener.h"
 
 UINT64 KeyboardEventListener::_crntInputFlag = 0;

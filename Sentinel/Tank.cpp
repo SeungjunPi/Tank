@@ -1,11 +1,11 @@
 #include "Tank.h"
 #include "Global.h"
-#include "GameEvent.h"
 #include "Collider.h"
 #include "CollisionManager.h"
 #include "PlayerManager.h"
 #include "ObjectManager.h"
-#include "StaticData.h"
+#include "GameStruct.h"
+#include "ServerPacketHandler.h"
 
 
 
@@ -86,7 +86,7 @@ void Tank::Tick(ULONGLONG tickDiff)
 	if (!IsAlive()) {
 		if (g_currentGameTick - _hitTick > TICK_TANK_RESPAWN_INTERVAL) {
 			Respawn();
-			GamePacket::BroadcastRespawnTank(_id);
+			ServerPacketHandler::BroadcastRespawnTank(_id);
 		}
 	}
 	return;
@@ -112,7 +112,7 @@ void Tank::OnHitWith(ULONGLONG currentTick, GameObject* other)
 				g_playerManager.IncreaseKillCount(other->GetOwnerId());
 			}
 			g_playerManager.IncreaseHitCount(other->GetOwnerId());
-			GamePacket::BroadcastHit(_id, other->GetID());
+			ServerPacketHandler::BroadcastHit(_id, other->GetID());
 		}
 	}
 }
