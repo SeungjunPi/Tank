@@ -9,7 +9,7 @@ public:
 	Projectile() = default;
 	~Projectile() = default;
 
-	void Initiate(ObjectID id, Transform* transform, UserDBIndex ownerID);
+	void Initiate(ObjectID id, const Transform* transform, UserDBIndex ownerID);
 	void Terminate();
 
 	void Tick(ULONGLONG tickDiff) override;

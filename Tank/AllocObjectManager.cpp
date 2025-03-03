@@ -61,7 +61,7 @@ Tank* AllocObjectManager::CreateTank(ObjectID objectID, UserDBIndex ownerIndex)
 	return pTank;
 }
 
-Projectile* AllocObjectManager::CreateProjectile(ObjectID objectID, Transform* pInitTransform, UserDBIndex ownerIndex)
+Projectile* AllocObjectManager::CreateProjectile(ObjectID objectID, const Transform* pInitTransform, UserDBIndex ownerIndex)
 {
 	Projectile* pProjectile = DNew Projectile();
 	const Transform* pProjectileTransform = pProjectile->GetTransformPtr();

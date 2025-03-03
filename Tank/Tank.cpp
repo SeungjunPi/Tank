@@ -1,7 +1,7 @@
 #include "Tank.h"
 #include "StaticData.h"
 #include "Global.h"
-#include "GameEvent.h"
+#include "ClientPacketHandler.h"
 #include "Collider.h"
 #include "IStableFlow.h"
 #include "AllocObjectManager.h"
@@ -163,7 +163,7 @@ BOOL Tank::TryFireMachineGun(ULONGLONG currentTick)
 	// 자신이 맞지 않기 위해 여유분을 1.0625만큼 줌
 	projectileTransform.Position = projectileTransform.Position + direction * 1.0625f; 
 	
-	GamePacket::SendFireMachineGun(&projectileTransform);
+	ClientPacketHandler::SendFireMachineGun(&projectileTransform);
 	return true;
 }
 
@@ -185,7 +185,7 @@ void Tank::ProcessInput()
 	PlayerInputState moveEdgeTrigger = prevMoveState ^ crntMoveState;
 	if (crntMoveState == 0) {
 		if (moveEdgeTrigger) {
-			GamePacket::SendEndMove(&_physicalComponent.transform);
+			ClientPacketHandler::SendEndMove(&_physicalComponent.transform);
 			_lastTransformSyncTick = g_currentGameTick;
 			return;
 		}
@@ -194,13 +194,13 @@ void Tank::ProcessInput()
 
 	if (prevMoveState == 0) {
 		// Start Move
-		GamePacket::SendStartMove(&_physicalComponent.transform, crntMoveState);
+		ClientPacketHandler::SendStartMove(&_physicalComponent.transform, crntMoveState);
 		_lastTransformSyncTick = g_currentGameTick;
 		return;
 	}
 
 	if (_lastTransformSyncTick + TICK_OWN_TANK_SYNC < g_currentGameTick) {
-		GamePacket::SendMoving(&_physicalComponent.transform, crntMoveState);
+		ClientPacketHandler::SendMoving(&_physicalComponent.transform, crntMoveState);
 		_lastTransformSyncTick = g_currentGameTick;
 		
 	}

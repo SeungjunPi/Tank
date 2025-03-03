@@ -78,9 +78,6 @@
     <ClCompile Include="AllocObjectManager.cpp">
       <Filter>game object</Filter>
     </ClCompile>
-    <ClCompile Include="GameEvent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TankAliases.h">
       <Filter>pch</Filter>
     </ClCompile>
@@ -89,6 +86,12 @@
     </ClCompile>
     <ClCompile Include="Player.cpp">
       <Filter>Player</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientPacketHandler.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkProtocol.cpp">
+      <Filter>Network</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -131,9 +134,6 @@
     <ClInclude Include="AllocObjectManager.h">
       <Filter>game object</Filter>
     </ClInclude>
-    <ClInclude Include="GameEvent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Camera.h">
       <Filter>Player</Filter>
     </ClInclude>
@@ -141,6 +141,9 @@
       <Filter>Player</Filter>
     </ClInclude>
     <ClInclude Include="NetworkProtocol.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="ClientPacketHandler.h">
       <Filter>Network</Filter>
     </ClInclude>
   </ItemGroup>

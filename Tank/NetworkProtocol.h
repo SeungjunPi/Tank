@@ -9,9 +9,9 @@ const int PW_LENGTH_MAX = 16;
 
 
 // [Kind3][Kind2][Kind1][SC, CS] 
-enum EGameEventCode
+enum ENetworkMessageType
 {
-	GAME_EVENT_CODE_CS_LOGIN,
+	GAME_MESSAGE_TYPE_CS_LOGIN,
 	GAME_EVENT_CODE_SC_LOGIN,
 	GAME_EVENT_CODE_CS_LOAD_PLAYER_STAT,
 	GAME_EVENT_CODE_SC_LOAD_PLAYER_STAT,
@@ -174,53 +174,63 @@ struct PACKET_SC_RESPAWN_TANK
 	Vector3 position;
 };
 
+// Client -> Server
+typedef void (*CSLoginCallback)(const PACKET_SC_LOGIN* login, UINT32 senderId);
+typedef void (*CSStartMoveCallback)(const PACKET_CS_START_MOVE* startMove, UINT32 senderId);
+typedef void (*CSEndMoveCallback)(const PACKET_CS_END_MOVE* endMove, UINT32 senderId);
+typedef void (*CSMovingCallback)(const PACKET_CS_MOVING* moving, UINT32 senderId);
+typedef void (*CSFireMachineGunCallback)(const PACKET_CS_FIRE_MACHINE_GUN* fireMachineGun, UINT32 senderId);
 
-class IPacketCallbacks
-{
-public:
-	virtual ~IPacketCallbacks() = default;
-
-	// Client -> Server packets
-	virtual void OnLogin(const PACKET_CS_LOGIN* login, UINT32 senderId) {}
-	virtual void OnStartMove(const PACKET_CS_START_MOVE* startMove, UINT32 senderId) {}
-	virtual void OnEndMove(const PACKET_CS_END_MOVE* endMove, UINT32 senderId) {}
-	virtual void OnMoving(const PACKET_CS_MOVING* moving, UINT32 senderId) {}
-	virtual void OnFireMachineGun(const PACKET_CS_FIRE_MACHINE_GUN* fireMachineGun, UINT32 senderId) {}
-
-	// Server -> Client packets
-	virtual void OnLoginResult(const PACKET_SC_LOGIN* login, UINT32 senderId) {}
-	virtual void OnCreateTank(const PACKET_SC_CREATE_TANK* createTank, UINT32 senderId) {}
-	virtual void OnDeleteTank(const PACKET_SC_DELETE_TANK* deleteTank, UINT32 senderId) {}
-	virtual void OnStartMoveResult(const PACKET_SC_START_MOVE* startMove, UINT32 senderId) {}
-	virtual void OnEndMoveResult(const PACKET_SC_END_MOVE* endMove, UINT32 senderId) {}
-	virtual void OnMovingResult(const PACKET_SC_MOVING* moving, UINT32 senderId) {}
-	virtual void OnSnapshot(const PACKET_SC_SNAPSHOT* snapshot, UINT32 senderId) {}
-	virtual void OnFireMachineGunResult(const PACKET_SC_FIRE_MACHINE_GUN* fireMachineGun, UINT32 senderId) {}
-	virtual void OnObjectHit(const PACKET_SC_OBJECT_HIT* objectHit, UINT32 senderId) {}
-	virtual void OnRespawnTank(const PACKET_SC_RESPAWN_TANK* respawnTank, UINT32 senderId) {}
-};
-
+// Server -> Client
+typedef void (*SCLoginCallback)(const PACKET_SC_LOGIN* login, UINT32 senderId);
+typedef void (*SCCreateTankCallback)(const PACKET_SC_CREATE_TANK* createTank, UINT32 senderId);
+typedef void (*SCDeleteTankCallback)(const PACKET_SC_DELETE_TANK* deleteTank, UINT32 senderId);
+typedef void (*SCStartMoveCallback)(const PACKET_SC_START_MOVE* startMove, UINT32 senderId);
+typedef void (*SCEndMoveCallback)(const PACKET_SC_END_MOVE* endMove, UINT32 senderId);
+typedef void (*SCMovingCallback)(const PACKET_SC_MOVING* moving, UINT32 senderId);
+typedef void (*SCSnapshotCallback)(const PACKET_SC_SNAPSHOT* snapshot, UINT32 senderId);
+typedef void (*SCFireMachineGunCallback)(const PACKET_SC_FIRE_MACHINE_GUN* fireMachineGun, UINT32 senderId);
+typedef void (*SCObjectHitCallback)(const PACKET_SC_OBJECT_HIT* objectHit, UINT32 senderId);
+typedef void (*SCRespawnTankCallback)(const PACKET_SC_RESPAWN_TANK* respawnTank, UINT32 senderId);
 
 class PacketHandler
 {
 public:
-	static void RegisterCallbacks(IPacketCallbacks* callbacks);
-
 	static BOOL Validate(BYTE* pGameEvent, UINT32 senderId);
-	static void HandlePacket(BYTE* pGameEvent, UINT32 senderId);
+	static void DispatchPacket(BYTE* pGameEvent, UINT32 senderId);
+
+	static void RegisterCSLoginCallback(CSLoginCallback callback);
+	static void RegisterCSStartMoveCallback(CSStartMoveCallback callback);
+	static void RegisterCSEndMoveCallback(CSEndMoveCallback callback);
+	static void RegisterCSMovingCallback(CSMovingCallback callback);
+	static void RegisterCSFireMachineGunCallback(CSFireMachineGunCallback callback);
+	
+	static void RegisterSCLoginCallback(SCLoginCallback callback);
+	static void RegisterSCCreateTankCallback(SCCreateTankCallback callback);
+	static void RegisterSCDeleteTankCallback(SCDeleteTankCallback callback);
+	static void RegisterSCStartMoveCallback(SCStartMoveCallback callback);
+	static void RegisterSCEndMoveCallback(SCEndMoveCallback callback);
+	static void RegisterSCMovingCallback(SCMovingCallback callback);
+	static void RegisterSCSnapshotCallback(SCSnapshotCallback callback);
+	static void RegisterSCFireMachineGunCallback(SCFireMachineGunCallback callback);
+	static void RegisterSCObjectHitCallback(SCObjectHitCallback callback);
+	static void RegisterSCRespawnTankCallback(SCRespawnTankCallback callback);
 
 private:
-	static IPacketCallbacks* s_callbacks;
+	static CSLoginCallback s_CSLoginCallback;
+	static CSStartMoveCallback s_CSStartMoveCallback;
+	static CSEndMoveCallback s_CSEndMoveCallback;
+	static CSMovingCallback s_CSMovingCallback;
+	static CSFireMachineGunCallback s_CSFireMachineGunCallback;
 
-	static void DispatchLoginRequest(BYTE* pPacket, UINT32 senderId);
-	static void DispatchLoginResult(BYTE* pPacket, UINT32 senderId);
-	static void DispatchCreateTank(BYTE* pPacket, UINT32 senderId);
-	static void DispatchDeleteTank(BYTE* pPacket, UINT32 senderId);
-	static void DispatchStartMove(BYTE* pPacket, UINT32 senderId);
-	static void DispatchEndMove(BYTE* pPacket, UINT32 senderId);
-	static void DispatchMoving(BYTE* pPacket, UINT32 senderId);
-	static void DispatchSnapshot(BYTE* pPacket, UINT32 senderId);
-	static void DispatchFireMachineGun(BYTE* pPacket, UINT32 senderId);
-	static void DispatchObjectHit(BYTE* pPacket, UINT32 senderId);
-	static void DispatchRespawnTank(BYTE* pPacket, UINT32 senderId);
+	static SCLoginCallback s_SCLoginCallback;
+	static SCCreateTankCallback s_SCCreateTankCallback;
+	static SCDeleteTankCallback s_SCDeleteTankCallback;
+	static SCStartMoveCallback s_SCStartMoveCallback;
+	static SCEndMoveCallback s_SCEndMoveCallback;
+	static SCMovingCallback s_SCMovingCallback;
+	static SCSnapshotCallback s_SCSnapshotCallback;
+	static SCFireMachineGunCallback s_SCFireMachineGunCallback;
+	static SCObjectHitCallback s_SCObjectHitCallback;
+	static SCRespawnTankCallback s_SCRespawnTankCallback;
 };

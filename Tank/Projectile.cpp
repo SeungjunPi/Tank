@@ -8,7 +8,7 @@
 #include "IStableFlow.h"
 #include "Player.h"
 
-void Projectile::Initiate(ObjectID id, Transform* transform, UserDBIndex ownerID)
+void Projectile::Initiate(ObjectID id, const Transform* transform, UserDBIndex ownerID)
 {
 	_id = id;
 	_ownerID = ownerID;

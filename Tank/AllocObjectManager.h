@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "TankPch.h"
 #include "GameObject.h"
 #include "Tank.h"
@@ -20,7 +20,7 @@ public:
 	void Terminate();
 
 	Tank* CreateTank(ObjectID objectID, UserDBIndex ownerIndex);
-	Projectile* CreateProjectile(ObjectID objectID, Transform* pInitTransform, UserDBIndex ownerIndex);
+	Projectile* CreateProjectile(ObjectID objectID, const Transform* pInitTransform, UserDBIndex ownerIndex);
 	Obstacle* CreateObstacle(ObjectID objectID, Transform* pInitTransform, UserDBIndex ownerIndex);
 
 	void RemoveObject(EGameObjectType objectKind, ObjectKey objectKey);

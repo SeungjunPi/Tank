@@ -6,7 +6,7 @@
 #include "Tank.h"
 
 #include "KeyboardEventListener.h"
-#include "GameEvent.h"
+#include "ClientPacketHandler.h"
 
 Player::Player(std::wstring name, std::wstring password)
 	: _name(name)

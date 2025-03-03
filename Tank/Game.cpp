@@ -14,7 +14,7 @@
 #include "NetMessageQueue.h"
 
 #include "CollisionManager.h"
-#include "GameEvent.h"
+#include "ClientPacketHandler.h"
 #include "IStableFlow.h"
 #include "Collider.h"
 #include "Player.h"
@@ -42,6 +42,7 @@ void Game::Initialize()
 	if (res != true) {
 		__debugbreak();
 	}
+	ClientPacketHandler::RegisterCallbacks();
 
 	CreateStableFlow(&g_pStableFlow);
 
@@ -120,7 +121,7 @@ void s_InitiatePlayer()
 	SessionID sessionID = g_pNetCore->ConnectTo("127.0.0.1", 30283);
 	g_pPlayer->OnConnected(sessionID);
 	// Send Login
-	GamePacket::SendLogin(g_userName, g_password);
+	ClientPacketHandler::SendLogin(g_userName, g_password);
 }
 
 void s_ApplyKeyboardEvents(ULONGLONG tickDiff)
@@ -173,7 +174,7 @@ void s_HandleNetEvents()
 	UINT32 serverId;
 	NetMessage* pMessage = pReceiveMessageQueue->GetNetMessageOrNull(&serverId);
 	while (pMessage != nullptr) {
-		GamePacket::HandlePacket((BYTE*)pMessage->body, serverId);
+		PacketHandler::DispatchPacket((BYTE*)pMessage->body, serverId);
 		pMessage = pReceiveMessageQueue->GetNetMessageOrNull(&serverId);
 	}
 	g_pNetCore->EndHandleReceivedMessages();
