@@ -97,6 +97,13 @@ INT Player::IncreaseDeath()
 	return _score.death;
 }
 
+void Player::Tick()
+{
+	HandleKeyboardEvents(g_keyboardPressedFlag, g_keyboardReleasedFlag, g_keyboardHeldFlag);
+
+
+}
+
 void Player::LogTankPosition(const char* str)
 {
 	if (_pTank == nullptr) {

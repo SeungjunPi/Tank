@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 
 
@@ -35,6 +35,8 @@ public:
 	INT IncreaseHit();
 	INT IncreaseKill();
 	INT IncreaseDeath();
+
+	void Tick();
 
 	void LogTankPosition(const char* str);
 private:

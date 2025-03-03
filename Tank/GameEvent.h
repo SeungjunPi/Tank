@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "GameStruct.h"
 #include "StaticData.h"
@@ -6,178 +6,6 @@
 
 const int ID_LENGTH_MAX = 16;
 const int PW_LENGTH_MAX = 16;
-
-// [Kind3][Kind2][Kind1][SC, CS] 
-enum EGameEventCode
-{
-	GAME_EVENT_CODE_CS_LOGIN,
-	GAME_EVENT_CODE_SC_LOGIN,
-	GAME_EVENT_CODE_CS_LOAD_PLAYER_STAT,
-	GAME_EVENT_CODE_SC_LOAD_PLAYER_STAT,
-	GAME_EVENT_CODE_SC_SNAPSHOT = 0x00010202,
-	GAME_EVENT_CODE_SC_CREATE_TANK = 0x01010102,
-	GAME_EVENT_CODE_SC_DELETE_TANK = 0x01010202,
-	GAME_EVENT_CODE_SC_RESPAWN_TANK = 0x01010302,
-	GAME_EVENT_CODE_CS_START_MOVE = 0x02010101,
-	GAME_EVENT_CODE_SC_START_MOVE = 0x02010102,
-	GAME_EVENT_CODE_CS_END_MOVE = 0x02010201,
-	GAME_EVENT_CODE_SC_END_MOVE = 0x02010202,
-	GAME_EVENT_CODE_CS_MOVING = 0x02010301,
-	GAME_EVENT_CODE_SC_MOVING = 0x02010302,
-	GAME_EVENT_CODE_CS_FIRE_MACHINE_GUN = 0x02010401,
-	GAME_EVENT_CODE_SC_FIRE_MACHINE_GUN = 0x02010402,
-	GAME_EVENT_CODE_SC_OBJECT_HIT = 0x02010501,
-	GAME_EVENT_CODE_SC_TANK_HIT = 0x02010502,
-	GAME_EVENT_CODE_SC_CREATE_OBSTACLE = 0x02010102,
-	GAME_EVENT_CODE_SC_DELETE_OBSTACLE = 0x02010202,
-};
-
-struct GameNetEvent
-{
-	EGameEventCode evCode;
-};
-
-
-struct PACKET_CS_LOGIN
-{
-	WCHAR id[ID_LENGTH_MAX + 1];
-	WCHAR pw[PW_LENGTH_MAX + 1];
-};
-
-struct PACKET_SC_LOGIN
-{
-	BOOL result;
-	UserDBIndex userDBIndex;
-	int hitCount;
-	int killCount;
-	int deathCount;
-};
-
-struct PACKET_CS_LOAD_PLAYER_STAT
-{
-	UserDBIndex userDBIndex;
-};
-
-struct PACKET_SC_LOAD_PLAYER_STAT
-{
-	int hitCount;
-	int killCount;
-	int deathCount;
-};
-
-
-struct PACKET_SC_PLAYER_ID
-{
-	UserDBIndex id;
-};
-
-struct PACKET_SC_CREATE_TANK
-{
-	UserDBIndex ownerId;
-	ObjectID objectId;
-	Transform transform;
-	PlayerInputState inputState;
-};
-
-struct PACKET_SC_DELETE_TANK
-{
-	ObjectID objectId;
-};
-
-struct PACKET_CS_START_MOVE
-{
-	PlayerInputState inputState;
-};
-
-struct PACKET_SC_START_MOVE
-{
-	PlayerInputState inputState;
-	ObjectID objectId;
-	Transform transform; // 클라이언트가 확인하기 위한 용도
-};
-
-struct PACKET_CS_END_MOVE
-{
-	Transform transform; // 보정용
-};
-
-struct PACKET_SC_END_MOVE
-{
-	ObjectID objectId;
-	Transform transform;
-};
-
-struct PACKET_CS_MOVING
-{
-	PlayerInputState inputState;
-	Transform transform;
-};
-
-struct PACKET_SC_MOVING
-{
-	PlayerInputState inputState;
-	ObjectID objectId;
-	Transform transform;
-};
-
-struct PACKET_OBJECT_INFO
-{
-	EGameObjectType kind;
-	ObjectID objectId;
-	UserDBIndex ownerId;
-	Transform transform;
-};
-
-struct PACKET_SC_SNAPSHOT
-{
-	UINT16 countObjects;
-};
-
-
-struct PACKET_CS_SHOOT
-{
-	Transform transform;
-};
-
-struct PACKET_SC_SHOOT
-{
-	ObjectID objectId;
-	UserDBIndex ownerId;
-	Transform transform;
-};
-
-struct PACKET_SC_TANK_HIT
-{
-	ObjectID tankId;
-	ObjectID projectileId;
-	UserDBIndex shooter;
-	UserDBIndex target;
-};
-
-struct PACKET_SC_OBJECT_HIT
-{
-	ObjectID oneID;
-	ObjectID anotherID;
-};
-
-struct PACKET_SC_CREATE_OBSTACLE
-{
-	ObjectID obstacleId;
-	Transform transform;
-};
-
-struct PACKET_SC_DELETE_OBSTACLE
-{
-	ObjectID obstacleId;
-	UserDBIndex shooterId;
-};
-
-struct PACKET_SC_RESPAWN_TANK
-{
-	ObjectID tankId;
-	Vector3 position;
-};
-
 
 
 class GamePacket
@@ -192,8 +20,34 @@ public:
 	static void SendMoving(const Transform* pTankTransform, PlayerInputState moveFlag);
 	static void SendFireMachineGun(const Transform* pTurretTransform);
 
+	static void SetLoginResultCallback(void (*callback)(const PACKET_SC_LOGIN* login));
+	static void SetCreateTankCallback(void (*callback)(const PACKET_SC_CREATE_TANK* createTank));
+	static void SetDeleteTankCallback(void (*callback)(const PACKET_SC_DELETE_TANK* deleteTank));
+	static void SetStartMoveCallback(void (*callback)(const PACKET_SC_START_MOVE* startMove));
+	static void SetEndMoveCallback(void (*callback)(const PACKET_SC_END_MOVE* endMove));
+	static void SetMovingCallback(void (*callback)(const PACKET_SC_MOVING* moving));
+	static void SetSnapshotCallback(void (*callback)(const PACKET_SC_SNAPSHOT* snapshot));
+	static void SetFireMachineGunCallback(void (*callback)(const PACKET_SC_FIRE_MACHINE_GUN* fireMachineGun));
+	static void SetObjectHitCallback(void (*callback)(const PACKET_SC_OBJECT_HIT* objectHit));
+	static void SetRespawnTankCallback(void (*callback)(const PACKET_SC_RESPAWN_TANK* respawnTank));
+
+
 private:
-	static void HandleLoginResult(BYTE* pGameEvent, UINT32 senderId);
+	static void (*LoginResultCallback)(const PACKET_SC_LOGIN* login);
+	static void (*CreateTankCallback)(const PACKET_SC_CREATE_TANK* createTank);
+	static void (*DeleteTankCallback)(const PACKET_SC_DELETE_TANK* deleteTank);
+	static void (*StartMoveCallback)(const PACKET_SC_START_MOVE* startMove);
+	static void (*EndMoveCallback)(const PACKET_SC_END_MOVE* endMove);
+	static void (*MovingCallback)(const PACKET_SC_MOVING* moving);
+	static void (*SnapshotCallback)(const PACKET_SC_SNAPSHOT* snapshot);
+	static void (*FireMachineGunCallback)(const PACKET_SC_FIRE_MACHINE_GUN* fireMachineGun);
+	static void (*ObjectHitCallback)(const PACKET_SC_OBJECT_HIT* objectHit);
+	static void (*RespawnTankCallback)(const PACKET_SC_RESPAWN_TANK* respawnTank);
+
+
+
+
+	static void DispatchLoginResult(BYTE* pGameEvent, UINT32 senderId);
 
 	static void HandleCreateTank(BYTE* pGameEvent, UINT32 senderId);
 

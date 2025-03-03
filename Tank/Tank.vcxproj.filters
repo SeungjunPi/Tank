@@ -34,6 +34,9 @@
     <Filter Include="Player">
       <UniqueIdentifier>{216bdc60-be59-4baa-bc03-aeb10cba4da4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Network">
+      <UniqueIdentifier>{3226aa50-de82-420e-b6e4-eee5ab9d68d0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -136,6 +139,9 @@
     </ClInclude>
     <ClInclude Include="Player.h">
       <Filter>Player</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkProtocol.h">
+      <Filter>Network</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

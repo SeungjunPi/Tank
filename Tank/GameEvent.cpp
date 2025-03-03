@@ -17,7 +17,7 @@ void GamePacket::HandlePacket(BYTE* pGameEvent, UINT32 senderId)
 	EGameEventCode* evCode = (EGameEventCode*)pGameEvent;
 	switch (*evCode) {
 	case GAME_EVENT_CODE_SC_LOGIN:
-		HandleLoginResult(pGameEvent, senderId);
+		DispatchLoginResult(pGameEvent, senderId);
 		break;
 	case GAME_EVENT_CODE_SC_SNAPSHOT:
 		HandleSnapshot(pGameEvent, senderId);
@@ -56,7 +56,7 @@ void GamePacket::HandlePacket(BYTE* pGameEvent, UINT32 senderId)
 }
 
 
-void GamePacket::HandleLoginResult(BYTE* pGameEvent, UINT32 senderId)
+void GamePacket::DispatchLoginResult(BYTE* pGameEvent, UINT32 senderId)
 {
 	PACKET_SC_LOGIN* pScLogin = (PACKET_SC_LOGIN*)(pGameEvent + sizeof(EGameEventCode));
 	if (pScLogin->result == FALSE) {
@@ -65,12 +65,16 @@ void GamePacket::HandleLoginResult(BYTE* pGameEvent, UINT32 senderId)
 		return;
 	}
 
-	g_pPlayer->OnSuccessLogin(pScLogin->userDBIndex, { pScLogin->hitCount , pScLogin->killCount , pScLogin->deathCount });
+	LoginResultCallback(pScLogin);
+
+	// g_pPlayer->OnSuccessLogin(pScLogin->userDBIndex, { pScLogin->hitCount , pScLogin->killCount , pScLogin->deathCount });
 }
 
 void GamePacket::HandleCreateTank(BYTE* pGameEvent, UINT32 senderId)
 {
 	PACKET_SC_CREATE_TANK* pScCreateTank = (PACKET_SC_CREATE_TANK*)(pGameEvent + sizeof(EGameEventCode));
+
+	CreateTankCallback(pScCreateTank);
 	
 	Tank* pTank = g_objectManager.CreateTank(pScCreateTank->objectId, pScCreateTank->ownerId);
 	if (pScCreateTank->ownerId == g_pPlayer->GetUserID()) {
@@ -161,7 +165,7 @@ void GamePacket::HandleSnapshot(BYTE* pGameEvent, UINT32 senderId)
 
 void GamePacket::HandleFireMachineGun(BYTE* pGameEvent, UINT32 senderId)
 {
-	PACKET_SC_SHOOT* pScShoot = (PACKET_SC_SHOOT*)(pGameEvent + sizeof(EGameEventCode));
+	PACKET_SC_FIRE_MACHINE_GUN* pScShoot = (PACKET_SC_FIRE_MACHINE_GUN*)(pGameEvent + sizeof(EGameEventCode));
 	g_objectManager.CreateProjectile(pScShoot->objectId, &pScShoot->transform, pScShoot->ownerId);
 }
 
@@ -272,12 +276,62 @@ void GamePacket::SendMoving(const Transform* pTankTransform, PlayerInputState mo
 
 void GamePacket::SendFireMachineGun(const Transform* pTurretTransform)
 {
-	const UINT32 contentsMsgSize = sizeof(PACKET_CS_SHOOT) + sizeof(EGameEventCode);
+	const UINT32 contentsMsgSize = sizeof(PACKET_CS_FIRE_MACHINE_GUN) + sizeof(EGameEventCode);
 	BYTE pRawPacket[contentsMsgSize] = { 0, };
 	EGameEventCode* pEvCode = (EGameEventCode*)pRawPacket;
-	PACKET_CS_SHOOT* pContentsMsgBody = (PACKET_CS_SHOOT*)(pRawPacket + sizeof(EGameEventCode));
+	PACKET_CS_FIRE_MACHINE_GUN* pContentsMsgBody = (PACKET_CS_FIRE_MACHINE_GUN*)(pRawPacket + sizeof(EGameEventCode));
 
 	*pEvCode = GAME_EVENT_CODE_CS_FIRE_MACHINE_GUN;
 	memcpy(&pContentsMsgBody->transform, pTurretTransform, sizeof(Transform));
 	g_pNetCore->SendMessageTo(g_pPlayer->GetSessionID(), pRawPacket, contentsMsgSize);
+}
+
+void GamePacket::SetLoginResultCallback(void(*callback)(const PACKET_SC_LOGIN* login))
+{
+	LoginResultCallback = callback;
+}
+
+void GamePacket::SetCreateTankCallback(void(*callback)(const PACKET_SC_CREATE_TANK* createTank))
+{
+	CreateTankCallback = callback;
+}
+
+void GamePacket::SetDeleteTankCallback(void(*callback)(const PACKET_SC_DELETE_TANK* deleteTank))
+{
+	DeleteTankCallback = callback;
+}
+
+void GamePacket::SetStartMoveCallback(void(*callback)(const PACKET_SC_START_MOVE* startMove))
+{
+	StartMoveCallback = callback;
+}
+
+void GamePacket::SetEndMoveCallback(void(*callback)(const PACKET_SC_END_MOVE* endMove))
+{
+	EndMoveCallback = callback;
+}
+
+void GamePacket::SetMovingCallback(void(*callback)(const PACKET_SC_MOVING* moving))
+{
+	MovingCallback = callback;
+}
+
+void GamePacket::SetSnapshotCallback(void(*callback)(const PACKET_SC_SNAPSHOT* snapshot))
+{
+	SnapshotCallback = callback;
+}
+
+void GamePacket::SetFireMachineGunCallback(void(*callback)(const PACKET_SC_FIRE_MACHINE_GUN* fireMachineGun))
+{
+	FireMachineGunCallback = callback;
+}
+
+void GamePacket::SetObjectHitCallback(void(*callback)(const PACKET_SC_OBJECT_HIT* objectHit))
+{
+	ObjectHitCallback = callback;
+}
+
+void GamePacket::SetRespawnTankCallback(void(*callback)(const PACKET_SC_RESPAWN_TANK* respawnTank))
+{
+	RespawnTankCallback = callback;
 }

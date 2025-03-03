@@ -171,6 +171,7 @@
     <ClInclude Include="GameStruct.h" />
     <ClInclude Include="Global.h" />
     <ClInclude Include="KeyboardEventListener.h" />
+    <ClInclude Include="NetworkProtocol.h" />
     <ClInclude Include="Obstacle.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Projectile.h" />
