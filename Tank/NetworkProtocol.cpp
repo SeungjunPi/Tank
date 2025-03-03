@@ -26,61 +26,61 @@ void PacketHandler::DispatchPacket(BYTE* pGameEvent, UINT32 senderId)
 {
 	ENetworkMessageType* evCode = (ENetworkMessageType*)pGameEvent;
 	switch (*evCode) {
-	case GAME_EVENT_CODE_SC_LOGIN:
+	case GAME_MESSAGE_TYPE_SC_LOGIN:
 	{
 		PACKET_SC_LOGIN* pScLogin = (PACKET_SC_LOGIN*)(pGameEvent + sizeof(ENetworkMessageType));
 		s_SCLoginCallback(pScLogin, senderId);
 	}
 		break;
-	case GAME_EVENT_CODE_SC_SNAPSHOT:
+	case GAME_MESSAGE_TYPE_SC_SNAPSHOT:
 	{
 		PACKET_SC_SNAPSHOT* pScSnapshot = (PACKET_SC_SNAPSHOT*)(pGameEvent + sizeof(ENetworkMessageType));
 		s_SCSnapshotCallback(pScSnapshot, senderId);
 	}
 		break;
-	case GAME_EVENT_CODE_SC_CREATE_TANK:
+	case GAME_MESSAGE_TYPE_SC_CREATE_TANK:
 	{
 		PACKET_SC_CREATE_TANK* pScCreateTank = (PACKET_SC_CREATE_TANK*)(pGameEvent + sizeof(ENetworkMessageType));
 		s_SCCreateTankCallback(pScCreateTank, senderId);
 	}
 		break;
-	case GAME_EVENT_CODE_SC_DELETE_TANK:
+	case GAME_MESSAGE_TYPE_SC_DELETE_TANK:
 	{
 		PACKET_SC_DELETE_TANK* pScDeleteTank = (PACKET_SC_DELETE_TANK*)(pGameEvent + sizeof(ENetworkMessageType));
 		s_SCDeleteTankCallback(pScDeleteTank, senderId);
 	}
 		break;
-	case GAME_EVENT_CODE_SC_START_MOVE:
+	case GAME_MESSAGE_TYPE_SC_START_MOVE:
 	{
 		PACKET_SC_START_MOVE* pScStartMove = (PACKET_SC_START_MOVE*)(pGameEvent + sizeof(ENetworkMessageType));
 		s_SCStartMoveCallback(pScStartMove, senderId);
 	}
 		break;
-	case GAME_EVENT_CODE_SC_END_MOVE:
+	case GAME_MESSAGE_TYPE_SC_END_MOVE:
 	{
 		PACKET_SC_END_MOVE* pScEndMove = (PACKET_SC_END_MOVE*)(pGameEvent + sizeof(ENetworkMessageType));
 		s_SCEndMoveCallback(pScEndMove, senderId);
 	}
 		break;
-	case GAME_EVENT_CODE_SC_MOVING:
+	case GAME_MESSAGE_TYPE_SC_MOVING:
 	{
 		PACKET_SC_MOVING* pScMoving = (PACKET_SC_MOVING*)(pGameEvent + sizeof(ENetworkMessageType));
 		s_SCMovingCallback(pScMoving, senderId);
 	}
 		break;
-	case GAME_EVENT_CODE_SC_FIRE_MACHINE_GUN:
+	case GAME_MESSAGE_TYPE_SC_FIRE_MACHINE_GUN:
 	{
 		PACKET_SC_FIRE_MACHINE_GUN* pScFireMachineGun = (PACKET_SC_FIRE_MACHINE_GUN*)(pGameEvent + sizeof(ENetworkMessageType));
 		s_SCFireMachineGunCallback(pScFireMachineGun, senderId);
 	}
 		break;	
-	case GAME_EVENT_CODE_SC_RESPAWN_TANK:
+	case GAME_MESSAGE_TYPE_SC_RESPAWN_TANK:
 	{
 		PACKET_SC_RESPAWN_TANK* pScRespawnTank = (PACKET_SC_RESPAWN_TANK*)(pGameEvent + sizeof(ENetworkMessageType));
 		s_SCRespawnTankCallback(pScRespawnTank, senderId);
 	}
 		break;
-	case GAME_EVENT_CODE_SC_OBJECT_HIT:
+	case GAME_MESSAGE_TYPE_SC_OBJECT_HIT:
 	{
 		PACKET_SC_OBJECT_HIT* pScObjectHit = (PACKET_SC_OBJECT_HIT*)(pGameEvent + sizeof(ENetworkMessageType));
 		s_SCObjectHitCallback(pScObjectHit, senderId);

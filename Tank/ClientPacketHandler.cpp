@@ -157,7 +157,7 @@ void ClientPacketHandler::SendStartMove(const Transform* pTankTransform, PlayerI
 	ENetworkMessageType* pEvCode = (ENetworkMessageType*)pRawPacket;
 	PACKET_CS_START_MOVE* pContentsMsgBody = (PACKET_CS_START_MOVE*)(pRawPacket + sizeof(ENetworkMessageType));
 
-	*pEvCode = GAME_EVENT_CODE_CS_START_MOVE;
+	*pEvCode = GAME_MESSAGE_TYPE_CS_START_MOVE;
 	pContentsMsgBody->inputState = inputState;
 	g_pNetCore->SendMessageTo(g_pPlayer->GetSessionID(), pRawPacket, contentsMsgSize);
 }
@@ -169,7 +169,7 @@ void ClientPacketHandler::SendEndMove(const Transform* pTankTransform)
 	ENetworkMessageType* pEvCode = (ENetworkMessageType*)pRawPacket;
 	PACKET_CS_END_MOVE* pContentsMsgBody = (PACKET_CS_END_MOVE*)(pRawPacket + sizeof(ENetworkMessageType));
 
-	*pEvCode = GAME_EVENT_CODE_CS_END_MOVE;
+	*pEvCode = GAME_MESSAGE_TYPE_CS_END_MOVE;
 	memcpy(&pContentsMsgBody->transform, pTankTransform, sizeof(Transform));
 	g_pNetCore->SendMessageTo(g_pPlayer->GetSessionID(), pRawPacket, contentsMsgSize);
 }
@@ -181,7 +181,7 @@ void ClientPacketHandler::SendMoving(const Transform* pTankTransform, PlayerInpu
 	ENetworkMessageType* pEvCode = (ENetworkMessageType*)pRawPacket;
 	PACKET_CS_MOVING* pContentsMsgBody = (PACKET_CS_MOVING*)(pRawPacket + sizeof(ENetworkMessageType));
 
-	*pEvCode = GAME_EVENT_CODE_CS_MOVING;
+	*pEvCode = GAME_MESSAGE_TYPE_CS_MOVING;
 	memcpy(&pContentsMsgBody->transform, pTankTransform, sizeof(Transform));
 	pContentsMsgBody->inputState = moveFlag;
 	g_pNetCore->SendMessageTo(g_pPlayer->GetSessionID(), pRawPacket, contentsMsgSize);
@@ -194,7 +194,7 @@ void ClientPacketHandler::SendFireMachineGun(const Transform* pTurretTransform)
 	ENetworkMessageType* pEvCode = (ENetworkMessageType*)pRawPacket;
 	PACKET_CS_FIRE_MACHINE_GUN* pContentsMsgBody = (PACKET_CS_FIRE_MACHINE_GUN*)(pRawPacket + sizeof(ENetworkMessageType));
 
-	*pEvCode = GAME_EVENT_CODE_CS_FIRE_MACHINE_GUN;
+	*pEvCode = GAME_MESSAGE_TYPE_CS_FIRE_MACHINE_GUN;
 	memcpy(&pContentsMsgBody->transform, pTurretTransform, sizeof(Transform));
 	g_pNetCore->SendMessageTo(g_pPlayer->GetSessionID(), pRawPacket, contentsMsgSize);
 }
