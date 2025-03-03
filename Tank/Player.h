@@ -6,6 +6,7 @@
 #include "TankPch.h"
 #include "GameStruct.h"
 #include "NetworkAlias.h"
+#include "Global.h"
 
 
 
@@ -18,14 +19,15 @@ public:
 	Player(std::wstring name, std::wstring password);
 	~Player();
 
-	void OnConnected(SessionID sessionID);
-	void OnSuccessLogin(UserDBIndex key, Score score);
+	virtual void OnConnected(SessionID sessionID);
+	virtual void OnSuccessLogin(UserDBIndex key, Score score);
 
 	std::wstring& GetName() { return _name; }
 	std::wstring& GetPassword() { return _password; }
 
 	void SetTank(Tank* pTank);
 	ObjectID GetTankID();
+	Tank* GetTankPtr() { return _pTank; }
 	Tank* ClearTank();
 
 	void HandleKeyboardEvents(UINT64 pressedKeys, UINT64 releasedKeys, UINT64 heldKeys);

@@ -10,6 +10,7 @@ static const int MAX_NUM_OBJECT = 4096;
 void AllocObjectManager::Initiate()
 {
 	_tankTable.Initiate(MAX_NUM_OBJECT);
+	_tankTableByOwner.Initiate(MAX_NUM_OBJECT);
 	_projectileTable.Initiate(MAX_NUM_OBJECT);
 	_obstacleTable.Initiate(MAX_NUM_OBJECT);
 }
@@ -18,6 +19,12 @@ void AllocObjectManager::Terminate()
 {
 	UINT32* keys = DNew UINT32[MAX_NUM_OBJECT];
 	UINT32 numCounts = 0;
+
+	_tankTableByOwner.GetIdsTo(keys, &numCounts);
+	for (int i = 0; i < numCounts; ++i) {
+		UINT32 key = keys[i];
+		void* ptr = _tankTableByOwner.Pop(key);
+	}
 
 	_tankTable.GetIdsTo(keys, &numCounts);
 	for (int i = 0; i < numCounts; ++i) {
@@ -41,7 +48,7 @@ void AllocObjectManager::Terminate()
 	}
 
 	delete[] keys;
-
+	_tankTableByOwner.Terminate();
 	_projectileTable.Terminate();
 	_obstacleTable.Terminate();
 	_tankTable.Terminate();
@@ -56,6 +63,10 @@ Tank* AllocObjectManager::CreateTank(ObjectID objectID, UserDBIndex ownerIndex)
 	pTank->AttachCollider(pCollider);
 
 	bool res = _tankTable.Insert(objectID.key, pTank);
+	if (!res) {
+		__debugbreak();
+	}
+	res = _tankTableByOwner.Insert(ownerIndex, pTank);
 	if (!res) {
 		__debugbreak();
 	}
@@ -213,6 +224,11 @@ GameObject* AllocObjectManager::GetObjectPtrOrNull(EGameObjectType objectKind, O
 GameObject* AllocObjectManager::GetObjectPtrOrNull(ObjectID objectID)
 {
 	return GetObjectPtrOrNull(objectID.type, objectID.key);
+}
+
+Tank* AllocObjectManager::GetTankPtrByOwnerOrNull(UserDBIndex ownerIndex)
+{
+	return (Tank*)_tankTableByOwner.Get(ownerIndex);
 }
 
 int AllocObjectManager::GetCountObjects() const

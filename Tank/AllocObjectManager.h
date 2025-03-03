@@ -36,6 +36,7 @@ public:
 
 	GameObject* GetObjectPtrOrNull(EGameObjectType objectKind, ObjectKey objectKey);
 	GameObject* GetObjectPtrOrNull(ObjectID objectID);
+	Tank* GetTankPtrByOwnerOrNull(UserDBIndex ownerIndex);
 
 	int GetCountObjects() const;
 
@@ -43,6 +44,7 @@ public:
 
 private:
 	PointerTable32 _tankTable;
+	PointerTable32 _tankTableByOwner;
 	PointerTable32 _projectileTable;
 	PointerTable32 _obstacleTable;
 };

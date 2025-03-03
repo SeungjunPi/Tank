@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{0561ca64-59f6-43c4-b090-daf9eb31237e}</ProjectGuid>
-    <RootNamespace>Tank</RootNamespace>
+    <ProjectGuid>{c57870fc-0404-4fbb-bd88-56b7d16ed36e}</ProjectGuid>
+    <RootNamespace>Dummy</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -40,7 +40,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -71,10 +71,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>$(SolutionDir)..\bin\$(Configuration);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
-    <IncludePath>$(SolutionDir)..\NetCore\;$(SolutionDir)..\DataStruct\;$(SolutionDir)..\Collision\;$(SolutionDir)..\Math\;$(SolutionDir)..\Common\</IncludePath>
     <OutDir>$(SolutionDir)..\bin\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)..\obj\$(ShortProjectName)\$(Configuration)\</IntDir>
+    <LibraryPath>$(SolutionDir)..\bin\$(Configuration);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <IncludePath>$(SolutionDir)..\NetCore\;$(SolutionDir)..\DataStruct\;$(SolutionDir)..\Collision\;$(SolutionDir)..\Math\;$(SolutionDir)..\Common\;$(SolutionDir)..\Tank;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -110,23 +110,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>
-      </AdditionalIncludeDirectories>
-      <PrecompiledHeaderFile>TankPch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\NetCore\;$(SolutionDir)..\DataStruct\;$(SolutionDir)..\Collision\;$(SolutionDir)..\Math\;$(SolutionDir)..\Common\;$(SolutionDir)..\Tank\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>NetCore.lib;DataStruct.lib;Collision.lib;Math.lib;Common.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>
-      </AdditionalLibraryDirectories>
-      <PerUserRedirection>false</PerUserRedirection>
+      <AdditionalDependencies>NetCore.lib;DataStruct.lib;Collision.lib;Math.lib;Tank.lib;Common.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PostBuildEvent>
-      <Command>
-      </Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -145,34 +135,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AllocObjectManager.cpp" />
-    <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="ConsoleRenderer.cpp" />
-    <ClCompile Include="DotObject.cpp" />
-    <ClCompile Include="GameObject.cpp" />
-    <ClCompile Include="Global.cpp" />
-    <ClCompile Include="KeyboardEventListener.cpp" />
-    <ClCompile Include="Obstacle.cpp" />
-    <ClCompile Include="Player.cpp" />
-    <ClCompile Include="Projectile.cpp" />
-    <ClCompile Include="StaticData.cpp" />
-    <ClCompile Include="Tank.cpp" />
-    <ClCompile Include="TankAliases.h" />
+    <ClCompile Include="Dummy.cpp" />
+    <ClCompile Include="DummyGame.cpp" />
+    <ClCompile Include="DummyGlobal.cpp" />
+    <ClCompile Include="DummyManager.cpp" />
+    <ClCompile Include="DummyPacketHandler.cpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AllocObjectManager.h" />
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="ConsoleRenderer.h" />
-    <ClInclude Include="DotObject.h" />
-    <ClInclude Include="GameObject.h" />
-    <ClInclude Include="Global.h" />
-    <ClInclude Include="KeyboardEventListener.h" />
-    <ClInclude Include="Obstacle.h" />
-    <ClInclude Include="Player.h" />
-    <ClInclude Include="Projectile.h" />
-    <ClInclude Include="StaticData.h" />
-    <ClInclude Include="TankPch.h" />
-    <ClInclude Include="Tank.h" />
+    <ClInclude Include="Dummy.h" />
+    <ClInclude Include="DummyGame.h" />
+    <ClInclude Include="DummyGlobal.h" />
+    <ClInclude Include="DummyManager.h" />
+    <ClInclude Include="DummyPacketHandler.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
