@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "TankPch.h"
 #include "TankAliases.h"
@@ -13,6 +13,8 @@ public:
 	Vector3 GetPosition() const;
 
 	void UpdateTransf(const Transform* to);
+
+	void Tick();
 	
 private:
 	Transform _transf;

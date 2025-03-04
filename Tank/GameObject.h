@@ -29,6 +29,8 @@ public:
 
 	UINT GetTransformedModel(Vertex* out_vertices);
 
+	void ResetDynamicPhysicalComponent();
+
 	void SetTransformByServer(const Transform* pTransform);
 
 

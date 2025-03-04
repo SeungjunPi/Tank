@@ -7,11 +7,11 @@ class ClientPacketHandler
 public:
 	static void RegisterCallbacks();
 
-	static void SendLogin(const std::wstring& wID, const std::wstring& wPw);
-	static void SendStartMove(const Transform* pTankTransform, PlayerInputState inputState);
-	static void SendEndMove(const Transform* pTankTransform);
-	static void SendMoving(const Transform* pTankTransform, PlayerInputState inputState);
-	static void SendFireMachineGun(const Transform* pTurretTransform);
+	static void SendLogin(const std::wstring& wID, const std::wstring& wPw, SessionID sessionID);
+	static void SendStartMove(const Transform* pTankTransform, PlayerInputState inputState, SessionID sessionID);
+	static void SendEndMove(const Transform* pTankTransform, SessionID sessionID);
+	static void SendMoving(const Transform* pTankTransform, PlayerInputState inputState, SessionID sessionID);
+	static void SendFireMachineGun(const Transform* pTurretTransform, SessionID sessionID);
 
 private:
 	static void OnLogin(const PACKET_SC_LOGIN* login, UINT32 senderID);
@@ -24,6 +24,7 @@ private:
 	static void OnFireMachineGun(const PACKET_SC_FIRE_MACHINE_GUN* fireMachineGun, UINT32 senderID);
 	static void OnObjectHit(const PACKET_SC_OBJECT_HIT* objectHit, UINT32 senderID);
 	static void OnRespawnTank(const PACKET_SC_RESPAWN_TANK* respawnTank, UINT32 senderID);
+	static void OnMachineGunHit(const PACKET_SC_MACHINE_GUN_HIT* machineGunHit, UINT32 senderID);
 
 
 };

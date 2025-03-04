@@ -51,28 +51,25 @@ void Tank::ResetHP()
 
 void Tank::AdvancePlayerInput(PlayerInputState inputState)
 {
-	_prevInputState = _crntInputState;
-	_crntInputState = inputState;
-
-	if ((_crntInputState & PLAYER_INPUT_FLAG_UP) && !(_crntInputState & PLAYER_INPUT_FLAG_DOWN)) {
+	if ((inputState & FLAG_PLAYER_INPUT_FORWARD) && !(inputState & FLAG_PLAYER_INPUT_BACKWARD)) {
 		_physicalComponent.velocity = Vector3::Rotate(FORWARD_DIRECTION, _physicalComponent.transform.Rotation) * TANK_TRANSLATION_SPEED;
 	}
-	else if ((_crntInputState & PLAYER_INPUT_FLAG_DOWN) && !(_crntInputState & PLAYER_INPUT_FLAG_UP)) {
+	else if ((inputState & FLAG_PLAYER_INPUT_BACKWARD) && !(inputState & FLAG_PLAYER_INPUT_FORWARD)) {
 		_physicalComponent.velocity = Vector3::Rotate(BACKWARD_DIRECTION, _physicalComponent.transform.Rotation) * TANK_TRANSLATION_SPEED;
 	}
 	else {
 		_physicalComponent.velocity = Vector3();
 	}
 
-	if (_crntInputState & PLAYER_INPUT_FLAG_LEFT) {
-		if (!(_crntInputState & PLAYER_INPUT_FLAG_RIGHT)) {
+	if (inputState & FLAG_PLAYER_INPUT_ROTATE_LEFT) {
+		if (!(inputState & FLAG_PLAYER_INPUT_ROTATE_RIGHT)) {
 			_physicalComponent.angularVelocity = { 0, 0, -TANK_ROTATION_SPEED };
 		}
 		else {
 			_physicalComponent.angularVelocity = Vector3();
 		}
 	}
-	else if (_crntInputState & PLAYER_INPUT_FLAG_RIGHT) {
+	else if (inputState & FLAG_PLAYER_INPUT_ROTATE_RIGHT) {
 		_physicalComponent.angularVelocity = { 0, 0, TANK_ROTATION_SPEED };
 	}
 	else {
@@ -100,14 +97,18 @@ BOOL Tank::IsDestroyed(ULONGLONG currentTick) const
 void Tank::OnHitWith(ULONGLONG currentTick, GameObject* other)
 {
 	ObjectID otherID = other->GetID();
+	if (_ownerIndex == other->GetOwnerId()) {
+		return;
+	}
+
 	if (otherID.type == GAME_OBJECT_TYPE_PROJECTILE) {
 		if (_hp > 0) {
 			if (--_hp == 0) {
 				_pCollider->Deactivate();
+				ResetDynamicPhysicalComponent();
 				_hitTick = currentTick;
 				_isAlive = false;
-				_crntInputState = PLAYER_INPUT_NONE;
-
+				
 				g_playerManager.IncreaseDeathCount(_ownerIndex);
 				g_playerManager.IncreaseKillCount(other->GetOwnerId());
 			}
@@ -161,17 +162,6 @@ BOOL Tank::TryFireMachineGun(ULONGLONG currentTick)
 
 	GamePacket::SendFireMachineGun(&projectileTransform);*/
 	return true;
-}
-
-void Tank::ProcessInput()
-{
-	PlayerInputState crntMoveStatr = _crntInputState & PLAYER_INPUT_MOVE_FLAGS;
-	if (crntMoveStatr) {
-		if (_lastTransformSyncTick + TICK_TANK_SYNC < g_currentGameTick) {
-			// Send Moving
-			// ??
-		}
-	}
 }
 
 

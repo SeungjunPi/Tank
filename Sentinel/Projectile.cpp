@@ -48,6 +48,10 @@ void Projectile::OnHitWith(ULONGLONG currentTick, GameObject* other)
 		return;
 	}
 
+	if (_ownerIndex == other->GetOwnerId()) {
+		return;
+	}
+
 	ObjectID otherID = other->GetID();
 	if (otherID.type == GAME_OBJECT_TYPE_TANK) {
 		_hitTick = currentTick;

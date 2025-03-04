@@ -1,7 +1,7 @@
 #include "Tank.h"
 #include "StaticData.h"
 #include "Global.h"
-#include "ClientPacketHandler.h"
+#include "NetworkProtocol.h"
 #include "Collider.h"
 #include "IStableFlow.h"
 #include "AllocObjectManager.h"
@@ -59,28 +59,25 @@ void Tank::UpdatePlayerInputStateFromServer(PlayerInputState inputState)
 
 void Tank::AdvancePlayerInput(PlayerInputState inputState)
 {
-	_prevInputState = _crntInputState;
-	_crntInputState = inputState;
-
-	if ((_crntInputState & PLAYER_INPUT_FLAG_UP) && !(_crntInputState & PLAYER_INPUT_FLAG_DOWN)) {
+	if ((inputState & FLAG_PLAYER_INPUT_FORWARD) && !(inputState & FLAG_PLAYER_INPUT_BACKWARD)) {
 		_physicalComponent.velocity = Vector3::Rotate(FORWARD_DIRECTION, _physicalComponent.transform.Rotation) * TANK_TRANSLATION_SPEED;
 	}
-	else if ((_crntInputState & PLAYER_INPUT_FLAG_DOWN) && !(_crntInputState & PLAYER_INPUT_FLAG_UP)) {
+	else if ((inputState & FLAG_PLAYER_INPUT_BACKWARD) && !(inputState & FLAG_PLAYER_INPUT_FORWARD)) {
 		_physicalComponent.velocity = Vector3::Rotate(BACKWARD_DIRECTION, _physicalComponent.transform.Rotation) * TANK_TRANSLATION_SPEED;
 	}
 	else {
 		_physicalComponent.velocity = Vector3();
 	}
 
-	if (_crntInputState & PLAYER_INPUT_FLAG_LEFT) {
-		if (!(_crntInputState & PLAYER_INPUT_FLAG_RIGHT)) {
+	if (inputState & FLAG_PLAYER_INPUT_ROTATE_LEFT) {
+		if (!(inputState & FLAG_PLAYER_INPUT_ROTATE_RIGHT)) {
 			_physicalComponent.angularVelocity = { 0, 0, -TANK_ROTATION_SPEED };
 		}
 		else {
 			_physicalComponent.angularVelocity = Vector3();
 		}
 	}
-	else if (_crntInputState & PLAYER_INPUT_FLAG_RIGHT) {
+	else if (inputState & FLAG_PLAYER_INPUT_ROTATE_RIGHT) {
 		_physicalComponent.angularVelocity = { 0, 0, TANK_ROTATION_SPEED };
 	}
 	else {
@@ -96,10 +93,8 @@ BOOL Tank::IsDestroyed(ULONGLONG currentTick) const
 void Tank::Tick(ULONGLONG tickDiff)
 {
 	GameObject::Tick(tickDiff);
-
+	//printf("[%f, %f, %f, %f]\n", _physicalComponent.transform.Rotation.w, _physicalComponent.transform.Rotation.x, _physicalComponent.transform.Rotation.y, _physicalComponent.transform.Rotation.z);
 	
-	ProcessInput();
-
 	return;
 }
 
@@ -110,9 +105,7 @@ void Tank::OnHitWith(ULONGLONG currentTick, GameObject* other)
 
 void Tank::OnUpdateTransform()
 {
-	if (g_pPlayer->GetUserID() == _ownerID) {
-		g_pCamera->UpdateTransf(&_physicalComponent.transform);
-	}
+	
 }
 
 void Tank::OnRespawn()
@@ -132,7 +125,7 @@ void Tank::OnHitServer(ULONGLONG currentTick, GameObject* other)
 				_pCollider->Deactivate();
 				_hitTick = currentTick;
 				_isAlive = false;
-				_crntInputState = PLAYER_INPUT_NONE;
+				ResetDynamicPhysicalComponent();
 
 				if (_id.equals(g_pPlayer->GetTankID())) {
 					g_pPlayer->IncreaseDeath();
@@ -156,6 +149,8 @@ BOOL Tank::TryFireMachineGun(ULONGLONG currentTick)
 		return false;
 	}
 
+	_lastMachineGunFiringTick = g_currentGameTick;
+
 	Transform projectileTransform;
 	Vector3 direction;
 	GetTurretInfo(&projectileTransform, &direction);
@@ -163,47 +158,8 @@ BOOL Tank::TryFireMachineGun(ULONGLONG currentTick)
 	// 자신이 맞지 않기 위해 여유분을 1.0625만큼 줌
 	projectileTransform.Position = projectileTransform.Position + direction * 1.0625f; 
 	
-	ClientPacketHandler::SendFireMachineGun(&projectileTransform);
+	PacketHandler::s_CSSendFireMachineGun(&projectileTransform, g_pPlayer->GetSessionID());
 	return true;
-}
-
-void Tank::ProcessInput()
-{
-	if (_ownerID != g_pPlayer->GetUserID()) {
-		return;
-	}
-	// Send Fire
-	if (_crntInputState & PLAYER_INPUT_FLAG_FIRE_MACHINE_GUN) {
-		BOOL fired = TryFireMachineGun(g_currentGameTick);
-		if (fired) {
-			_lastMachineGunFiringTick = g_currentGameTick;
-		}
-	}
-
-	PlayerInputState prevMoveState = _prevInputState & PLAYER_INPUT_MOVE_FLAGS;
-	PlayerInputState crntMoveState = _crntInputState & PLAYER_INPUT_MOVE_FLAGS;
-	PlayerInputState moveEdgeTrigger = prevMoveState ^ crntMoveState;
-	if (crntMoveState == 0) {
-		if (moveEdgeTrigger) {
-			ClientPacketHandler::SendEndMove(&_physicalComponent.transform);
-			_lastTransformSyncTick = g_currentGameTick;
-			return;
-		}
-		return;
-	}
-
-	if (prevMoveState == 0) {
-		// Start Move
-		ClientPacketHandler::SendStartMove(&_physicalComponent.transform, crntMoveState);
-		_lastTransformSyncTick = g_currentGameTick;
-		return;
-	}
-
-	if (_lastTransformSyncTick + TICK_OWN_TANK_SYNC < g_currentGameTick) {
-		ClientPacketHandler::SendMoving(&_physicalComponent.transform, crntMoveState);
-		_lastTransformSyncTick = g_currentGameTick;
-		
-	}
 }
 
 

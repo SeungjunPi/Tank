@@ -13,8 +13,10 @@
 #include "NetMessage.h"
 #include "NetMessageQueue.h"
 
-#include "CollisionManager.h"
 #include "ClientPacketHandler.h"
+#include "NetworkProtocol.h"
+
+#include "CollisionManager.h"
 #include "IStableFlow.h"
 #include "Collider.h"
 #include "Player.h"
@@ -90,9 +92,13 @@ void Game::Start()
 
 			// Physics(Detect Collision, Decide Next Movement))
 			g_pStableFlow->ProcessStableFlow(g_currentGameTick);
-			
+
 			// Game Logic( )
 			s_ApplyObjectLogic(gameTickDiff);
+
+			// Update Camera
+			g_pCamera->Tick();
+
 			// Destroy Game Objects
 			s_CleanupDestroyedObjects(g_currentGameTick);
 
@@ -121,7 +127,7 @@ void s_InitiatePlayer()
 	SessionID sessionID = g_pNetCore->ConnectTo("127.0.0.1", 30283);
 	g_pPlayer->OnConnected(sessionID);
 	// Send Login
-	ClientPacketHandler::SendLogin(g_userName, g_password);
+	PacketHandler::s_CSSendLogin(g_userName, g_password, sessionID);
 }
 
 void s_ApplyKeyboardEvents(ULONGLONG tickDiff)

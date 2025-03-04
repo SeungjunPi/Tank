@@ -6,6 +6,12 @@ CSEndMoveCallback PacketHandler::s_CSEndMoveCallback = nullptr;
 CSMovingCallback PacketHandler::s_CSMovingCallback = nullptr;
 CSFireMachineGunCallback PacketHandler::s_CSFireMachineGunCallback = nullptr;
 
+CSSendLogin PacketHandler::s_CSSendLogin = nullptr;
+CSSendStartMove PacketHandler::s_CSSendStartMove = nullptr;
+CSSendEndMove PacketHandler::s_CSSendEndMove = nullptr;
+CSSendMoving PacketHandler::s_CSSendMoving = nullptr;
+CSSendFireMachineGun PacketHandler::s_CSSendFireMachineGun = nullptr;
+
 SCLoginCallback PacketHandler::s_SCLoginCallback = nullptr;
 SCCreateTankCallback PacketHandler::s_SCCreateTankCallback = nullptr;
 SCDeleteTankCallback PacketHandler::s_SCDeleteTankCallback = nullptr;
@@ -16,13 +22,14 @@ SCSnapshotCallback PacketHandler::s_SCSnapshotCallback = nullptr;
 SCFireMachineGunCallback PacketHandler::s_SCFireMachineGunCallback = nullptr;
 SCObjectHitCallback PacketHandler::s_SCObjectHitCallback = nullptr;
 SCRespawnTankCallback PacketHandler::s_SCRespawnTankCallback = nullptr;
+SCMachineGunCallback PacketHandler::s_SCMachineGunCallback = nullptr;
 	
-BOOL PacketHandler::Validate(BYTE* pGameEvent, UINT32 senderId)
+BOOL PacketHandler::Validate(BYTE* pGameEvent, SessionID sessionID)
 {
 	return 0;
 }
 
-void PacketHandler::DispatchPacket(BYTE* pGameEvent, UINT32 senderId)
+void PacketHandler::DispatchPacket(BYTE* pGameEvent, SessionID sessionID)
 {
 	ENetworkMessageType* evCode = (ENetworkMessageType*)pGameEvent;
 	switch (*evCode) {
@@ -30,61 +37,67 @@ void PacketHandler::DispatchPacket(BYTE* pGameEvent, UINT32 senderId)
 	case GAME_MESSAGE_TYPE_SC_LOGIN:
 	{
 		PACKET_SC_LOGIN* pScLogin = (PACKET_SC_LOGIN*)(pGameEvent + sizeof(ENetworkMessageType));
-		s_SCLoginCallback(pScLogin, senderId);
+		s_SCLoginCallback(pScLogin, sessionID);
 	}
 	break;
 	case GAME_MESSAGE_TYPE_SC_SNAPSHOT:
 	{
 		PACKET_SC_SNAPSHOT* pScSnapshot = (PACKET_SC_SNAPSHOT*)(pGameEvent + sizeof(ENetworkMessageType));
-		s_SCSnapshotCallback(pScSnapshot, senderId);
+		s_SCSnapshotCallback(pScSnapshot, sessionID);
 	}
 	break;
 	case GAME_MESSAGE_TYPE_SC_CREATE_TANK:
 	{
 		PACKET_SC_CREATE_TANK* pScCreateTank = (PACKET_SC_CREATE_TANK*)(pGameEvent + sizeof(ENetworkMessageType));
-		s_SCCreateTankCallback(pScCreateTank, senderId);
+		s_SCCreateTankCallback(pScCreateTank, sessionID);
 	}
 	break;
 	case GAME_MESSAGE_TYPE_SC_DELETE_TANK:
 	{
 		PACKET_SC_DELETE_TANK* pScDeleteTank = (PACKET_SC_DELETE_TANK*)(pGameEvent + sizeof(ENetworkMessageType));
-		s_SCDeleteTankCallback(pScDeleteTank, senderId);
+		s_SCDeleteTankCallback(pScDeleteTank, sessionID);
 	}
 	break;
 	case GAME_MESSAGE_TYPE_SC_START_MOVE:
 	{
 		PACKET_SC_START_MOVE* pScStartMove = (PACKET_SC_START_MOVE*)(pGameEvent + sizeof(ENetworkMessageType));
-		s_SCStartMoveCallback(pScStartMove, senderId);
+		s_SCStartMoveCallback(pScStartMove, sessionID);
 	}
 	break;
 	case GAME_MESSAGE_TYPE_SC_END_MOVE:
 	{
 		PACKET_SC_END_MOVE* pScEndMove = (PACKET_SC_END_MOVE*)(pGameEvent + sizeof(ENetworkMessageType));
-		s_SCEndMoveCallback(pScEndMove, senderId);
+		s_SCEndMoveCallback(pScEndMove, sessionID);
 	}
 	break;
 	case GAME_MESSAGE_TYPE_SC_MOVING:
 	{
 		PACKET_SC_MOVING* pScMoving = (PACKET_SC_MOVING*)(pGameEvent + sizeof(ENetworkMessageType));
-		s_SCMovingCallback(pScMoving, senderId);
+		s_SCMovingCallback(pScMoving, sessionID);
 	}
 	break;
 	case GAME_MESSAGE_TYPE_SC_FIRE_MACHINE_GUN:
 	{
 		PACKET_SC_FIRE_MACHINE_GUN* pScFireMachineGun = (PACKET_SC_FIRE_MACHINE_GUN*)(pGameEvent + sizeof(ENetworkMessageType));
-		s_SCFireMachineGunCallback(pScFireMachineGun, senderId);
+		s_SCFireMachineGunCallback(pScFireMachineGun, sessionID);
 	}
 	break;
 	case GAME_MESSAGE_TYPE_SC_RESPAWN_TANK:
 	{
 		PACKET_SC_RESPAWN_TANK* pScRespawnTank = (PACKET_SC_RESPAWN_TANK*)(pGameEvent + sizeof(ENetworkMessageType));
-		s_SCRespawnTankCallback(pScRespawnTank, senderId);
+		s_SCRespawnTankCallback(pScRespawnTank, sessionID);
 	}
 	break;
 	case GAME_MESSAGE_TYPE_SC_OBJECT_HIT:
 	{
 		PACKET_SC_OBJECT_HIT* pScObjectHit = (PACKET_SC_OBJECT_HIT*)(pGameEvent + sizeof(ENetworkMessageType));
-		s_SCObjectHitCallback(pScObjectHit, senderId);
+		s_SCObjectHitCallback(pScObjectHit, sessionID);
+	}
+	break;
+	case GAME_MESSAGE_TYPE_SC_MACHINE_GUN_HIT:
+	{
+		PACKET_SC_MACHINE_GUN_HIT* pScMachineGunHit = (PACKET_SC_MACHINE_GUN_HIT*)(pGameEvent + sizeof(ENetworkMessageType));
+		s_SCMachineGunCallback(pScMachineGunHit, sessionID);
 	}
 	break;
 	
@@ -92,31 +105,31 @@ void PacketHandler::DispatchPacket(BYTE* pGameEvent, UINT32 senderId)
 	case GAME_MESSAGE_TYPE_CS_LOGIN:
 	{
 		PACKET_CS_LOGIN* pCsLogin = (PACKET_CS_LOGIN*)(pGameEvent + sizeof(ENetworkMessageType));
-		s_CSLoginCallback(pCsLogin, senderId);
+		s_CSLoginCallback(pCsLogin, sessionID);
 	}
 	break;
 	case GAME_MESSAGE_TYPE_CS_START_MOVE:
 	{
 		PACKET_CS_START_MOVE* pCsStartMove = (PACKET_CS_START_MOVE*)(pGameEvent + sizeof(ENetworkMessageType));
-		s_CSStartMoveCallback(pCsStartMove, senderId);
+		s_CSStartMoveCallback(pCsStartMove, sessionID);
 	}
 	break;
 	case GAME_MESSAGE_TYPE_CS_END_MOVE:
 	{
 		PACKET_CS_END_MOVE* pCsEndMove = (PACKET_CS_END_MOVE*)(pGameEvent + sizeof(ENetworkMessageType));
-		s_CSEndMoveCallback(pCsEndMove, senderId);
+		s_CSEndMoveCallback(pCsEndMove, sessionID);
 	}
 	break;
 	case GAME_MESSAGE_TYPE_CS_MOVING:
 	{
 		PACKET_CS_MOVING* pCsMoving = (PACKET_CS_MOVING*)(pGameEvent + sizeof(ENetworkMessageType));
-		s_CSMovingCallback(pCsMoving, senderId);
+		s_CSMovingCallback(pCsMoving, sessionID);
 	}
 	break;
 	case GAME_MESSAGE_TYPE_CS_FIRE_MACHINE_GUN:
 	{
 		PACKET_CS_FIRE_MACHINE_GUN* pCsFireMachineGun = (PACKET_CS_FIRE_MACHINE_GUN*)(pGameEvent + sizeof(ENetworkMessageType));
-		s_CSFireMachineGunCallback(pCsFireMachineGun, senderId);
+		s_CSFireMachineGunCallback(pCsFireMachineGun, sessionID);
 	}
 	break;	
 	default:
@@ -149,6 +162,31 @@ void PacketHandler::RegisterCSMovingCallback(CSMovingCallback callback)
 void PacketHandler::RegisterCSFireMachineGunCallback(CSFireMachineGunCallback callback)
 {
 	s_CSFireMachineGunCallback = callback;
+}
+
+void PacketHandler::RegisterCSSendLogin(CSSendLogin send)
+{
+	s_CSSendLogin = send;
+}
+
+void PacketHandler::RegisterCSSendStartMove(CSSendStartMove send)
+{
+	s_CSSendStartMove = send;
+}
+
+void PacketHandler::RegisterCSSendEndMove(CSSendEndMove send)
+{
+	s_CSSendEndMove = send;
+}
+
+void PacketHandler::RegisterCSSendMoving(CSSendMoving send)
+{
+	s_CSSendMoving = send;
+}
+
+void PacketHandler::RegisterCSSendFireMachineGun(CSSendFireMachineGun send)
+{
+	s_CSSendFireMachineGun = send;
 }
 
 void PacketHandler::RegisterSCLoginCallback(SCLoginCallback callback)
@@ -199,4 +237,9 @@ void PacketHandler::RegisterSCObjectHitCallback(SCObjectHitCallback callback)
 void PacketHandler::RegisterSCRespawnTankCallback(SCRespawnTankCallback callback)
 {
 	s_SCRespawnTankCallback = callback;
+}
+
+void PacketHandler::RegisterSCMachineGunHitCallback(SCMachineGunCallback callback)
+{
+	s_SCMachineGunCallback = callback;
 }

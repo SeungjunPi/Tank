@@ -51,4 +51,11 @@ private:
 
 	Tank* _pTank = nullptr;
 	Score _score;
+
+	ULONGLONG _lastMovementSyncTick = 0;
+
+	void UpdateInputState(UINT64 heldKeys);
+
+	PlayerInputState _crntInputState = PLAYER_INPUT_NONE;
+	PlayerInputState _prevInputState = PLAYER_INPUT_NONE;
 };

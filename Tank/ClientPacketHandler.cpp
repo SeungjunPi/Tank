@@ -7,6 +7,12 @@
 
 void ClientPacketHandler::RegisterCallbacks()
 {
+	PacketHandler::RegisterCSSendLogin(SendLogin);
+	PacketHandler::RegisterCSSendStartMove(SendStartMove);
+	PacketHandler::RegisterCSSendEndMove(SendEndMove);
+	PacketHandler::RegisterCSSendMoving(SendMoving);
+	PacketHandler::RegisterCSSendFireMachineGun(SendFireMachineGun);
+
 	PacketHandler::RegisterSCLoginCallback(OnLogin);
 	PacketHandler::RegisterSCCreateTankCallback(OnCreateTank);
 	PacketHandler::RegisterSCDeleteTankCallback(OnDeleteTank);
@@ -17,6 +23,7 @@ void ClientPacketHandler::RegisterCallbacks()
 	PacketHandler::RegisterSCFireMachineGunCallback(OnFireMachineGun);
 	PacketHandler::RegisterSCObjectHitCallback(OnObjectHit);
 	PacketHandler::RegisterSCRespawnTankCallback(OnRespawnTank);
+	PacketHandler::RegisterSCMachineGunHitCallback(OnMachineGunHit);
 }
 
 void ClientPacketHandler::OnLogin(const PACKET_SC_LOGIN* login, UINT32 senderID)
@@ -133,7 +140,18 @@ void ClientPacketHandler::OnRespawnTank(const PACKET_SC_RESPAWN_TANK* respawnTan
 	pTank->Respawn();
 }
 
-void ClientPacketHandler::SendLogin(const std::wstring& wID, const std::wstring& wPw)
+void ClientPacketHandler::OnMachineGunHit(const PACKET_SC_MACHINE_GUN_HIT* machineGunHit, UINT32 senderID)
+{
+	if (machineGunHit->shooter == g_pPlayer->GetUserID()) {
+		
+	}
+
+	
+	
+	machineGunHit->victim;
+}
+
+void ClientPacketHandler::SendLogin(const std::wstring& wID, const std::wstring& wPw, SessionID sessionID)
 {
 	const UINT32 contentsMsgSize = sizeof(PACKET_CS_LOGIN) + sizeof(ENetworkMessageType);
 
@@ -147,10 +165,10 @@ void ClientPacketHandler::SendLogin(const std::wstring& wID, const std::wstring&
 	memcpy(&pLogin->id, rawID, sizeof(WCHAR) * (wID.length() + 1));
 	memcpy(&pLogin->pw, rawPW, sizeof(WCHAR) * (wPw.length() + 1));
 
-	g_pNetCore->SendMessageTo(g_pPlayer->GetSessionID(), pRawPacket, contentsMsgSize);
+	g_pNetCore->SendMessageTo(sessionID, pRawPacket, contentsMsgSize);
 }
 
-void ClientPacketHandler::SendStartMove(const Transform* pTankTransform, PlayerInputState inputState)
+void ClientPacketHandler::SendStartMove(const Transform* pTankTransform, PlayerInputState inputState, SessionID sessionID)
 {
 	const UINT32 contentsMsgSize = sizeof(PACKET_CS_START_MOVE) + sizeof(ENetworkMessageType);
 	BYTE pRawPacket[contentsMsgSize] = { 0, };
@@ -159,10 +177,10 @@ void ClientPacketHandler::SendStartMove(const Transform* pTankTransform, PlayerI
 
 	*pEvCode = GAME_MESSAGE_TYPE_CS_START_MOVE;
 	pContentsMsgBody->inputState = inputState;
-	g_pNetCore->SendMessageTo(g_pPlayer->GetSessionID(), pRawPacket, contentsMsgSize);
+	g_pNetCore->SendMessageTo(sessionID, pRawPacket, contentsMsgSize);
 }
 
-void ClientPacketHandler::SendEndMove(const Transform* pTankTransform)
+void ClientPacketHandler::SendEndMove(const Transform* pTankTransform, SessionID sessionID)
 {
 	const UINT32 contentsMsgSize = sizeof(PACKET_CS_END_MOVE) + sizeof(ENetworkMessageType);
 	BYTE pRawPacket[contentsMsgSize] = { 0, };
@@ -171,10 +189,10 @@ void ClientPacketHandler::SendEndMove(const Transform* pTankTransform)
 
 	*pEvCode = GAME_MESSAGE_TYPE_CS_END_MOVE;
 	memcpy(&pContentsMsgBody->transform, pTankTransform, sizeof(Transform));
-	g_pNetCore->SendMessageTo(g_pPlayer->GetSessionID(), pRawPacket, contentsMsgSize);
+	g_pNetCore->SendMessageTo(sessionID, pRawPacket, contentsMsgSize);
 }
 
-void ClientPacketHandler::SendMoving(const Transform* pTankTransform, PlayerInputState moveFlag)
+void ClientPacketHandler::SendMoving(const Transform* pTankTransform, PlayerInputState moveFlag, SessionID sessionID)
 {
 	const UINT32 contentsMsgSize = sizeof(PACKET_CS_MOVING) + sizeof(ENetworkMessageType);
 	BYTE pRawPacket[contentsMsgSize] = { 0, };
@@ -184,10 +202,10 @@ void ClientPacketHandler::SendMoving(const Transform* pTankTransform, PlayerInpu
 	*pEvCode = GAME_MESSAGE_TYPE_CS_MOVING;
 	memcpy(&pContentsMsgBody->transform, pTankTransform, sizeof(Transform));
 	pContentsMsgBody->inputState = moveFlag;
-	g_pNetCore->SendMessageTo(g_pPlayer->GetSessionID(), pRawPacket, contentsMsgSize);
+	g_pNetCore->SendMessageTo(sessionID, pRawPacket, contentsMsgSize);
 }
 
-void ClientPacketHandler::SendFireMachineGun(const Transform* pTurretTransform)
+void ClientPacketHandler::SendFireMachineGun(const Transform* pTurretTransform, SessionID sessionID)
 {
 	const UINT32 contentsMsgSize = sizeof(PACKET_CS_FIRE_MACHINE_GUN) + sizeof(ENetworkMessageType);
 	BYTE pRawPacket[contentsMsgSize] = { 0, };
@@ -196,5 +214,5 @@ void ClientPacketHandler::SendFireMachineGun(const Transform* pTurretTransform)
 
 	*pEvCode = GAME_MESSAGE_TYPE_CS_FIRE_MACHINE_GUN;
 	memcpy(&pContentsMsgBody->transform, pTurretTransform, sizeof(Transform));
-	g_pNetCore->SendMessageTo(g_pPlayer->GetSessionID(), pRawPacket, contentsMsgSize);
+	g_pNetCore->SendMessageTo(sessionID, pRawPacket, contentsMsgSize);
 }

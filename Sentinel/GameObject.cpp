@@ -43,6 +43,13 @@ Vector3 GameObject::GetPosition() const
 	return _physicalComponent.transform.Position;
 }
 
+void GameObject::ResetDynamicPhysicalComponent()
+{
+	_physicalComponent.transform = Transform();
+	_physicalComponent.velocity = Vector3();
+	_physicalComponent.angularVelocity = Vector3();
+}
+
 BOOL GameObject::UpdateTransformIfValid(const Transform* pTransform)
 {
 	BOOL isClosed = IsTransformCloseEnough(pTransform);

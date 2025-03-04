@@ -10,9 +10,9 @@ class Player;
 
 struct Score
 {
-	int kill;
-	int death;
-	int hit;
+	int kill = 0;
+	int death = 0;
+	int hit = 0;
 };
 
 

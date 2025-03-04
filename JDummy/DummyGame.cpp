@@ -45,6 +45,8 @@ void DummyGame::Initialize()
 		__debugbreak();
 	}
 
+	DummyPacketHandler::RegisterCallbacks();
+
 	CreateStableFlow(&g_pStableFlow);
 
 	g_pCamera = DNew GameCamera;

@@ -22,7 +22,13 @@ void DummyPacketHandler::RegisterCallbacks()
 	PacketHandler::RegisterSCSnapshotCallback(OnSnapshot);
 	PacketHandler::RegisterSCFireMachineGunCallback(OnFireMachineGun);
 	PacketHandler::RegisterSCObjectHitCallback(OnObjectHit);
-	PacketHandler::RegisterSCRespawnTankCallback(OnRespawnTank);	
+	PacketHandler::RegisterSCRespawnTankCallback(OnRespawnTank);
+
+	PacketHandler::RegisterCSSendLogin(SendLogin);
+	PacketHandler::RegisterCSSendStartMove(SendStartMove);
+	PacketHandler::RegisterCSSendEndMove(SendEndMove);
+	PacketHandler::RegisterCSSendMoving(SendMoving);
+	PacketHandler::RegisterCSSendFireMachineGun(SendFireMachineGun);
 }
 
 void DummyPacketHandler::SendLogin(const std::wstring& wID, const std::wstring& wPw, SessionID sessionID)

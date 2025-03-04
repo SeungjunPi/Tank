@@ -1,5 +1,8 @@
 
 #include "Camera.h"
+#include "Global.h"
+#include "Player.h"
+#include "Tank.h"
 
 GameCamera::GameCamera()
 {
@@ -20,4 +23,16 @@ Vector3 GameCamera::GetPosition() const
 void GameCamera::UpdateTransf(const Transform* to)
 {
 	memcpy(&_transf, to, sizeof(Transform));
+}
+
+void GameCamera::Tick()
+{
+	assert(g_pPlayer != nullptr);
+
+	Tank* pTank = g_pPlayer->GetTankPtr();
+	if (pTank == nullptr) {
+		return;
+	}
+
+	UpdateTransf(pTank->GetTransformPtr());
 }
