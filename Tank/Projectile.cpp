@@ -59,14 +59,8 @@ void Projectile::OnHitWith(ULONGLONG currentTick, GameObject* other)
 
 void Projectile::OnHitServer(ULONGLONG currentTick, GameObject* other)
 {
-	if (other->GetID().type == GAME_OBJECT_TYPE_TANK) {
-		if (_hitTick != 0) {
-			return;
-		}
-
-		_hitTick = currentTick;
-		_pCollider->Deactivate();
-	}
+	_hitTick = currentTick;
+	_pCollider->Deactivate();
 }
 
 void Projectile::OnUpdateTransform()

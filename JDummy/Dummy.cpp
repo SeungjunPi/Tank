@@ -75,17 +75,35 @@ void Dummy::Tick()
 	Tank* pTank = GetTankPtr();
 	pTank->AdvancePlayerInput(_input);
 
-	UINT64 edgeTrigger = _input ^ _prevInput;
+	PlayerInputState edgeTrigger = _input ^ _prevInput;
+
 	if (edgeTrigger) {
-		// 변화가 있다는건 Reaction이 생겼다는 뜻.
-		_prevReactionTick = g_currentGameTick;
+		if (_input == 0) {
+			PacketHandler::s_CSSendEndMove(GetTankPtr()->GetTransformPtr(), GetSessionID());
+			_lastMovementSyncTick = g_currentGameTick;
+			return;
+		}
+
+		// Start Move
+		PacketHandler::s_CSSendStartMove(GetTankPtr()->GetTransformPtr(), _input, GetSessionID());
+		_lastMovementSyncTick = g_currentGameTick;
+		return;
 	}
-	_prevInput = _input;
+
+	if (_lastMovementSyncTick + TICK_OWN_TANK_SYNC < g_currentGameTick) {
+		PacketHandler::s_CSSendMoving(GetTankPtr()->GetTransformPtr(), _input, GetSessionID());
+		_lastMovementSyncTick = g_currentGameTick;
+	}
 }
 
 void Dummy::DetermineInput()
 {
-	_input = 0; // Reset
+	/*if (GetUserID() != 8) {
+		printf("sid:%u, uid:%u, input:%u\n", GetSessionID(), GetUserID(), _input);
+	}*/
+
+	_prevInput = _input;
+	_input = PLAYER_INPUT_NONE; // Reset
 	if (_prevReactionTick + DUMMY_REACTION_SPEED > g_currentGameTick) {
 		// Reaction이 없으므로 변화 없음.
 		_input = _prevInput;
@@ -98,7 +116,8 @@ void Dummy::DetermineInput()
 		// 한 프레임 정지, 새로운 방향 설정
 		// printf("Reset Destination\n");
 		_destinationCoord = GetRandomPlanePosition();
-		_input = 0;
+		_input = PLAYER_INPUT_NONE;
+		_prevReactionTick = g_currentGameTick;
 		return;
 	}
 
@@ -113,19 +132,21 @@ void Dummy::DetermineInput()
 
 	int moveDetermine = Vector2::DeterminRotationDirection(headDir, moveDir);
 
+	
+
 	if (moveDetermine == 0) {
-		_input |= KEYBOARD_INPUT_FLAG_UP;
+		_input |= FLAG_PLAYER_INPUT_FORWARD;
 		// printf("[GO] FoDir:[%f, %f], MoveDir:[%f, %f]\n", headDir.x, headDir.y, moveDir.x, moveDir.y);
 		return;
 	}
 
 	if (moveDetermine > 0) {
 		// printf("[RR] FoDir:[%f, %f], MoveDir:[%f, %f]\n", headDir.x, headDir.y, moveDir.x, moveDir.y);
-		_input |= KEYBOARD_INPUT_FLAG_RIGHT;
+		_input |= FLAG_PLAYER_INPUT_ROTATE_RIGHT;
 	}
 	else {
 		// printf("[LL] FoDir:[%f, %f], MoveDir:[%f, %f]\n", headDir.x, headDir.y, moveDir.x, moveDir.y);
-		_input |= KEYBOARD_INPUT_FLAG_LEFT;
+		_input |= FLAG_PLAYER_INPUT_ROTATE_LEFT;
 	}
 }
 

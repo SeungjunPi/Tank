@@ -16,6 +16,7 @@ public:
 	static void BroadcastDeleteTank(ObjectID tankId);
 
 	static void BroadcastHit(ObjectID oneID, ObjectID anotherID);
+	static void BroadcastMachineGunHit(UserDBIndex shooter, ObjectID projectileID, UserDBIndex victim, ObjectID victimTankID, UINT16 victimLeftHP);
 	static void BroadcastCreateObstacle(ObjectID obstacleId, Transform* pTransform);
 	static void BroadcastDeleteObstacle(ObjectID obstacleId, UserDBIndex shooterId);
 	static void BroadcastRespawnTank(ObjectID tankId);

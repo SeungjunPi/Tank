@@ -56,32 +56,34 @@ void ClientPacketHandler::OnDeleteTank(const PACKET_SC_DELETE_TANK* deleteTank, 
 void ClientPacketHandler::OnStartMove(const PACKET_SC_START_MOVE* startMove, UINT32 senderID)
 {
 	if (startMove->objectId.equals(g_pPlayer->GetTankID())) {
-		// hmm..
+		
 	}
 	else {
 		g_objectManager.SetObjectInputStateByServer(startMove->objectId, startMove->inputState);
-		g_objectManager.UpdateObjectTransformFromServer(startMove->objectId, &startMove->transform);
 	}
+	g_objectManager.UpdateObjectTransformFromServer(startMove->objectId, &startMove->transform);
 }
 
 void ClientPacketHandler::OnEndMove(const PACKET_SC_END_MOVE* endMove, UINT32 senderID)
 {
 	if (endMove->objectId.equals(g_pPlayer->GetTankID())) {
-		// overrided..
+		
+	}
+	else {
+		g_objectManager.SetObjectInputStateByServer(endMove->objectId, PLAYER_INPUT_NONE);
 	}
 
-	g_objectManager.SetObjectInputStateByServer(endMove->objectId, PLAYER_INPUT_NONE);
 	g_objectManager.UpdateObjectTransformFromServer(endMove->objectId, &endMove->transform);
-
 }
 
 void ClientPacketHandler::OnMoving(const PACKET_SC_MOVING* moving, UINT32 senderID)
 {
 	if (moving->objectId.equals(g_pPlayer->GetTankID())) {
-		// update if transforms are diffrent
+		
 	}
-
-	g_objectManager.SetObjectInputStateByServer(moving->objectId, moving->inputState);
+	else {
+		g_objectManager.SetObjectInputStateByServer(moving->objectId, moving->inputState);
+	}
 	g_objectManager.UpdateObjectTransformFromServer(moving->objectId, &moving->transform);
 }
 
@@ -142,13 +144,32 @@ void ClientPacketHandler::OnRespawnTank(const PACKET_SC_RESPAWN_TANK* respawnTan
 
 void ClientPacketHandler::OnMachineGunHit(const PACKET_SC_MACHINE_GUN_HIT* machineGunHit, UINT32 senderID)
 {
+	Projectile* pProjectile = (Projectile*)g_objectManager.GetObjectPtrOrNull(machineGunHit->projectileID);
+	Tank* pTank = g_objectManager.GetTankPtrByOwnerOrNull(machineGunHit->victim);
 	if (machineGunHit->shooter == g_pPlayer->GetUserID()) {
-		
+		if (machineGunHit->victimLeftHP == 0) {
+			g_pPlayer->IncreaseKill();
+		}
+		else {
+			g_pPlayer->IncreaseHit();
+		}
+		return;
+	}
+	
+	if (machineGunHit->victim == g_pPlayer->GetUserID()) {
+		if (machineGunHit->victimLeftHP == 0) {
+			g_pPlayer->IncreaseDeath();
+		}
 	}
 
+	if (pProjectile != nullptr) {
+		pProjectile->OnHitServer(g_currentGameTick, pTank);
+	}
+
+	if (pTank != nullptr) {
+		pTank->OnHitServer(g_currentGameTick, pProjectile);
+	}
 	
-	
-	machineGunHit->victim;
 }
 
 void ClientPacketHandler::SendLogin(const std::wstring& wID, const std::wstring& wPw, SessionID sessionID)
@@ -213,6 +234,6 @@ void ClientPacketHandler::SendFireMachineGun(const Transform* pTurretTransform, 
 	PACKET_CS_FIRE_MACHINE_GUN* pContentsMsgBody = (PACKET_CS_FIRE_MACHINE_GUN*)(pRawPacket + sizeof(ENetworkMessageType));
 
 	*pEvCode = GAME_MESSAGE_TYPE_CS_FIRE_MACHINE_GUN;
-	memcpy(&pContentsMsgBody->transform, pTurretTransform, sizeof(Transform));
+	pContentsMsgBody->transform = Transform();
 	g_pNetCore->SendMessageTo(sessionID, pRawPacket, contentsMsgSize);
 }

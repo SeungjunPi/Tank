@@ -64,9 +64,9 @@ enum EColliderKindnessFlag : UINT32
 const static ULONGLONG OBJECT_DESTROY_DELAY = 0x1000;
 
 const float TANK_TRANSLATION_SPEED = 1.0f / 60.f;
-const float TANK_ROTATION_SPEED = 3.14159265358979323846f / 1000.f * 60.f / 32.f * 0.5f;
+const float TANK_ROTATION_SPEED = 3.14159265358979323846f / 1000.f * 60.f / 32.f * 0.25f;
 
-const float TANK_COLLIDER_RADIUS = 1.0f;
+const float TANK_COLLIDER_RADIUS = 2.0f;
 const float TANK_COLLIDER_MASS = 10.f;
 const ULONGLONG TANK_MACHINE_GUN_DELAY = 250;
 

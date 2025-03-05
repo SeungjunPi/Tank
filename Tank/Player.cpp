@@ -56,6 +56,11 @@ ObjectID Player::GetTankID()
 	return INVALID_OBJECT_ID;
 }
 
+Tank* Player::GetTankPtr()
+{
+	return _pTank;
+}
+
 Tank* Player::ClearTank()
 {
 	if (_pTank == nullptr) {
@@ -85,7 +90,10 @@ void Player::HandleKeyboardEvents(UINT64 pressedKeys, UINT64 releasedKeys, UINT6
 
 	// Fire Machine Gun
 	if (_crntInputState & FLAG_PLAYER_INPUT_FIRE_MACHINE_GUN) {
-		_pTank->TryFireMachineGun(g_currentGameTick);
+		BOOL fired = _pTank->TryFireMachineGun(g_currentGameTick);
+		if (fired) {
+			PacketHandler::s_CSSendFireMachineGun(nullptr, _sessionID);
+		}
 	}
 
 	// Edge

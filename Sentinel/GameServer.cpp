@@ -348,6 +348,9 @@ void s_ProcessDBResultLoadScore(DBQueryLoadStat* pQueryLoadStat)
 
 	// Create players tank
 	Tank* pTank = g_objectManager.CreateTank(dbIndex);
+
+	pPlayer->SetTank(pTank);
+
 	ServerPacketHandler::BroadcastCreateTank(pTank->GetID(), dbIndex, pTank->GetTransformPtr());
 }
 

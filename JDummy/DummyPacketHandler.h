@@ -26,5 +26,6 @@ private:
 	static void OnFireMachineGun(const PACKET_SC_FIRE_MACHINE_GUN* fireMachineGun, UINT32 sessionID);
 	static void OnObjectHit(const PACKET_SC_OBJECT_HIT* objectHit, UINT32 sessionID);
 	static void OnRespawnTank(const PACKET_SC_RESPAWN_TANK* respawnTank, UINT32 sessionID);
+	static void OnMachineGunHit(const PACKET_SC_MACHINE_GUN_HIT* machineGunHit, UINT32 sessionID);
 
 };

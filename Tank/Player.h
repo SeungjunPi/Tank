@@ -27,7 +27,7 @@ public:
 
 	void SetTank(Tank* pTank);
 	ObjectID GetTankID();
-	Tank* GetTankPtr() { return _pTank; }
+	Tank* GetTankPtr();
 	Tank* ClearTank();
 
 	void HandleKeyboardEvents(UINT64 pressedKeys, UINT64 releasedKeys, UINT64 heldKeys);
@@ -42,6 +42,12 @@ public:
 	void Tick();
 
 	void LogTankPosition(const char* str);
+protected:
+	PlayerInputState _crntInputState = PLAYER_INPUT_NONE;
+	PlayerInputState _prevInputState = PLAYER_INPUT_NONE;
+
+	ULONGLONG _lastMovementSyncTick = 0;
+
 private:
 	std::wstring _name;
 	std::wstring _password;
@@ -52,10 +58,5 @@ private:
 	Tank* _pTank = nullptr;
 	Score _score;
 
-	ULONGLONG _lastMovementSyncTick = 0;
-
 	void UpdateInputState(UINT64 heldKeys);
-
-	PlayerInputState _crntInputState = PLAYER_INPUT_NONE;
-	PlayerInputState _prevInputState = PLAYER_INPUT_NONE;
 };

@@ -105,6 +105,7 @@ void AllocObjectManager::RemoveObject(EGameObjectType objectKind, ObjectKey obje
 		Tank* pTank = (Tank*)ptr;
 		Collider* pCollider = pTank->GetColliderPtr();
 		g_pStableFlow->ReturnCollider(pCollider);
+		_tankTableByOwner.Remove(pTank->GetOwnerID());
 		break;
 	}
 	case GAME_OBJECT_TYPE_PROJECTILE:

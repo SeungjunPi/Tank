@@ -28,7 +28,7 @@ void Tank::GetTurretInfo(Transform* out_position, Vector3* out_direction) const
 	Vector3 position = _physicalComponent.transform.Position;
 	Quaternion rotation = _physicalComponent.transform.Rotation;
 
-	Vector3 v = { 0.0f, -1.0f, 0.0f };
+	Vector3 v = { 0.0f, -2.0f, 0.0f };
 	v = Vector3::Rotate(v, rotation);
 	v.x += position.x;
 	v.y += position.y;
@@ -37,7 +37,7 @@ void Tank::GetTurretInfo(Transform* out_position, Vector3* out_direction) const
 	out_position->Rotation = _physicalComponent.transform.Rotation;
 
 	Vector3 direction = FORWARD_DIRECTION;
-	direction = direction * (_physicalComponent.radius + PROJECTILE_COLLIDER_RADIUS) * 1.03125f;
+	direction = direction * (_physicalComponent.radius + PROJECTILE_COLLIDER_RADIUS) * 1.5f;
 
 	const Vector3 forwardDirection = Vector3::Rotate(direction, rotation);
 
@@ -113,7 +113,8 @@ void Tank::OnHitWith(ULONGLONG currentTick, GameObject* other)
 				g_playerManager.IncreaseKillCount(other->GetOwnerId());
 			}
 			g_playerManager.IncreaseHitCount(other->GetOwnerId());
-			ServerPacketHandler::BroadcastHit(_id, other->GetID());
+			//ServerPacketHandler::BroadcastHit(_id, other->GetID());
+			ServerPacketHandler::BroadcastMachineGunHit(other->GetOwnerId(), otherID, _ownerIndex, _id, _hp);
 		}
 	}
 }

@@ -20,13 +20,12 @@ public:
 
 
 private:
-	Transform* _transform = nullptr;
 	Vector3 _destinationCoord;
 
 	bool _isConnecting = false;
 
-	UINT64 _input = 0;
-	UINT64 _prevInput = 0;
+	PlayerInputState _input = PLAYER_INPUT_NONE;
+	PlayerInputState _prevInput = PLAYER_INPUT_NONE;
 
 	ULONGLONG _prevReactionTick = 0;
 

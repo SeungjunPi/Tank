@@ -23,6 +23,7 @@ void DummyPacketHandler::RegisterCallbacks()
 	PacketHandler::RegisterSCFireMachineGunCallback(OnFireMachineGun);
 	PacketHandler::RegisterSCObjectHitCallback(OnObjectHit);
 	PacketHandler::RegisterSCRespawnTankCallback(OnRespawnTank);
+	PacketHandler::RegisterSCMachineGunHitCallback(OnMachineGunHit);
 
 	PacketHandler::RegisterCSSendLogin(SendLogin);
 	PacketHandler::RegisterCSSendStartMove(SendStartMove);
@@ -122,9 +123,6 @@ void DummyPacketHandler::OnCreateTank(const PACKET_SC_CREATE_TANK* createTank, U
 	if (pDummy != nullptr) {
 		pDummy->SetTank(pTank);
 	}
-	else {
-		//	printf("Here????????\n");
-	}
 }
 
 void DummyPacketHandler::OnDeleteTank(const PACKET_SC_DELETE_TANK* deleteTank, UINT32 sessionID)
@@ -167,8 +165,8 @@ void DummyPacketHandler::OnMoving(const PACKET_SC_MOVING* moving, UINT32 session
 		return;
 	}
 
-	g_objectManager.SetObjectInputStateByServer(moving->objectId, moving->inputState);
-	g_objectManager.UpdateObjectTransformFromServer(moving->objectId, &moving->transform);
+	// g_objectManager.SetObjectInputStateByServer(moving->objectId, moving->inputState);
+	// g_objectManager.UpdateObjectTransformFromServer(moving->objectId, &moving->transform);
 
 }
 
@@ -226,4 +224,13 @@ void DummyPacketHandler::OnRespawnTank(const PACKET_SC_RESPAWN_TANK* respawnTank
 	}
 	GameObject* pTank = g_objectManager.GetObjectPtrOrNull(respawnTank->tankId);
 	pTank->Respawn();
+}
+
+void DummyPacketHandler::OnMachineGunHit(const PACKET_SC_MACHINE_GUN_HIT* machineGunHit, UINT32 sessionID)
+{
+	if (!g_pDummyManager->IsMaster(sessionID)) {
+		return;
+	}
+
+
 }

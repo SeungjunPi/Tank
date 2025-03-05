@@ -111,6 +111,25 @@ void ServerPacketHandler::BroadcastHit(ObjectID oneID, ObjectID anotherID)
 	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
 }
 
+void ServerPacketHandler::BroadcastMachineGunHit(UserDBIndex shooter, ObjectID projectileID, UserDBIndex victim, ObjectID victimTankID, UINT16 victimLeftHP)
+{
+	const size_t PACKET_SIZE = sizeof(ENetworkMessageType) + sizeof(PACKET_SC_MACHINE_GUN_HIT);
+	BYTE pRawPacket[PACKET_SIZE];
+
+	ENetworkMessageType* pEvCode = (ENetworkMessageType*)pRawPacket;
+	*pEvCode = GAME_MESSAGE_TYPE_SC_MACHINE_GUN_HIT;
+
+	PACKET_SC_MACHINE_GUN_HIT* pScMachineGunHit = (PACKET_SC_MACHINE_GUN_HIT*)(pRawPacket + sizeof(ENetworkMessageType));
+
+	pScMachineGunHit->shooter = shooter;
+	pScMachineGunHit->projectileID = projectileID;
+	pScMachineGunHit->victim = victim;
+	pScMachineGunHit->victimTankID = victimTankID;
+	pScMachineGunHit->victimLeftHP = victimLeftHP;
+
+	GameServer::Broadcast(pRawPacket, PACKET_SIZE);
+}
+
 void ServerPacketHandler::BroadcastCreateObstacle(ObjectID obstacleId, Transform* pTransform)
 {
 	//const size_t PACKET_SIZE = sizeof(ENetworkMessageType) + sizeof(PACKET_SC_CREATE_OBSTACLE);
@@ -165,7 +184,7 @@ void ServerPacketHandler::OnStartMove(const PACKET_CS_START_MOVE* startMove, UIN
 {
 	Player* pPlayer = g_playerManager.GetPlayerBySessionID(senderID);
 	if (pPlayer == nullptr) {
-		__debugbreak();
+		return;
 	}
 	UserDBIndex userIndex = pPlayer->GetUserIndex();
 
@@ -279,7 +298,13 @@ void ServerPacketHandler::OnFireMachineGun(const PACKET_CS_FIRE_MACHINE_GUN* fir
 	}
 
 	UserDBIndex userIndex = pPlayer->GetUserIndex();
-	Projectile* pProjectile = g_objectManager.CreateProjectile(userIndex, &fireMachineGun->transform);
+
+	Tank* pTank = pPlayer->GetTank();
+	Transform turretTransform;
+	Vector3 direction;
+	pTank->GetTurretInfo(&turretTransform, &direction);
+
+	Projectile* pProjectile = g_objectManager.CreateProjectile(userIndex, &turretTransform);
 
 	const size_t PACKET_SIZE = sizeof(ENetworkMessageType) + sizeof(PACKET_SC_FIRE_MACHINE_GUN);
 	BYTE pRawPacket[PACKET_SIZE] = { 0, };

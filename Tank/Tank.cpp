@@ -29,6 +29,7 @@ void Tank::GetTurretInfo(Transform* out_position, Vector3* out_direction) const
 	Quaternion rotation = _physicalComponent.transform.Rotation;
 
 	Vector3 v = _model.vertices[0].v;
+	v.y -= 1.0f;
 	v = Vector3::Rotate(v, rotation);
 	v.x += position.x;
 	v.y += position.y;
@@ -37,7 +38,7 @@ void Tank::GetTurretInfo(Transform* out_position, Vector3* out_direction) const
 	out_position->Rotation = _physicalComponent.transform.Rotation;
 
 	Vector3 direction = FORWARD_DIRECTION;
-	direction = direction * (_physicalComponent.radius + PROJECTILE_COLLIDER_RADIUS) * 1.03125f;
+	direction = direction * (_physicalComponent.radius + PROJECTILE_COLLIDER_RADIUS) * 1.5f;
 
 	const Vector3 forwardDirection = Vector3::Rotate(direction, rotation);
 
@@ -51,9 +52,6 @@ void Tank::ResetHP()
 
 void Tank::UpdatePlayerInputStateFromServer(PlayerInputState inputState)
 {
-	if (_ownerID == g_pPlayer->GetUserID()) {
-		return;
-	}
 	AdvancePlayerInput(inputState);
 }
 
@@ -93,8 +91,7 @@ BOOL Tank::IsDestroyed(ULONGLONG currentTick) const
 void Tank::Tick(ULONGLONG tickDiff)
 {
 	GameObject::Tick(tickDiff);
-	//printf("[%f, %f, %f, %f]\n", _physicalComponent.transform.Rotation.w, _physicalComponent.transform.Rotation.x, _physicalComponent.transform.Rotation.y, _physicalComponent.transform.Rotation.z);
-	
+
 	return;
 }
 
@@ -126,18 +123,6 @@ void Tank::OnHitServer(ULONGLONG currentTick, GameObject* other)
 				_hitTick = currentTick;
 				_isAlive = false;
 				ResetDynamicPhysicalComponent();
-
-				if (_id.equals(g_pPlayer->GetTankID())) {
-					g_pPlayer->IncreaseDeath();
-				}
-
-				if (other->GetOwnerID() == g_pPlayer->GetUserID()) {
-					g_pPlayer->IncreaseKill();
-				}
-			}
-
-			if (other->GetOwnerID() == g_pPlayer->GetUserID()) {
-				g_pPlayer->IncreaseHit();
 			}
 		}
 	}
@@ -150,15 +135,6 @@ BOOL Tank::TryFireMachineGun(ULONGLONG currentTick)
 	}
 
 	_lastMachineGunFiringTick = g_currentGameTick;
-
-	Transform projectileTransform;
-	Vector3 direction;
-	GetTurretInfo(&projectileTransform, &direction);
-
-	// 자신이 맞지 않기 위해 여유분을 1.0625만큼 줌
-	projectileTransform.Position = projectileTransform.Position + direction * 1.0625f; 
-	
-	PacketHandler::s_CSSendFireMachineGun(&projectileTransform, g_pPlayer->GetSessionID());
 	return true;
 }
 

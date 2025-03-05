@@ -149,7 +149,23 @@ void s_ApplyObjectLogic(ULONGLONG tickDiff)
 			if (pObject == NULL) {
 				__debugbreak();
 			}
+			
+			if (pObject->GetOwnerID() == 100) {
 
+				//printf("ClientID: %u\n", pObject->GetOwnerID());
+				//const Transform* pTrans = pObject->GetTransformPtr();
+				//printf("Pos:[%f, %f, %f]\n", pTrans->Position.x, pTrans->Position.y, pTrans->Position.z);
+				//printf("Rot:[%f, %f, %f %f]\n", pTrans->Rotation.w, pTrans->Rotation.x, pTrans->Rotation.y, pTrans->Rotation.z);
+				//Transform colliderTransform;
+				//Vector3 velocity;
+				//Vector3 angularVelocity;
+				//pObject->GetColliderPtr()->GetComputedResults(&colliderTransform, &velocity, &angularVelocity);
+				//printf("ColliderNext Pos:[%f, %f, %f]\n", colliderTransform.Position.x, colliderTransform.Position.y, colliderTransform.Position.z);
+				//printf("ColliderNext Rot:[%f, %f, %f %f]\n", colliderTransform.Rotation.w, colliderTransform.Rotation.x, colliderTransform.Rotation.y, colliderTransform.Rotation.z);
+
+				//printf("ColliderNext Vel:[%f, %f, %f]\n", velocity.x, velocity.y, velocity.z);
+				//printf("ColliderNext AngVel:[%f, %f, %f]\n", angularVelocity.x, angularVelocity.y, angularVelocity.z);
+			}
 			pObject->Tick(tickDiff);
 		}
 	}
