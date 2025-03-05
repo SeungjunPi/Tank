@@ -100,11 +100,9 @@ Projectile* ObjectManager::CreateProjectile(UserDBIndex ownerId, const Transform
 	assert(objectId.key != INVALID_OBJECT_KEY);
 
 	Projectile* pProjectile = DNew Projectile;
-	const Transform* pProjectileTransform = pProjectile->GetTransformPtr();
 	Collider* pCollider = g_pStableFlow->GetNewColliderPtr(pProjectile, pProjectile->GetPhysicalComponentPtr());
 	pProjectile->AttachCollider(pCollider);
 	pProjectile->Initiate(objectId, pTransform, ownerId);
-	
 	bool res = _projectileTable.Insert(objectId.key, pProjectile);
 	assert(res);
 	return pProjectile;

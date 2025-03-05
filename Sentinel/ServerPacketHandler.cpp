@@ -303,8 +303,10 @@ void ServerPacketHandler::OnFireMachineGun(const PACKET_CS_FIRE_MACHINE_GUN* fir
 	Transform turretTransform;
 	Vector3 direction;
 	pTank->GetTurretInfo(&turretTransform, &direction);
+	Transform projectileTransform = turretTransform;
+	projectileTransform.Position = projectileTransform.Position + direction;
 
-	Projectile* pProjectile = g_objectManager.CreateProjectile(userIndex, &turretTransform);
+	Projectile* pProjectile = g_objectManager.CreateProjectile(userIndex, &projectileTransform);
 
 	const size_t PACKET_SIZE = sizeof(ENetworkMessageType) + sizeof(PACKET_SC_FIRE_MACHINE_GUN);
 	BYTE pRawPacket[PACKET_SIZE] = { 0, };

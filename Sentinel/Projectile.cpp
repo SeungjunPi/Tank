@@ -19,6 +19,8 @@ void Projectile::Initiate(ObjectID id, const Transform* transform, UserDBIndex o
 	_physicalComponent.velocity = Vector3::Rotate(FORWARD_DIRECTION, _physicalComponent.transform.Rotation) * PROJECTILE_TRANSLATION_SPEED;
 	_physicalComponent.mass = PROJECTILE_COLLIDER_MASS;
 	_physicalComponent.radius = PROJECTILE_COLLIDER_RADIUS;
+
+	_pCollider->UpdatePhysicsComponentFromGameObject();
 }
 
 void Projectile::Terminate()

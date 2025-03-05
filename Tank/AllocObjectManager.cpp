@@ -76,10 +76,11 @@ Tank* AllocObjectManager::CreateTank(ObjectID objectID, UserDBIndex ownerIndex)
 Projectile* AllocObjectManager::CreateProjectile(ObjectID objectID, const Transform* pInitTransform, UserDBIndex ownerIndex)
 {
 	Projectile* pProjectile = DNew Projectile();
-	const Transform* pProjectileTransform = pProjectile->GetTransformPtr();
 	Collider* pCollider = g_pStableFlow->GetNewColliderPtr(pProjectile, pProjectile->GetPhysicalComponentPtr());
 	pProjectile->AttachCollider(pCollider);
 	pProjectile->Initiate(objectID, pInitTransform, ownerIndex);
+	
+	
 	_projectileTable.Insert(objectID.key, pProjectile);
 	return pProjectile;
 }
