@@ -34,6 +34,9 @@
     <Filter Include="Player">
       <UniqueIdentifier>{216bdc60-be59-4baa-bc03-aeb10cba4da4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Network">
+      <UniqueIdentifier>{3226aa50-de82-420e-b6e4-eee5ab9d68d0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -75,9 +78,6 @@
     <ClCompile Include="AllocObjectManager.cpp">
       <Filter>game object</Filter>
     </ClCompile>
-    <ClCompile Include="GameEvent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TankAliases.h">
       <Filter>pch</Filter>
     </ClCompile>
@@ -86,6 +86,12 @@
     </ClCompile>
     <ClCompile Include="Player.cpp">
       <Filter>Player</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientPacketHandler.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkProtocol.cpp">
+      <Filter>Network</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -128,14 +134,17 @@
     <ClInclude Include="AllocObjectManager.h">
       <Filter>game object</Filter>
     </ClInclude>
-    <ClInclude Include="GameEvent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Camera.h">
       <Filter>Player</Filter>
     </ClInclude>
     <ClInclude Include="Player.h">
       <Filter>Player</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkProtocol.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="ClientPacketHandler.h">
+      <Filter>Network</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

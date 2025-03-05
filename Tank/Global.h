@@ -10,9 +10,9 @@ class Player;
 
 struct Score
 {
-	int kill;
-	int death;
-	int hit;
+	int kill = 0;
+	int death = 0;
+	int hit = 0;
 };
 
 
@@ -29,7 +29,6 @@ extern DWORD g_currentFPS;
 extern INetCore* g_pNetCore;
 
 extern bool g_isTankCreateRequest;
-extern Player* g_pPlayer;
 extern Score g_score;
 extern AllocObjectManager g_objectManager;
 
@@ -39,6 +38,13 @@ extern std::wstring g_password;
 extern IStableFlow* g_pStableFlow;
 
 extern GameCamera* g_pCamera;
+
+extern UINT64 g_keyboardPressedFlag;
+extern UINT64 g_keyboardReleasedFlag;
+extern UINT64 g_keyboardHeldFlag;
+
+
+extern Player* g_pPlayer;
 
 class Global
 {

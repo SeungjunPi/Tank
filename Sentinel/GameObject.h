@@ -23,6 +23,8 @@ public:
 	const Transform* GetTransformPtr() const;
 	Vector3 GetPosition() const;
 
+	void ResetDynamicPhysicalComponent();
+
 	// other object
 	BOOL UpdateTransformIfValid(const Transform* pTransform);
 

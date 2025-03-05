@@ -68,6 +68,13 @@ UINT GameObject::GetTransformedModel(Vertex* out_vertices)
 	return _model.numVertices;
 }
 
+void GameObject::ResetDynamicPhysicalComponent()
+{
+	_physicalComponent.transform = Transform();
+	_physicalComponent.velocity = Vector3();
+	_physicalComponent.angularVelocity = Vector3();
+}
+
 void GameObject::SetTransformByServer(const Transform* pTransform)
 {
 	memcpy(&_physicalComponent.transform, pTransform, sizeof(Transform));

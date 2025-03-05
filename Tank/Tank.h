@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GameObject.h"
-#include "CommonData.h"
+#include "GameStruct.h"
 
 class Collider;
 
@@ -28,17 +28,12 @@ public:
 	virtual void OnRespawn() override;
 
 	virtual void OnHitServer(ULONGLONG currentTick, GameObject* other) override;
+
+	BOOL TryFireMachineGun(ULONGLONG currentTick);
 private:
-	PlayerInputState _crntInputState = PLAYER_INPUT_NONE;
-	PlayerInputState _prevInputState = PLAYER_INPUT_NONE;
-	
-	ULONGLONG _lastTransformSyncTick = 0;
 	ULONGLONG _lastMachineGunFiringTick = 0;
 
 	int _hp = 0;
-
-	BOOL TryFireMachineGun(ULONGLONG currentTick);
-	void ProcessInput();
 };
 
 

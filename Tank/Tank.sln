@@ -5,6 +5,11 @@ VisualStudioVersion = 17.9.34714.143
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tank", "Tank.vcxproj", "{0561CA64-59F6-43C4-B090-DAF9EB31237E}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TankApp", "..\TankApp\TankApp.vcxproj", "{638F3337-6536-40C4-AAF7-72DB8D237333}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0561CA64-59F6-43C4-B090-DAF9EB31237E} = {0561CA64-59F6-43C4-B090-DAF9EB31237E}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +26,14 @@ Global
 		{0561CA64-59F6-43C4-B090-DAF9EB31237E}.Release|x64.Build.0 = Release|x64
 		{0561CA64-59F6-43C4-B090-DAF9EB31237E}.Release|x86.ActiveCfg = Release|Win32
 		{0561CA64-59F6-43C4-B090-DAF9EB31237E}.Release|x86.Build.0 = Release|Win32
+		{638F3337-6536-40C4-AAF7-72DB8D237333}.Debug|x64.ActiveCfg = Debug|x64
+		{638F3337-6536-40C4-AAF7-72DB8D237333}.Debug|x64.Build.0 = Debug|x64
+		{638F3337-6536-40C4-AAF7-72DB8D237333}.Debug|x86.ActiveCfg = Debug|Win32
+		{638F3337-6536-40C4-AAF7-72DB8D237333}.Debug|x86.Build.0 = Debug|Win32
+		{638F3337-6536-40C4-AAF7-72DB8D237333}.Release|x64.ActiveCfg = Release|x64
+		{638F3337-6536-40C4-AAF7-72DB8D237333}.Release|x64.Build.0 = Release|x64
+		{638F3337-6536-40C4-AAF7-72DB8D237333}.Release|x86.ActiveCfg = Release|Win32
+		{638F3337-6536-40C4-AAF7-72DB8D237333}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

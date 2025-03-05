@@ -1,6 +1,6 @@
 #include "ObjectManager.h"
 #include "Tank.h"
-#include "GameEvent.h"
+#include "ServerPacketHandler.h"
 #include "Projectile.h"
 #include "Global.h"
 #include "StaticData.h"
@@ -91,7 +91,7 @@ void ObjectManager::RemoveTank(ObjectID objectId, UserDBIndex ownerId)
 	delete pTank;
 }
 
-Projectile* ObjectManager::CreateProjectile(UserDBIndex ownerId, Transform* pTransform)
+Projectile* ObjectManager::CreateProjectile(UserDBIndex ownerId, const Transform* pTransform)
 {
 	assert(_unusedObjectIdQueue.GetCount() != 0);
 	ObjectID objectId;

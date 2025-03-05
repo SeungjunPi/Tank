@@ -40,7 +40,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -71,9 +71,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
-    <IncludePath>
-    </IncludePath>
+    <LibraryPath>$(SolutionDir)..\bin\$(Configuration);$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <IncludePath>$(SolutionDir)..\NetCore\;$(SolutionDir)..\DataStruct\;$(SolutionDir)..\Collision\;$(SolutionDir)..\Math\;$(SolutionDir)..\Common\</IncludePath>
+    <OutDir>$(SolutionDir)..\bin\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)..\obj\$(ShortProjectName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -110,19 +111,21 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\NetCore\;$(SolutionDir)..\DataStruct\;$(SolutionDir)..\Collision\;$(SolutionDir)..\Math\;$(SolutionDir)..\Common\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>TankPch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(SolutionDir)..\bin\Debug\NetCore.lib;$(SolutionDir)..\bin\Debug\DataStruct.lib;$(SolutionDir)..\bin\Debug\Collision.lib;$(SolutionDir)..\bin\Debug\Math.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>NetCore.lib;DataStruct.lib;Collision.lib;Math.lib;Common.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
       <PerUserRedirection>false</PerUserRedirection>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(OutDir)*.*" "$(SolutionDir)..\bin\Debug"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -146,13 +149,9 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ConsoleRenderer.cpp" />
     <ClCompile Include="DotObject.cpp" />
-    <ClCompile Include="Game.cpp" />
-    <ClCompile Include="GameEvent.cpp" />
     <ClCompile Include="GameObject.cpp" />
-    <ClCompile Include="GameStruct.cpp" />
     <ClCompile Include="Global.cpp" />
     <ClCompile Include="KeyboardEventListener.cpp" />
-    <ClCompile Include="main.cpp" />
     <ClCompile Include="Obstacle.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Projectile.cpp" />
@@ -165,10 +164,7 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="ConsoleRenderer.h" />
     <ClInclude Include="DotObject.h" />
-    <ClInclude Include="Game.h" />
-    <ClInclude Include="GameEvent.h" />
     <ClInclude Include="GameObject.h" />
-    <ClInclude Include="GameStruct.h" />
     <ClInclude Include="Global.h" />
     <ClInclude Include="KeyboardEventListener.h" />
     <ClInclude Include="Obstacle.h" />

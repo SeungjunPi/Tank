@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC
@@ -9,13 +9,12 @@
 #endif
 
 #include <winsock2.h>
-#include <stdlib.h>
 #include <windows.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 #include <float.h>
 #include <string>
-#include "TankAliases.h"
 
 
 

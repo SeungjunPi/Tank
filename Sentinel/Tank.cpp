@@ -1,11 +1,11 @@
 #include "Tank.h"
 #include "Global.h"
-#include "GameEvent.h"
 #include "Collider.h"
 #include "CollisionManager.h"
 #include "PlayerManager.h"
 #include "ObjectManager.h"
-#include "StaticData.h"
+#include "GameStruct.h"
+#include "ServerPacketHandler.h"
 
 
 
@@ -28,7 +28,7 @@ void Tank::GetTurretInfo(Transform* out_position, Vector3* out_direction) const
 	Vector3 position = _physicalComponent.transform.Position;
 	Quaternion rotation = _physicalComponent.transform.Rotation;
 
-	Vector3 v = { 0.0f, -1.0f, 0.0f };
+	Vector3 v = { 0.0f, -2.0f, 0.0f };
 	v = Vector3::Rotate(v, rotation);
 	v.x += position.x;
 	v.y += position.y;
@@ -37,7 +37,7 @@ void Tank::GetTurretInfo(Transform* out_position, Vector3* out_direction) const
 	out_position->Rotation = _physicalComponent.transform.Rotation;
 
 	Vector3 direction = FORWARD_DIRECTION;
-	direction = direction * (_physicalComponent.radius + PROJECTILE_COLLIDER_RADIUS) * 1.03125f;
+	direction = direction * (_physicalComponent.radius + PROJECTILE_COLLIDER_RADIUS) * 1.5f;
 
 	const Vector3 forwardDirection = Vector3::Rotate(direction, rotation);
 
@@ -51,28 +51,25 @@ void Tank::ResetHP()
 
 void Tank::AdvancePlayerInput(PlayerInputState inputState)
 {
-	_prevInputState = _crntInputState;
-	_crntInputState = inputState;
-
-	if ((_crntInputState & PLAYER_INPUT_FLAG_UP) && !(_crntInputState & PLAYER_INPUT_FLAG_DOWN)) {
+	if ((inputState & FLAG_PLAYER_INPUT_FORWARD) && !(inputState & FLAG_PLAYER_INPUT_BACKWARD)) {
 		_physicalComponent.velocity = Vector3::Rotate(FORWARD_DIRECTION, _physicalComponent.transform.Rotation) * TANK_TRANSLATION_SPEED;
 	}
-	else if ((_crntInputState & PLAYER_INPUT_FLAG_DOWN) && !(_crntInputState & PLAYER_INPUT_FLAG_UP)) {
+	else if ((inputState & FLAG_PLAYER_INPUT_BACKWARD) && !(inputState & FLAG_PLAYER_INPUT_FORWARD)) {
 		_physicalComponent.velocity = Vector3::Rotate(BACKWARD_DIRECTION, _physicalComponent.transform.Rotation) * TANK_TRANSLATION_SPEED;
 	}
 	else {
 		_physicalComponent.velocity = Vector3();
 	}
 
-	if (_crntInputState & PLAYER_INPUT_FLAG_LEFT) {
-		if (!(_crntInputState & PLAYER_INPUT_FLAG_RIGHT)) {
+	if (inputState & FLAG_PLAYER_INPUT_ROTATE_LEFT) {
+		if (!(inputState & FLAG_PLAYER_INPUT_ROTATE_RIGHT)) {
 			_physicalComponent.angularVelocity = { 0, 0, -TANK_ROTATION_SPEED };
 		}
 		else {
 			_physicalComponent.angularVelocity = Vector3();
 		}
 	}
-	else if (_crntInputState & PLAYER_INPUT_FLAG_RIGHT) {
+	else if (inputState & FLAG_PLAYER_INPUT_ROTATE_RIGHT) {
 		_physicalComponent.angularVelocity = { 0, 0, TANK_ROTATION_SPEED };
 	}
 	else {
@@ -86,7 +83,7 @@ void Tank::Tick(ULONGLONG tickDiff)
 	if (!IsAlive()) {
 		if (g_currentGameTick - _hitTick > TICK_TANK_RESPAWN_INTERVAL) {
 			Respawn();
-			GamePacket::BroadcastRespawnTank(_id);
+			ServerPacketHandler::BroadcastRespawnTank(_id);
 		}
 	}
 	return;
@@ -100,19 +97,24 @@ BOOL Tank::IsDestroyed(ULONGLONG currentTick) const
 void Tank::OnHitWith(ULONGLONG currentTick, GameObject* other)
 {
 	ObjectID otherID = other->GetID();
+	if (_ownerIndex == other->GetOwnerId()) {
+		return;
+	}
+
 	if (otherID.type == GAME_OBJECT_TYPE_PROJECTILE) {
 		if (_hp > 0) {
 			if (--_hp == 0) {
 				_pCollider->Deactivate();
+				ResetDynamicPhysicalComponent();
 				_hitTick = currentTick;
 				_isAlive = false;
-				_crntInputState = PLAYER_INPUT_NONE;
-
+				
 				g_playerManager.IncreaseDeathCount(_ownerIndex);
 				g_playerManager.IncreaseKillCount(other->GetOwnerId());
 			}
 			g_playerManager.IncreaseHitCount(other->GetOwnerId());
-			GamePacket::BroadcastHit(_id, other->GetID());
+			//ServerPacketHandler::BroadcastHit(_id, other->GetID());
+			ServerPacketHandler::BroadcastMachineGunHit(other->GetOwnerId(), otherID, _ownerIndex, _id, _hp);
 		}
 	}
 }
@@ -161,17 +163,6 @@ BOOL Tank::TryFireMachineGun(ULONGLONG currentTick)
 
 	GamePacket::SendFireMachineGun(&projectileTransform);*/
 	return true;
-}
-
-void Tank::ProcessInput()
-{
-	PlayerInputState crntMoveStatr = _crntInputState & PLAYER_INPUT_MOVE_FLAGS;
-	if (crntMoveStatr) {
-		if (_lastTransformSyncTick + TICK_TANK_SYNC < g_currentGameTick) {
-			// Send Moving
-			// ??
-		}
-	}
 }
 
 

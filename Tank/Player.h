@@ -1,10 +1,12 @@
-﻿#pragma once
+#pragma once
 
 
 
 #include "NetCoreAliases.h"
 #include "TankPch.h"
 #include "GameStruct.h"
+#include "NetworkAlias.h"
+#include "Global.h"
 
 
 
@@ -17,14 +19,15 @@ public:
 	Player(std::wstring name, std::wstring password);
 	~Player();
 
-	void OnConnected(SessionID sessionID);
-	void OnSuccessLogin(UserDBIndex key, Score score);
+	virtual void OnConnected(SessionID sessionID);
+	virtual void OnSuccessLogin(UserDBIndex key, Score score);
 
 	std::wstring& GetName() { return _name; }
 	std::wstring& GetPassword() { return _password; }
 
 	void SetTank(Tank* pTank);
 	ObjectID GetTankID();
+	Tank* GetTankPtr();
 	Tank* ClearTank();
 
 	void HandleKeyboardEvents(UINT64 pressedKeys, UINT64 releasedKeys, UINT64 heldKeys);
@@ -36,7 +39,15 @@ public:
 	INT IncreaseKill();
 	INT IncreaseDeath();
 
+	void Tick();
+
 	void LogTankPosition(const char* str);
+protected:
+	PlayerInputState _crntInputState = PLAYER_INPUT_NONE;
+	PlayerInputState _prevInputState = PLAYER_INPUT_NONE;
+
+	ULONGLONG _lastMovementSyncTick = 0;
+
 private:
 	std::wstring _name;
 	std::wstring _password;
@@ -46,4 +57,6 @@ private:
 
 	Tank* _pTank = nullptr;
 	Score _score;
+
+	void UpdateInputState(UINT64 heldKeys);
 };

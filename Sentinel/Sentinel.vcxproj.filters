@@ -31,6 +31,9 @@
     <Filter Include="Static Data">
       <UniqueIdentifier>{80d4aaa3-7e59-40db-9fb9-8ac49a183c9b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Network">
+      <UniqueIdentifier>{2e0d67fd-a26e-4f44-a9f5-8e1adce878fe}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameServer.cpp">
@@ -57,12 +60,6 @@
     <ClCompile Include="DummyObject.cpp">
       <Filter>Game Object</Filter>
     </ClCompile>
-    <ClCompile Include="GameEvent.cpp">
-      <Filter>Game Event</Filter>
-    </ClCompile>
-    <ClCompile Include="GameStruct.cpp">
-      <Filter>Game Object</Filter>
-    </ClCompile>
     <ClCompile Include="Global.cpp">
       <Filter>Static Data</Filter>
     </ClCompile>
@@ -80,6 +77,9 @@
     </ClCompile>
     <ClCompile Include="ObjectManager.cpp">
       <Filter>Game Object</Filter>
+    </ClCompile>
+    <ClCompile Include="ServerPacketHandler.cpp">
+      <Filter>Network</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -110,9 +110,6 @@
     <ClInclude Include="GameObject.h">
       <Filter>Game Object</Filter>
     </ClInclude>
-    <ClInclude Include="GameStruct.h">
-      <Filter>Game Object</Filter>
-    </ClInclude>
     <ClInclude Include="Tank.h">
       <Filter>Game Object</Filter>
     </ClInclude>
@@ -134,14 +131,14 @@
     <ClInclude Include="CQueue.h">
       <Filter>DB</Filter>
     </ClInclude>
-    <ClInclude Include="GameEvent.h">
-      <Filter>Game Event</Filter>
-    </ClInclude>
     <ClInclude Include="Global.h">
       <Filter>Static Data</Filter>
     </ClInclude>
     <ClInclude Include="StaticData.h">
       <Filter>Static Data</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerPacketHandler.h">
+      <Filter>Network</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

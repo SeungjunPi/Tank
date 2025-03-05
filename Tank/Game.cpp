@@ -13,13 +13,16 @@
 #include "NetMessage.h"
 #include "NetMessageQueue.h"
 
+#include "ClientPacketHandler.h"
+#include "NetworkProtocol.h"
+
 #include "CollisionManager.h"
-#include "GameEvent.h"
 #include "IStableFlow.h"
 #include "Collider.h"
 #include "Player.h"
 #include "Camera.h"
 
+static void s_InitiatePlayer();
 static void s_ApplyKeyboardEvents(ULONGLONG tickDiff);
 static void s_ApplyObjectLogic(ULONGLONG tickDiff);
 static void s_HandleNetEvents();
@@ -41,8 +44,11 @@ void Game::Initialize()
 	if (res != true) {
 		__debugbreak();
 	}
+	ClientPacketHandler::RegisterCallbacks();
 
 	CreateStableFlow(&g_pStableFlow);
+
+	s_InitiatePlayer();
 	
 	g_pCamera = DNew GameCamera;
 }
@@ -60,19 +66,14 @@ void Game::CleanUp()
 	ConsoleRenderer::Terminate();
 	KeyboardEventListener::Terminate();
 	g_objectManager.Terminate();
+
+	
 	delete g_pPlayer;
 	delete g_pCamera;
 }
 
 void Game::Start()
 {
-	g_pPlayer = DNew Player(g_userName, g_password);
-	SessionID serverID = g_pNetCore->ConnectTo("127.0.0.1", 30283);
-	g_pPlayer->OnConnected(serverID);
-
-	// Send Login
-	GamePacket::SendLogin(g_userName, g_password);
-
 	g_previousGameTick = GetTickCount64();
 
 	while (s_isRunning) {
@@ -87,11 +88,17 @@ void Game::Start()
 			//// Handle Keyboard Events
 			s_ApplyKeyboardEvents(gameTickDiff);
 
+			g_pPlayer->Tick();
+
 			// Physics(Detect Collision, Decide Next Movement))
 			g_pStableFlow->ProcessStableFlow(g_currentGameTick);
-			
+
 			// Game Logic( )
 			s_ApplyObjectLogic(gameTickDiff);
+
+			// Update Camera
+			g_pCamera->Tick();
+
 			// Destroy Game Objects
 			s_CleanupDestroyedObjects(g_currentGameTick);
 
@@ -113,22 +120,25 @@ void Game::End()
 	
 }
 
+void s_InitiatePlayer()
+{
+	// Create a new player
+	g_pPlayer = DNew Player(g_userName, g_password);
+	SessionID sessionID = g_pNetCore->ConnectTo("127.0.0.1", 30283);
+	g_pPlayer->OnConnected(sessionID);
+	// Send Login
+	PacketHandler::s_CSSendLogin(g_userName, g_password, sessionID);
+}
+
 void s_ApplyKeyboardEvents(ULONGLONG tickDiff)
 {
 	KeyboardEventListener::ProcessInputs();
 
-	UINT64 pressedFlag;
-	UINT64 releasedFlag;
-	UINT64 heldFlag;
-	KeyboardEventListener::GetAndUpdateKeyboardMovementStatus(&pressedFlag, &releasedFlag, &heldFlag);
+	KeyboardEventListener::GetAndUpdateKeyboardMovementStatus(&g_keyboardPressedFlag, &g_keyboardReleasedFlag, &g_keyboardHeldFlag);
 
-	if (pressedFlag & KEYBOARD_INPUT_FLAG_ESC) {
+	if (g_keyboardPressedFlag & KEYBOARD_INPUT_FLAG_ESC) {
 		s_isRunning = false;
 		return;
-	}
-
-	if (g_pPlayer != nullptr) {
-		g_pPlayer->HandleKeyboardEvents(pressedFlag, releasedFlag, heldFlag);
 	}	
 }
 
@@ -170,7 +180,7 @@ void s_HandleNetEvents()
 	UINT32 serverId;
 	NetMessage* pMessage = pReceiveMessageQueue->GetNetMessageOrNull(&serverId);
 	while (pMessage != nullptr) {
-		GamePacket::HandlePacket((BYTE*)pMessage->body, serverId);
+		PacketHandler::DispatchPacket((BYTE*)pMessage->body, serverId);
 		pMessage = pReceiveMessageQueue->GetNetMessageOrNull(&serverId);
 	}
 	g_pNetCore->EndHandleReceivedMessages();

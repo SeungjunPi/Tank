@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GameObject.h"
-#include "CommonData.h"
+#include "GameStruct.h"
 
 
 
@@ -32,16 +32,9 @@ protected:
 	virtual BOOL IsTransformCloseEnough(const Transform* other) override;
 
 private:
-	PlayerInputState _crntInputState = PLAYER_INPUT_NONE;
-	PlayerInputState _prevInputState = PLAYER_INPUT_NONE;
-
-	ULONGLONG _lastTransformSyncTick = 0;
 	ULONGLONG _lastMachineGunFiringTick = 0;
-	
 
 	int _hp = 0;
 
 	BOOL TryFireMachineGun(ULONGLONG currentTick);
-	void ProcessInput();
-	
 };

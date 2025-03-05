@@ -6,7 +6,7 @@
 #include "Tank.h"
 
 #include "KeyboardEventListener.h"
-#include "GameEvent.h"
+#include "ClientPacketHandler.h"
 
 Player::Player(std::wstring name, std::wstring password)
 	: _name(name)
@@ -56,6 +56,11 @@ ObjectID Player::GetTankID()
 	return INVALID_OBJECT_ID;
 }
 
+Tank* Player::GetTankPtr()
+{
+	return _pTank;
+}
+
 Tank* Player::ClearTank()
 {
 	if (_pTank == nullptr) {
@@ -75,8 +80,46 @@ void Player::HandleKeyboardEvents(UINT64 pressedKeys, UINT64 releasedKeys, UINT6
 	}
 
 	// Convert KeyboardInput to PlayerInput
+	UpdateInputState(heldKeys);
 	
-	_pTank->AdvancePlayerInput(heldKeys);
+	if (!_pTank->IsAlive()) {
+		return;
+	}
+	
+	_pTank->AdvancePlayerInput(_crntInputState);
+
+	// Fire Machine Gun
+	if (_crntInputState & FLAG_PLAYER_INPUT_FIRE_MACHINE_GUN) {
+		BOOL fired = _pTank->TryFireMachineGun(g_currentGameTick);
+		if (fired) {
+			PacketHandler::s_CSSendFireMachineGun(nullptr, _sessionID);
+		}
+	}
+
+	// Edge
+	PlayerInputState prevMoveState = _prevInputState & FLAGS_PLAYER_INPUT_MOVEMENT;
+	PlayerInputState crntMoveState = _crntInputState & FLAGS_PLAYER_INPUT_MOVEMENT;
+	PlayerInputState moveEdgeTrigger = prevMoveState ^ crntMoveState;
+	if (crntMoveState == 0) {
+		if (moveEdgeTrigger) {
+			PacketHandler::s_CSSendEndMove(_pTank->GetTransformPtr(), GetSessionID());
+			_lastMovementSyncTick = g_currentGameTick;
+			return;
+		}
+		return;
+	}
+
+	if (prevMoveState == 0) {
+		// Start Move
+		PacketHandler::s_CSSendStartMove(_pTank->GetTransformPtr(), crntMoveState, GetSessionID());
+		_lastMovementSyncTick = g_currentGameTick;
+		return;
+	}
+
+	if (_lastMovementSyncTick + TICK_OWN_TANK_SYNC < g_currentGameTick) {
+		PacketHandler::s_CSSendMoving(_pTank->GetTransformPtr(), crntMoveState, g_pPlayer->GetSessionID());
+		_lastMovementSyncTick = g_currentGameTick;
+	}
 }
 
 INT Player::IncreaseHit()
@@ -97,6 +140,13 @@ INT Player::IncreaseDeath()
 	return _score.death;
 }
 
+void Player::Tick()
+{
+	HandleKeyboardEvents(g_keyboardPressedFlag, g_keyboardReleasedFlag, g_keyboardHeldFlag);
+
+	// Send Keyboard Event
+}
+
 void Player::LogTankPosition(const char* str)
 {
 	if (_pTank == nullptr) {
@@ -107,6 +157,31 @@ void Player::LogTankPosition(const char* str)
 	Vector3 pos = _pTank->GetPosition();
 
 	printf("[%s], [%f, %f, %f]\n", str, pos.x, pos.y, pos.z);
+}
+
+void Player::UpdateInputState(UINT64 heldKeys)
+{
+	_prevInputState = _crntInputState;
+	_crntInputState = PLAYER_INPUT_NONE;
+	if (heldKeys & KEYBOARD_INPUT_FLAG_SPACE) {
+		_crntInputState |= FLAG_PLAYER_INPUT_FIRE_MACHINE_GUN;
+	}
+	
+	if (heldKeys & KEYBOARD_INPUT_FLAG_UP) {
+		_crntInputState |= FLAG_PLAYER_INPUT_FORWARD;
+	}
+	
+	if (heldKeys & KEYBOARD_INPUT_FLAG_DOWN) {
+		_crntInputState |= FLAG_PLAYER_INPUT_BACKWARD;
+	}
+	
+	if (heldKeys & KEYBOARD_INPUT_FLAG_LEFT) {
+		_crntInputState |= FLAG_PLAYER_INPUT_ROTATE_LEFT;
+	}
+	
+	if (heldKeys & KEYBOARD_INPUT_FLAG_RIGHT) {
+		_crntInputState |= FLAG_PLAYER_INPUT_ROTATE_RIGHT;
+	}
 }
 
 

@@ -5,11 +5,9 @@
 #include "ObjectManager.h"
 #include "PlayerManager.h"
 #include "StaticData.h"
-#include "GameEvent.h"
-#include "CommonData.h"
+#include "ServerPacketHandler.h"
 
-
-void Projectile::Initiate(ObjectID id, Transform* transform, UserDBIndex ownerId)
+void Projectile::Initiate(ObjectID id, const Transform* transform, UserDBIndex ownerId)
 {
 	assert(_pCollider != nullptr);
 	_id = id;
@@ -47,6 +45,10 @@ void Projectile::OnHitWith(ULONGLONG currentTick, GameObject* other)
 {
 	// printf("Projectile OnHit %llu\n", _hitTick);
 	if (_hitTick != 0) {
+		return;
+	}
+
+	if (_ownerIndex == other->GetOwnerId()) {
 		return;
 	}
 
